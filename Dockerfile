@@ -33,7 +33,7 @@ COPY . .
 RUN npx prisma migrate deploy
 
 # Собираем TypeScript код
-RUN npm run full-build
+RUN npm run build
 
 # Пересобираем bcrypt, если нужно
 RUN npm rebuild bcrypt --build-from-source
