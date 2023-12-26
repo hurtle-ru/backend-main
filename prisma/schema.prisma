@@ -1,0 +1,411 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Applicant {
+  id                   String    @id @default(uuid())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  email                String    @unique
+  login                String    @unique
+  password             Password  @relation(fields: [passwordId], references: [id])
+  passwordId           String    @unique
+  contact              String
+  firstName            String
+  middleName           String?
+  lastName             String
+  phone                String?   @unique
+  birthDate            DateTime?
+  gender               String?
+  city                 String?
+  country              String?
+  aboutMe              String?
+  specialty            String?
+  nickname             String?   @unique
+  isReadyToRelocate    Boolean?
+  isVisibleToEmployers Boolean   @default(false)
+  isConfirmedByManager Boolean   @default(false)
+  resumeId             String?   @unique
+  resume               Resume?   @relation(fields: [resumeId], references: [id])
+  meetings             Meeting[]
+  assignedVacancies    Vacancy[] @relation("ApplicantToVacancy")
+  offers               Offer[]
+}
+
+model Employer {
+  id                   String             @id @default(uuid())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  email                String             @unique
+  login                String             @unique
+  password             Password           @relation(fields: [passwordId], references: [id])
+  passwordId           String             @unique
+  contact              String
+  firstName            String
+  middleName           String?
+  lastName             String
+  phone                String?            @unique
+  name                 String?
+  inn                  String?
+  ogrn                 String?
+  legalForm            EmployerLegalForm?
+  agreementNumber      String?
+  agreementDate        DateTime?
+  isConfirmedByManager Boolean            @default(false)
+  meetings             Meeting[]
+  vacancies            Vacancy[]
+}
+
+model Manager {
+  id           String                @id @default(uuid())
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  login        String                @unique
+  password     Password              @relation(fields: [passwordId], references: [id])
+  passwordId   String                @unique
+  name         String
+  accessScopes ManagerAccessScopes[]
+  slots        MeetingSlot[]
+}
+
+model Password {
+  id        String     @id @default(uuid())
+  hash      String
+  manager   Manager?
+  applicant Applicant?
+  employer  Employer?
+}
+
+model EmailVerification {
+  code      String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @unique
+  role      String
+}
+
+model PasswordResetReqeust {
+  code      String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String   @unique
+  role      String
+}
+
+model Vacancy {
+  id                   String                @id @default(uuid())
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  name                 String
+  teamRole             VacancyTeamRole
+  description          String
+  salary               Int
+  salaryCurrency       Currency
+  experience           VacancyExperience
+  employmentType       VacancyEmploymentType
+  price                Int?
+  city                 String
+  reportingForm        VacancyReportingForm
+  workingHours         VacancyWorkingHours
+  workplaceModel       VacancyWorkplaceModel
+  isConfirmedByManager Boolean               @default(false)
+  keySkills            String[]
+  employerId           String
+  employer             Employer              @relation(fields: [employerId], references: [id])
+  candidates           Applicant[]           @relation("ApplicantToVacancy")
+  offers               Offer[]
+}
+
+model Offer {
+  id             String      @id @default(uuid())
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  message        String
+  salary         Int
+  salaryCurrency Currency
+  status         OfferStatus @default(PENDING)
+  vacancyId      String
+  vacancy        Vacancy     @relation(fields: [vacancyId], references: [id])
+  candidateId    String
+  candidate      Applicant   @relation(fields: [candidateId], references: [id])
+}
+
+model Resume {
+  id                   String                       @id @default(uuid())
+  createdAt            DateTime                     @default(now())
+  importedFrom         ResumeImportExternalService?
+  importedId           String?
+  title                String
+  summary              String?
+  city                 String?
+  skills               String[]
+  isVisibleToEmployers Boolean                      @default(false)
+  applicant            Applicant?
+  certificates         ResumeCertificate[]
+  contacts             ResumeContact[]
+  education            ResumeEducation[]
+  experience           ResumeExperience[]
+  languages            ResumeLanguage[]
+}
+
+model ResumeContact {
+  id        String      @id @default(uuid())
+  name      String?
+  type      ContactType
+  value     String
+  preferred Boolean     @default(false)
+  resumeId  String
+  resume    Resume      @relation(fields: [resumeId], references: [id])
+}
+
+model ResumeLanguage {
+  id       String        @id @default(uuid())
+  name     String
+  level    LanguageLevel
+  resumeId String
+  resume   Resume        @relation(fields: [resumeId], references: [id])
+}
+
+model ResumeEducation {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  degree      String?
+  startYear   Int?
+  endYear     Int
+  resumeId    String
+  resume      Resume  @relation(fields: [resumeId], references: [id])
+}
+
+model ResumeExperience {
+  id          String    @id @default(uuid())
+  company     String?
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  resumeId    String
+  resume      Resume    @relation(fields: [resumeId], references: [id])
+}
+
+model ResumeCertificate {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  year        Int?
+  resumeId    String
+  resume      Resume  @relation(fields: [resumeId], references: [id])
+}
+
+model Meeting {
+  id          String                  @id @default(uuid())
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  name        String
+  description String
+  roomUrl     String
+  type        MeetingType
+  status      MeetingStatus           @default(PLANNED)
+  feedback    MeetingFeedback[]
+  scripts     MeetingScriptProtocol[]
+  applicant   Applicant?              @relation(fields: [applicantId], references: [id])
+  applicantId String?
+  employer    Employer?               @relation(fields: [employerId], references: [id])
+  employerId  String?
+  slot        MeetingSlot             @relation(fields: [slotId], references: [id])
+  slotId      String                  @unique
+}
+
+model MeetingSlot {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  dateTime  DateTime
+  types     MeetingType[]
+  meeting   Meeting?
+  manager   Manager       @relation(fields: [managerId], references: [id])
+  managerId String
+}
+
+model MeetingScriptProtocol {
+  id         String                @id @default(uuid())
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  meetingId  String
+  templateId String
+  answers    MeetingScriptAnswer[]
+  meeting    Meeting               @relation(fields: [meetingId], references: [id])
+  template   MeetingScriptTemplate @relation(fields: [templateId], references: [id])
+}
+
+model MeetingScriptTemplate {
+  id                     String                  @id @default(uuid())
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  title                  String
+  description            String?
+  meetingScriptProtocols MeetingScriptProtocol[]
+  questions              MeetingScriptQuestion[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
+}
+
+model MeetingScriptQuestion {
+  id            String                  @id @default(uuid())
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  text          String
+  answerOptions String[]
+  answers       MeetingScriptAnswer[]
+  template      MeetingScriptTemplate[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
+}
+
+model MeetingScriptAnswer {
+  id         String                @id @default(uuid())
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  text       String
+  protocolId String
+  questionId String
+  protocol   MeetingScriptProtocol @relation(fields: [protocolId], references: [id])
+  question   MeetingScriptQuestion @relation(fields: [questionId], references: [id])
+}
+
+model MeetingFeedback {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  text      String
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+}
+
+model PartnershipInquiry {
+  id                 String                   @id @default(uuid())
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  representativeName String
+  companyName        String
+  contact            String
+  email              String
+  status             PartnershipInquiryStatus @default(PENDING)
+}
+
+enum ContactType {
+  PHONE
+  EMAIL
+  TELEGRAM
+  VK
+  FACEBOOK
+  LINKEDIN
+  GITHUB
+  OTHER
+}
+
+enum LanguageLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+  L1
+}
+
+enum ResumeImportExternalService {
+  HH
+}
+
+enum Currency {
+  RUB
+  USD
+  EUR
+  GBP
+  GEL
+  AZN
+  BYR
+  KGS
+  KZT
+  UZS
+}
+
+enum EmployerLegalForm {
+  INDIVIDUAL_ENTREPRENEUR
+  OOO
+  ZAO
+  PAO
+  NKO
+}
+
+enum ManagerAccessScopes {
+  NONE
+}
+
+enum VacancyExperience {
+  NO_EXPERIENCE
+  BETWEEN_1_AND_3
+  BETWEEN_3_AND_6
+  MORE_THAN_6
+}
+
+enum VacancyEmploymentType {
+  FULL_TIME
+  PART_TIME
+  PROJECT
+  VOLUNTEER
+  PROBATION
+}
+
+enum VacancyReportingForm {
+  DIRECTOR
+  PROJECT_MANAGER
+  GROUP_WORK
+  INDEPENDENT_WORK
+}
+
+enum VacancyTeamRole {
+  COLLABORATIVE_WORK
+  TEAM_COORDINATION
+  TEAM_MANAGEMENT
+  INDEPENDENT_WORK
+}
+
+enum VacancyWorkingHours {
+  STRICT_SCHEDULE
+  FREELANCE
+  GROUP_WORK
+  FIXED_HOURS
+}
+
+enum VacancyWorkplaceModel {
+  OFFICE
+  HYBRID
+  REMOTE
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum PartnershipInquiryStatus {
+  PENDING
+  RESOLVED
+}
+
+enum MeetingType {
+  INTERVIEW
+  CONSULTATION_B2C
+  CONSULTATION_B2B
+}
+
+enum MeetingStatus {
+  PLANNED
+  CANCELED
+  COMPLETED
+}

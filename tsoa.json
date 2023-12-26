@@ -1,0 +1,24 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/domain/**/*controller.ts"],
+  "spec": {
+    "outputDirectory": "./dist",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "specMerging": "recursive",
+    "operationIdTemplate": "{{replace controllerName 'Controller' ''}}_{{titleCase method.name}}"
+  },
+  "routes": {
+    "routesDir": "./src/route",
+    "authenticationModule": "src/domain/auth/auth.middleware.ts",
+    "baseRouteName": "/api/v1",
+    "iocModule": "src/infrastructure/di/iocContainer.ts"
+  }
+}

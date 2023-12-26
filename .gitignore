@@ -5,3 +5,7 @@ src/route
 dist
 **.env
 Running
+.vscode
+typings
+# Sentry Config File
+.sentryclirc

@@ -1,0 +1,13 @@
+<body>
+<div id="redoc-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/redoc@2.0.0-rc.55/bundles/redoc.standalone.min.js"> </script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/redoc-try-it-out/dist/try-it-out.min.js"></script>
+<div id="redoc_container"></div>
+<script>
+    RedocTryItOut.init(
+        `${window.location.href.split("redoc")[0]}swagger.json`,
+        { title: "Хартл" },
+        document.getElementById("redoc_container")
+    )
+</script>
+</body>
