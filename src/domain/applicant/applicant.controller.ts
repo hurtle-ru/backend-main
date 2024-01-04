@@ -7,9 +7,9 @@ import {
   BasicApplicant, GetApplicantResponse,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
-import { PageResponse } from "../../infrastructure/controller/page.response";
+import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
-import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/page.dto";
+import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 
 
 @injectable()

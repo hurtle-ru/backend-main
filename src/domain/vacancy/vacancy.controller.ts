@@ -19,8 +19,8 @@ import { BasicVacancy, CreateVacancyRequest, GetVacancyResponse, PutVacancyReque
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
-import { PageResponse } from "../../infrastructure/controller/page.response";
-import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/page.dto";
+import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
+import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 
 @injectable()
 @Route("api/v1/vacancies")

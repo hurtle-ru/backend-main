@@ -1,7 +1,7 @@
 import { injectable, singleton } from "tsyringe";
-import { UtcDate } from "./slot.dto";
 import { MeetingType } from "@prisma/client";
 import { UserRole } from "../../auth/auth.dto";
+import { UtcDate } from "../../../infrastructure/controller/date/date.dto";
 
 
 @injectable()

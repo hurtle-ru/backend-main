@@ -3,9 +3,9 @@ import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import { BasicEmployer, EmployerPutByIdRequest, EmployerPutMeRequest, GetEmployerResponse } from "./employer.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
-import { PageResponse } from "../../infrastructure/controller/page.response";
+import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
-import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/page.dto";
+import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
 

@@ -4,9 +4,9 @@ import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prismaClient";
 import { BasicOffer, CreateOfferRequest, GetOfferResponse, PutOfferRequest } from "./offer.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
-import { PageResponse } from "../../../infrastructure/controller/page.response";
+import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { OfferStatus } from "@prisma/client";
-import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/page.dto";
+import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 
 @injectable()
 @Route("api/v1/offers")
