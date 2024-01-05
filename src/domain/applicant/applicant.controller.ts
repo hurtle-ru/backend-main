@@ -67,26 +67,6 @@ export class ApplicantController extends Controller {
     return new PageResponse(applicants, page, size, applicantsCount);
   }
 
-  @Get("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
-  async get(
-    @Path() id: string,
-    @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
-  ): Promise<GetApplicantResponse> {
-    const applicant = await prisma.applicant.findUnique({
-      where: { id },
-      include: {
-        resume: include?.includes("resume"),
-        meetings: include?.includes("meetings"),
-        assignedVacancies: include?.includes("assignedVacancies"),
-      },
-    });
-
-    if (!applicant) throw new HttpError(404, "Applicant not found");
-    return applicant;
-  }
-
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
@@ -157,6 +137,26 @@ export class ApplicantController extends Controller {
       data: body,
     });
 
+    return applicant;
+  }
+
+  @Get("{id}")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  async get(
+    @Path() id: string,
+    @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
+  ): Promise<GetApplicantResponse> {
+    const applicant = await prisma.applicant.findUnique({
+      where: { id },
+      include: {
+        resume: include?.includes("resume"),
+        meetings: include?.includes("meetings"),
+        assignedVacancies: include?.includes("assignedVacancies"),
+      },
+    });
+
+    if (!applicant) throw new HttpError(404, "Applicant not found");
     return applicant;
   }
 }
