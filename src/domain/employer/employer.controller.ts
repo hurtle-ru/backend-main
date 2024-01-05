@@ -63,25 +63,6 @@ export class EmployerController extends Controller {
     return new PageResponse(employers, page, size, employersCount);
   }
 
-  @Get("{id}")
-  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  async get(
-    @Path() id: string,
-    @Query() include?: ("meetings" | "vacancies")[]
-  ): Promise<GetEmployerResponse> {
-    const employer = await prisma.employer.findUnique({
-      where: { id },
-      include: {
-        meetings: include?.includes("meetings"),
-        vacancies: include?.includes("vacancies"),
-      },
-    });
-
-    if (!employer) throw new HttpError(404, "Employer not found");
-    return employer;
-  }
-
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
@@ -152,6 +133,25 @@ export class EmployerController extends Controller {
       data: body,
     });
 
+    return employer;
+  }
+
+  @Get("{id}")
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  async get(
+    @Path() id: string,
+    @Query() include?: ("meetings" | "vacancies")[]
+  ): Promise<GetEmployerResponse> {
+    const employer = await prisma.employer.findUnique({
+      where: { id },
+      include: {
+        meetings: include?.includes("meetings"),
+        vacancies: include?.includes("vacancies"),
+      },
+    });
+
+    if (!employer) throw new HttpError(404, "Employer not found");
     return employer;
   }
 }

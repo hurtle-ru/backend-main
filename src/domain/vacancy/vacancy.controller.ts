@@ -48,32 +48,6 @@ export class VacancyController extends Controller {
     });
   }
 
-  @Get("{id}")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async getById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Query() include?: ("employer" | "candidates")[]
-  ): Promise<GetVacancyResponse> {
-    let where;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, candidates: { some: { id: req.user.id } }};
-
-    const vacancy = await prisma.vacancy.findUnique({
-      where: where!,
-      include: {
-        employer: include?.includes("employer"),
-        candidates: include?.includes("candidates"),
-      },
-    });
-
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-
-    return vacancy;
-  }
-
   @Get("")
   @Security("jwt", [UserRole.MANAGER])
   public async getAll(
@@ -239,5 +213,31 @@ export class VacancyController extends Controller {
       where: where!,
       data: body,
     });
+  }
+
+  @Get("{id}")
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  public async getById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Query() include?: ("employer" | "candidates")[]
+  ): Promise<GetVacancyResponse> {
+    let where;
+    if(req.user.role === UserRole.MANAGER) where = { id };
+    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
+    else if(req.user.role === UserRole.APPLICANT) where = { id, candidates: { some: { id: req.user.id } }};
+
+    const vacancy = await prisma.vacancy.findUnique({
+      where: where!,
+      include: {
+        employer: include?.includes("employer"),
+        candidates: include?.includes("candidates"),
+      },
+    });
+
+    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+
+    return vacancy;
   }
 }
