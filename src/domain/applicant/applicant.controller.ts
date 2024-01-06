@@ -10,6 +10,7 @@ import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
+import { JsonObject } from "@prisma/client/runtime/library";
 
 
 @injectable()
@@ -158,5 +159,26 @@ export class ApplicantController extends Controller {
     });
 
     return applicant;
+  }
+
+  @Get("{id}/status")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.APPLICANT])
+  async getProfileStatus(
+    @Request() req: JwtModel,
+  ): Promise<JsonObject> {
+
+    const applicant = await prisma.applicant.findUnique({
+      where: { id: req.user.id },
+      include: {meetings: true},
+    });
+
+    if (!applicant) throw new HttpError(404, "Applicant not found");
+
+    return {
+      'isEmailConfirmed': applicant.isEmailConfirmed,
+      'hasResume': !!applicant.resumeId,
+      'hasMeeting': applicant.meetings.length > 0,
+    };
   }
 }

@@ -8,8 +8,8 @@ export class TelegramService {
   private bot: TelegramBot;
   private adminGroupChatId = telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID
 
-  constructor(token: string) {
-    this.bot = new TelegramBot(token);
+  constructor() {
+    this.bot = new TelegramBot(telegramConfig.TELEGRAM_BOT_TOKEN);
   }
 
   async sendMessage(text: string, options: SendMessageOptions): Promise<void> {
