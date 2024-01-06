@@ -52,6 +52,7 @@ export class RegisterApplicantRequest {
 
 export class RegisterEmployerRequest {
   static schema = yup.object({
+    inn: yup.string().trim().min(10),
     email: yup.string().email().min(3),
     contact: yup.string().trim().min(1),
     password: yup.string().trim().min(8),
@@ -61,6 +62,7 @@ export class RegisterEmployerRequest {
   });
 
   constructor(
+    public inn: string,
     public email: string,
     public contact: string,
     public password: string,

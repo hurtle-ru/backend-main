@@ -7,9 +7,9 @@ const BaseDadataURL = "http://suggestions.dadata.ru/suggestions/api/4_1/"
 
 export default {
   async getBasicCompanyInfoByInn(inn: string): Promise<BasicDadataCompany | null> {
-    axios.post(
+    const response = await axios.post(
       BaseDadataURL + "rs/suggest/party",
-      JSON.stringify({query: "7724261610"}),
+      JSON.stringify({query: inn}),
       {
         method: "POST",
         // mode: "cors",
@@ -20,16 +20,12 @@ export default {
         },
       }
     )
-    .then(function (response) {
-      const data = response.data["suggestions"][0]
-      return {
-        "name": data["value"],
-        "ogrn": data["data"]["ogrn"],
-      }
-    })
-    .catch(function (error) {
-      console.log("Error: ", error);
-    })
-    return null
+    if (response.data["suggestions"].length == 0) {console.log("blyat");return null}
+
+    const data = response.data["suggestions"][0]
+    return {
+      "name": data["value"],
+      "ogrn": data["data"]["ogrn"],
+    }
   },
 }

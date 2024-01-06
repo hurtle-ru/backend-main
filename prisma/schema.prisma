@@ -35,6 +35,7 @@ model Applicant {
   meetings             Meeting[]
   assignedVacancies    Vacancy[] @relation("ApplicantToVacancy")
   offers               Offer[]
+  isEmailConfirmed     Boolean   @default(false)
 }
 
 model Employer {
@@ -51,7 +52,7 @@ model Employer {
   lastName             String
   phone                String?            @unique
   name                 String?
-  inn                  String?
+  inn                  String
   ogrn                 String?
   legalForm            EmployerLegalForm?
   agreementNumber      String?
