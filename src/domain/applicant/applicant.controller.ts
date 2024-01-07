@@ -4,7 +4,7 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import {
   ApplicantPutByIdRequest,
   ApplicantPutMeRequest,
-  BasicApplicant, GetApplicantResponse,
+  BasicApplicant, GetApplicantResponse, GetApplicantStatusResponse,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -144,9 +144,9 @@ export class ApplicantController extends Controller {
   @Get("{id}/status")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  async getProfileStatus(
+  async getApplicantStatus(
     @Request() req: JwtModel,
-  ): Promise<JsonObject> {
+  ): Promise<GetApplicantStatusResponse> {
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
       include: { meetings: true },
