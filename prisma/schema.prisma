@@ -52,7 +52,7 @@ model Employer {
   lastName             String
   phone                String?            @unique
   name                 String?
-  inn                  String?
+  inn                  String
   ogrn                 String?
   legalForm            EmployerLegalForm?
   agreementNumber      String?
