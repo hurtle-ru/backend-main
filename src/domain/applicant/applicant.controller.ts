@@ -68,26 +68,6 @@ export class ApplicantController extends Controller {
     return new PageResponse(applicants, page, size, applicantsCount);
   }
 
-  @Get("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
-  async get(
-    @Path() id: string,
-    @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
-  ): Promise<GetApplicantResponse> {
-    const applicant = await prisma.applicant.findUnique({
-      where: { id },
-      include: {
-        resume: include?.includes("resume"),
-        meetings: include?.includes("meetings"),
-        assignedVacancies: include?.includes("assignedVacancies"),
-      },
-    });
-
-    if (!applicant) throw new HttpError(404, "Applicant not found");
-    return applicant;
-  }
-
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
@@ -160,25 +140,44 @@ export class ApplicantController extends Controller {
 
     return applicant;
   }
-
+  
   @Get("{id}/status")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.APPLICANT])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   async getProfileStatus(
     @Request() req: JwtModel,
   ): Promise<JsonObject> {
-
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
-      include: {meetings: true},
+      include: { meetings: true },
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
 
     return {
-      'isEmailConfirmed': applicant.isEmailConfirmed,
-      'hasResume': !!applicant.resumeId,
-      'hasMeeting': applicant.meetings.length > 0,
+      "isEmailConfirmed": applicant.isEmailConfirmed,
+      "hasResume": !!applicant.resumeId,
+      "hasMeeting": applicant.meetings.length > 0,
     };
+  }
+
+  @Get("{id}")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  async get(
+    @Path() id: string,
+    @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
+  ): Promise<GetApplicantResponse> {
+    const applicant = await prisma.applicant.findUnique({
+      where: { id },
+      include: {
+        resume: include?.includes("resume"),
+        meetings: include?.includes("meetings"),
+        assignedVacancies: include?.includes("assignedVacancies"),
+      },
+    });
+
+    if (!applicant) throw new HttpError(404, "Applicant not found");
+    return applicant;
   }
 }

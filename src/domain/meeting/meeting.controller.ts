@@ -48,7 +48,7 @@ export class MeetingController extends Controller {
 
     if (!slot) throw new HttpError(404, "MeetingSlot not found");
     if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-    if (this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
+    if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
     let user: { firstName: string, lastName: string } | null;

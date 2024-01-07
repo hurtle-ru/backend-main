@@ -47,33 +47,6 @@ export class MeetingSlotController extends Controller {
     });
   }
 
-  @Get("{id}")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
-  @Response<HttpErrorBody & {"error": "MeetingSlot not found"}>(404)
-  public async getById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Query() include?: ("meeting" | "manager")[]
-  ): Promise<BasicMeetingSlot> {
-    let where;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, meeting: { employerId: req.user.id } };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, meeting: { applicantId: req.user.id }};
-
-    const meetingSlot = await prisma.meetingSlot.findUnique({
-      where: where!,
-      include: {
-        meeting: include?.includes("meeting"),
-        manager: include?.includes("manager"),
-      },
-    });
-
-    if(!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
-
-    return meetingSlot;
-  }
-
-
   @Get("")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
   @Response<HttpErrorBody & {"error": "Only available slots are accessible to employers and applicants"}>(403)
@@ -175,5 +148,31 @@ export class MeetingSlotController extends Controller {
       where,
       data: body,
     });
+  }
+
+  @Get("{id}")
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Response<HttpErrorBody & {"error": "MeetingSlot not found"}>(404)
+  public async getById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Query() include?: ("meeting" | "manager")[]
+  ): Promise<BasicMeetingSlot> {
+    let where;
+    if(req.user.role === UserRole.MANAGER) where = { id };
+    else if(req.user.role === UserRole.EMPLOYER) where = { id, meeting: { employerId: req.user.id } };
+    else if(req.user.role === UserRole.APPLICANT) where = { id, meeting: { applicantId: req.user.id }};
+
+    const meetingSlot = await prisma.meetingSlot.findUnique({
+      where: where!,
+      include: {
+        meeting: include?.includes("meeting"),
+        manager: include?.includes("manager"),
+      },
+    });
+
+    if(!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
+
+    return meetingSlot;
   }
 }

@@ -3,6 +3,7 @@ import { UserRole } from "../auth/auth.dto";
 import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicMeetingSlot } from "./slot/slot.dto";
+import { BasicMeetingFeedback } from "./feedback/feedback.dto";
 
 
 export type BasicMeeting = Omit<
@@ -16,7 +17,7 @@ export type BasicMeeting = Omit<
 >;
 
 export type GetMeetingResponse = BasicMeeting & {
-  feedback?: any[],
+  feedback?: BasicMeetingFeedback[],
   scripts?: any[],
   applicant?: BasicApplicant | null,
   employer?: BasicEmployer | null,
