@@ -35,6 +35,7 @@ model Applicant {
   meetings             Meeting[]
   assignedVacancies    Vacancy[] @relation("ApplicantToVacancy")
   offers               Offer[]
+  isEmailConfirmed     Boolean   @default(false)
 }
 
 model Employer {

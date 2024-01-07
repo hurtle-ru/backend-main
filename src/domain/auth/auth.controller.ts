@@ -40,7 +40,7 @@ export class AuthController extends Controller {
         },
       },
     }
-    
+
     if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery);
     if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findQuery);
     if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery);

@@ -2,7 +2,7 @@ import nodemailer, { Transporter } from "nodemailer";
 import { mailConfig } from "./mail.config";
 import * as fs from "fs";
 import path from "path";
-import Sqrl from "squirrelly";
+import { render as renderTemplate } from "squirrelly";
 import { singleton } from "tsyringe";
 
 
@@ -45,8 +45,8 @@ export class MailService {
   }
 
   loadTemplate(templateName: string, context: any): string {
-    const templatePath = path.join(__dirname, `./resources/email-templates/${templateName}.template.html`);
+    const templatePath = path.join(process.cwd(), `resources/email-templates/${templateName}.template.html`);
     const templateHtml = fs.readFileSync(templatePath, "utf8")
-    return Sqrl.render(templateHtml, context);
+    return renderTemplate(templateHtml, context);
   }
 }
