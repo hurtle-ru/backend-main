@@ -3,7 +3,7 @@ import { injectable, singleton } from "tsyringe";
 
 @injectable()
 @singleton()
-export class MeetingScriptService {
+export class MeetingScriptQuestionService {
   constructor() {
   }
 }

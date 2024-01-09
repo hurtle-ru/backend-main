@@ -1,22 +1,27 @@
-import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import {
   ApplicantPutByIdRequest,
   ApplicantPutMeRequest,
-  BasicApplicant, GetApplicantResponse,
+  BasicApplicant, GetApplicantResponse, GetApplicantStatusResponse,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
+import { ArtifactService} from "../../external/artifact/artifact.service";
+import { Readable } from 'stream';
+import {Request as ExpressRequest} from 'express';
+import path from "path";
+import { AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE } from "../../external/artifact/artifact.config";
 
 
 @injectable()
 @Route("api/v1/applicants")
 @Tags("Applicant")
 export class ApplicantController extends Controller {
-  constructor() {
+  constructor(private readonly ArtifactService: ArtifactService) {
     super();
   }
 
@@ -140,6 +145,26 @@ export class ApplicantController extends Controller {
     return applicant;
   }
 
+  @Get("{id}/status")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
+  async getApplicantStatus(
+    @Request() req: JwtModel,
+  ): Promise<GetApplicantStatusResponse> {
+    const applicant = await prisma.applicant.findUnique({
+      where: { id: req.user.id },
+      include: { meetings: true },
+    });
+
+    if (!applicant) throw new HttpError(404, "Applicant not found");
+
+    return {
+      "isEmailConfirmed": applicant.isEmailConfirmed,
+      "hasResume": !!applicant.resumeId,
+      "hasMeeting": applicant.meetings.length > 0,
+    };
+  }
+
   @Get("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
@@ -158,5 +183,51 @@ export class ApplicantController extends Controller {
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
     return applicant;
+  }
+
+  @Get("/{id}/avatar")
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  public async getAvatar(
+      @Request() req: ExpressRequest & JwtModel,
+      @Path() id: string,
+  ): Promise<Readable | any> {
+      const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, 'avatar')
+      const filePath = `applicant/${id}/${fileName}`
+
+      if(fileName == null) throw new HttpError(404, "File not found")
+
+      const response = req.res;
+      if (response) {
+        console.log("File path: ", filePath)
+        const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
+
+        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
+        response.setHeader('Content-Length', fileOptions.size.toString());
+
+        stream.pipe(response)
+        return stream
+      }
+  }
+
+  @Put("/{id}/avatar")
+  @Security("jwt", [UserRole.APPLICANT])
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
+  public async uploadAvatar(
+      @Request() req: JwtModel,
+      @UploadedFile() file: Express.Multer.File,
+      @Path() id: string,
+  ): Promise<void> {
+    const avatarExtension = path.extname(file.originalname)
+    const avatarDirectory = `applicant/${id}/`
+    const avatarPath = avatarDirectory + `avatar${avatarExtension}`
+
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, 'avatar')
+
+    if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
+
+    await this.ArtifactService.saveImageFile(file, avatarPath);
   }
 }

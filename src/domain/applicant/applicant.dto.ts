@@ -1,6 +1,7 @@
 import { Applicant } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
+import { boolean } from "yup";
 
 
 export type BasicApplicant = Omit<
@@ -56,3 +57,9 @@ export type ApplicantPutByIdRequest = Pick<
   | "isVisibleToEmployers"
   | "isConfirmedByManager"
 >
+
+export type GetApplicantStatusResponse = {
+  isEmailConfirmed: boolean,
+  hasResume: boolean,
+  hasMeeting: boolean,
+}

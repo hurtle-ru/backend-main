@@ -31,7 +31,7 @@ export class EmailVerificationController extends Controller {
       data: {
         userId: req.user.id,
         role: req.user.role,
-        code: otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false }),
+        code: code,
       },
     });
 
@@ -48,7 +48,7 @@ export class EmailVerificationController extends Controller {
   async verifyEmail(
     @Request() req: JwtModel,
     @Path() code: string,
-  ) {
+  ): Promise<void> {
     try {
       await prisma.emailVerification.delete({
         where: {
@@ -57,7 +57,13 @@ export class EmailVerificationController extends Controller {
           code: code,
         },
       });
+      await prisma.applicant.update({
+        where: { id: req.user.id },
+        data: {isEmailConfirmed: true},
+      }
+    )
     } catch (e) {
+      console.log(`Error: ${e}`);
       throw new HttpError(404, "Invalid code");
     }
   }

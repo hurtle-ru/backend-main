@@ -85,7 +85,7 @@ export class MeetingController extends Controller {
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("feedback" | "scripts" | "applicant" | "employer" | "slot")[],
+    @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[],
     @Query() applicantId?: string,
     @Query() employerId?: string,
     @Query() hasFeedback?: boolean,
@@ -105,7 +105,7 @@ export class MeetingController extends Controller {
         where,
         include: {
           feedback: include?.includes("feedback"),
-          scripts: include?.includes("scripts"),
+          scriptProtocols: include?.includes("scriptProtocols"),
           applicant: include?.includes("applicant"),
           employer: include?.includes("employer"),
           slot: include?.includes("slot"),
@@ -123,7 +123,7 @@ export class MeetingController extends Controller {
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("feedback" | "scripts" | "applicant" | "employer" | "slot")[],
+    @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[],
   ): Promise<PageResponse<GetMeetingResponse>> {
     const where = {
       applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
@@ -138,7 +138,7 @@ export class MeetingController extends Controller {
         where,
         include: {
           feedback: include?.includes("feedback"),
-          scripts: include?.includes("scripts"),
+          scriptProtocols: include?.includes("scriptProtocols"),
           slot: include?.includes("slot"),
           applicant: include?.includes("applicant"),
           employer: include?.includes("employer"),
@@ -156,7 +156,7 @@ export class MeetingController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("feedback" | "scripts" | "applicant" | "employer" | "slot")[]
+    @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[]
   ): Promise<GetMeetingResponse> {
     const meeting = await prisma.meeting.findUnique({
       where: {
@@ -166,7 +166,7 @@ export class MeetingController extends Controller {
       },
       include: {
         feedback: include?.includes("feedback"),
-        scripts: include?.includes("scripts"),
+        scriptProtocols: include?.includes("scriptProtocols"),
         slot: include?.includes("slot"),
         applicant: include?.includes("applicant"),
         employer: include?.includes("employer"),
