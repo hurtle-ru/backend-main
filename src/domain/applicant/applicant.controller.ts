@@ -199,7 +199,7 @@ export class ApplicantController extends Controller {
 
       const response = req.res;
       if (response) {
-        console.log("file path: ", filePath)
+        console.log("File path: ", filePath)
         const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
         if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
