@@ -9,7 +9,7 @@ export type BasicManager = Omit<
   | "slots"
 >;
 
-export type ManagerGetResponse = BasicManager & {
+export type GetManagerResponse = BasicManager & {
   slots?: BasicMeetingSlot[];
 }
 

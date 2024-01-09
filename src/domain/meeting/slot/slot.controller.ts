@@ -15,7 +15,7 @@ import {
   Tags,
 } from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicMeetingSlot, CreateMeetingSlotRequest, PutMeetingSlotRequest } from "./slot.dto";
+import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
@@ -157,7 +157,7 @@ export class MeetingSlotController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("meeting" | "manager")[]
-  ): Promise<BasicMeetingSlot> {
+  ): Promise<GetMeetingSlotResponse> {
     let where;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, meeting: { employerId: req.user.id } };

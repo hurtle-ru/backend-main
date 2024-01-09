@@ -10,7 +10,6 @@ import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { JsonObject } from "@prisma/client/runtime/library";
 
 
 @injectable()

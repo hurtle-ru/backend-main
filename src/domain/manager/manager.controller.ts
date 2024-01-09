@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Patch, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
-import { BasicManager, ManagerGetResponse, ManagerPutMeRequest } from "./manager.dto";
+import { BasicManager, GetManagerResponse, ManagerPutMeRequest } from "./manager.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { injectable } from "tsyringe";
 import { BasicMeetingSlot } from "../meeting/slot/slot.dto";
@@ -21,7 +21,7 @@ export class ManagerController extends Controller {
   async getMe(
     @Request() req: JwtModel,
     @Query() include?: ("slots")[]
-  ): Promise<ManagerGetResponse> {
+  ): Promise<GetManagerResponse> {
     const manager = await prisma.manager.findUnique({
       where: { id: req.user.id },
       include: {
