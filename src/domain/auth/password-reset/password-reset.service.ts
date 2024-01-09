@@ -11,7 +11,7 @@ export class PasswordResetService {
   async sendEmail(email: string, code: string) {
     const link = appConfig.DOMAIN + "/auth/reset-password/" + code;
 
-    await this.mailService.sendEmail(email, "Подтверждение почты", {
+    await this.mailService.sendEmail(email, "Сброс пароля", {
       name: "reset-password",
       context: { link },
     })
