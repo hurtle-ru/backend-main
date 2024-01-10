@@ -21,13 +21,14 @@ export class DadataService {
             "Authorization": "Token " + dadataConfig.DADATA_TOKEN,
         },
       }
-    )
-    if (response.data["suggestions"].length == 0) return null
+    );
 
-    const data = response.data["suggestions"][0]
+    if (response.data["suggestions"].length == 0) return null;
+
+    const data = response.data["suggestions"][0];
     return {
       "name": data["value"],
       "ogrn": data["data"]["ogrn"],
-    }
+    };
   }
 }

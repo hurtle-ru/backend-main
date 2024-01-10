@@ -48,7 +48,7 @@ export class EmailVerificationController extends Controller {
   async verifyEmail(
     @Request() req: JwtModel,
     @Path() code: string,
-  ) {
+  ): Promise<void> {
     try {
       await prisma.emailVerification.delete({
         where: {

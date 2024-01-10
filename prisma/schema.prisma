@@ -52,7 +52,7 @@ model Employer {
   lastName             String
   phone                String?            @unique
   name                 String?
-  inn                  String
+  inn                  String?
   ogrn                 String?
   legalForm            EmployerLegalForm?
   agreementNumber      String?
@@ -204,22 +204,22 @@ model ResumeCertificate {
 }
 
 model Meeting {
-  id          String                  @id @default(uuid())
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  name        String
-  description String
-  roomUrl     String
-  type        MeetingType
-  status      MeetingStatus           @default(PLANNED)
-  feedback    MeetingFeedback[]
-  scripts     MeetingScriptProtocol[]
-  applicant   Applicant?              @relation(fields: [applicantId], references: [id])
-  applicantId String?
-  employer    Employer?               @relation(fields: [employerId], references: [id])
-  employerId  String?
-  slot        MeetingSlot             @relation(fields: [slotId], references: [id])
-  slotId      String                  @unique
+  id              String                  @id @default(uuid())
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  name            String
+  description     String
+  roomUrl         String
+  type            MeetingType
+  status          MeetingStatus           @default(PLANNED)
+  feedback        MeetingFeedback[]
+  scriptProtocols MeetingScriptProtocol[]
+  applicant       Applicant?              @relation(fields: [applicantId], references: [id])
+  applicantId     String?
+  employer        Employer?               @relation(fields: [employerId], references: [id])
+  employerId      String?
+  slot            MeetingSlot             @relation(fields: [slotId], references: [id])
+  slotId          String                  @unique
 }
 
 model MeetingSlot {
@@ -228,9 +228,9 @@ model MeetingSlot {
   updatedAt DateTime      @updatedAt
   dateTime  DateTime
   types     MeetingType[]
+  managerId String
   meeting   Meeting?
   manager   Manager       @relation(fields: [managerId], references: [id])
-  managerId String
 }
 
 model MeetingScriptProtocol {
@@ -239,19 +239,19 @@ model MeetingScriptProtocol {
   updatedAt  DateTime              @updatedAt
   meetingId  String
   templateId String
-  answers    MeetingScriptAnswer[]
   meeting    Meeting               @relation(fields: [meetingId], references: [id])
   template   MeetingScriptTemplate @relation(fields: [templateId], references: [id])
+  answers    MeetingScriptAnswer[]
 }
 
 model MeetingScriptTemplate {
-  id                     String                  @id @default(uuid())
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  title                  String
-  description            String?
-  meetingScriptProtocols MeetingScriptProtocol[]
-  questions              MeetingScriptQuestion[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
+  id          String                  @id @default(uuid())
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  title       String
+  description String?
+  protocols   MeetingScriptProtocol[]
+  questions   MeetingScriptQuestion[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
 }
 
 model MeetingScriptQuestion {
@@ -261,7 +261,7 @@ model MeetingScriptQuestion {
   text          String
   answerOptions String[]
   answers       MeetingScriptAnswer[]
-  template      MeetingScriptTemplate[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
+  templates     MeetingScriptTemplate[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
 }
 
 model MeetingScriptAnswer {

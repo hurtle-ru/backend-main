@@ -90,6 +90,7 @@ export class AuthController extends Controller {
 
   @Post("employer")
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
+  @Response<HttpErrorBody & {"error": "Company with this inn not found"}>(404)
   async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
     RegisterEmployerRequest.schema.validateSync(body);
 

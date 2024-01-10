@@ -1,5 +1,6 @@
 import { MeetingSlot, MeetingType } from "@prisma/client";
-import { UserRole } from "../../auth/auth.dto";
+import { BasicMeeting } from "../meeting.dto";
+import { BasicManager } from "../../manager/manager.dto";
 
 
 export type BasicMeetingSlot = Omit<
@@ -19,3 +20,8 @@ export type PutMeetingSlotRequest = Pick<
   | "dateTime"
   | "types"
 >;
+
+export type GetMeetingSlotResponse = BasicMeetingSlot & {
+  meeting?: BasicMeeting | null;
+  manager?: BasicManager;
+};

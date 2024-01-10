@@ -4,6 +4,7 @@ import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicMeetingSlot } from "./slot/slot.dto";
 import { BasicMeetingFeedback } from "./feedback/feedback.dto";
+import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
 
 
 export type BasicMeeting = Omit<
@@ -18,10 +19,10 @@ export type BasicMeeting = Omit<
 
 export type GetMeetingResponse = BasicMeeting & {
   feedback?: BasicMeetingFeedback[],
-  scripts?: any[],
+  scriptProtocols?: BasicMeetingScriptProtocol[],
   applicant?: BasicApplicant | null,
   employer?: BasicEmployer | null,
-  slot?: BasicMeetingSlot
+  slot?: BasicMeetingSlot,
 };
 
 export type CreateMeetingRequest = Pick<

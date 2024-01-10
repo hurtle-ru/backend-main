@@ -199,7 +199,7 @@ export class ApplicantController extends Controller {
 
       const response = req.res;
       if (response) {
-        console.log("file path: ", filePath)
+        console.log("File path: ", filePath)
         const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
         if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
@@ -226,9 +226,8 @@ export class ApplicantController extends Controller {
     await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
     const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, 'avatar')
 
-    if (oldAvatarFileName !== null) {
-      this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)
-    }
+    if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
+
     await this.ArtifactService.saveImageFile(file, avatarPath);
   }
 }
