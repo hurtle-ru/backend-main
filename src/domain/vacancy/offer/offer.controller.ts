@@ -105,7 +105,7 @@ export class OfferController extends Controller {
   @Put("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Offer not found"}>(404)
-  public async put(
+  public async putById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PutOfferRequest,
@@ -149,7 +149,7 @@ export class OfferController extends Controller {
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Offer not found"}>(404)
-  public async patch(
+  public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: Partial<PutOfferRequest>,

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
-import { BasicManager, GetManagerResponse, ManagerPutMeRequest } from "./manager.dto";
+import { BasicManager, GetManagerResponse, PutMeManagerRequest } from "./manager.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { injectable } from "tsyringe";
 import { ArtifactService} from "../../external/artifact/artifact.service";
@@ -49,7 +49,7 @@ export class ManagerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   async putMe(
     @Request() req: JwtModel,
-    @Body() body: ManagerPutMeRequest
+    @Body() body: PutMeManagerRequest
   ): Promise<BasicManager> {
     const manager = await prisma.manager.update({
       where: { id: req.user.id },
@@ -63,7 +63,7 @@ export class ManagerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<ManagerPutMeRequest>
+    @Body() body: Partial<PutMeManagerRequest>
   ): Promise<BasicManager> {
     const manager = await prisma.manager.update({
       where: { id: req.user.id },

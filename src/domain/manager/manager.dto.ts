@@ -13,12 +13,12 @@ export type GetManagerResponse = BasicManager & {
   slots?: BasicMeetingSlot[];
 }
 
-export type ManagerPutMeRequest = Pick<
+export type PutMeManagerRequest = Pick<
   BasicManager,
   | "name"
 >;
 
-export type ManagerPutByIdRequest = Pick<
+export type PutByIdManagerRequest = Pick<
   BasicManager,
   | "name"
 >;

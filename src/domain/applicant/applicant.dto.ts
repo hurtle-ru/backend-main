@@ -19,7 +19,7 @@ export type GetApplicantResponse = BasicApplicant & {
   assignedVacancies?: BasicVacancy[]
 };
 
-export type ApplicantPutMeRequest = Pick<
+export type PutMeApplicantRequest = Pick<
   BasicApplicant,
   | "contact"
   | "firstName"
@@ -37,7 +37,7 @@ export type ApplicantPutMeRequest = Pick<
   | "isVisibleToEmployers"
 >
 
-export type ApplicantPutByIdRequest = Pick<
+export type PutByIdApplicantRequest = Pick<
   BasicApplicant,
   | "email"
   | "login"

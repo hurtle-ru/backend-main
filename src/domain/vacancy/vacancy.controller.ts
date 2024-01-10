@@ -170,7 +170,7 @@ export class VacancyController extends Controller {
   @Put("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async put(
+  public async putById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PutVacancyRequest,
@@ -194,7 +194,7 @@ export class VacancyController extends Controller {
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async patch(
+  public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: Partial<PutVacancyRequest>,
