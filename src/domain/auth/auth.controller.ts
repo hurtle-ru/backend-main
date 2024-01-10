@@ -96,8 +96,8 @@ export class AuthController extends Controller {
     const existingEmployer = await prisma.employer.findUnique({ where: { email: body.email } });
     if(existingEmployer) throw new HttpError(409, "User with this email already exists");
 
-    const DadataEmployer = await this.dadataService.getBasicCompanyInfoByInn(body.inn);
-    if (!DadataEmployer) throw new HttpError(404, "Company with this inn not found");
+    const dadataEmployer = await this.dadataService.getBasicCompanyInfoByInn(body.inn);
+    if (!dadataEmployer) throw new HttpError(404, "Company with this inn not found");
 
     await prisma.employer.create({
       data: {
@@ -113,8 +113,8 @@ export class AuthController extends Controller {
         middleName: body.middleName,
         login: body.email,
         inn: body.inn,
-        ogrn: DadataEmployer.ogrn,
-        name: DadataEmployer.name,
+        ogrn: dadataEmployer.ogrn,
+        name: dadataEmployer.name,
       },
     });
   }
