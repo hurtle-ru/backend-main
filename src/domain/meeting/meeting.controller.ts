@@ -7,9 +7,6 @@ import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { BasicApplicant } from "../applicant/applicant.dto";
-import { BasicEmployer } from "../employer/employer.dto";
-import { BasicMeetingSlot } from "./slot/slot.dto";
 
 
 @injectable()
@@ -51,14 +48,14 @@ export class MeetingController extends Controller {
     if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
-    let user: { firstName: string, lastName: string } | null;
+    let user: { firstName: string, lastName: string, email: string } | null = null;
     const findArgs = {
       where: { id: req.user.id },
-      select: { firstName: true, lastName: true },
+      select: { firstName: true, lastName: true, email: true },
     };
 
-    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs);
-    else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs);
+    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs)
+    else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs)
 
     const roomUrl = await this.meetingService.createRoom(body.type, user!);
     const meeting = await prisma.meeting.create({
@@ -74,11 +71,15 @@ export class MeetingController extends Controller {
       { name: body.name, id: meeting.id, dateTime: slot.dateTime },
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
+      );
+    await this.meetingService.sendMeetingCreatedToEmail(
+      user!.email,
+      { name: body.name, link: roomUrl, dateTime: slot.dateTime },
     );
 
     return meeting;
   }
-  
+
   @Get("")
   @Security("jwt", [UserRole.MANAGER])
   public async getAll(

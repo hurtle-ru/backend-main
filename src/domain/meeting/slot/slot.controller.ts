@@ -131,7 +131,7 @@ export class MeetingSlotController extends Controller {
   @Patch("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "MeetingSlot not found"}>(404)
-  public async patch(
+  public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: Partial<PutMeetingSlotRequest>,

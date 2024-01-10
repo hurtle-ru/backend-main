@@ -1,18 +1,35 @@
-import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Path,
+  Put,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  Tags,
+  UploadedFile,
+} from "tsoa";
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import {
-  ApplicantPutByIdRequest,
-  ApplicantPutMeRequest,
-  BasicApplicant, GetApplicantResponse, GetApplicantStatusResponse,
+  BasicApplicant,
+  GetApplicantResponse,
+  GetApplicantStatusResponse,
+  PutByIdApplicantRequest,
+  PutMeApplicantRequest,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { ArtifactService} from "../../external/artifact/artifact.service";
-import { Readable } from 'stream';
-import {Request as ExpressRequest} from 'express';
+import { ArtifactService } from "../../external/artifact/artifact.service";
+import { Readable } from "stream";
+import { Request as ExpressRequest } from "express";
 import path from "path";
 import { AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE } from "../../external/artifact/artifact.config";
 
@@ -49,11 +66,18 @@ export class ApplicantController extends Controller {
   @Get("")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
   async getAll(
+    @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
     const where = {};
+
+    let includeResume: any = false;
+    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
+      includeResume = true;
+    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
+      includeResume = { where: { isVisibleToEmployers: true } };
 
     const [applicants, applicantsCount] = await Promise.all([
       prisma.applicant.findMany({
@@ -61,7 +85,7 @@ export class ApplicantController extends Controller {
         take: size,
         where,
         include: {
-          resume: include?.includes("resume"),
+          resume: includeResume,
           meetings: include?.includes("meetings"),
           assignedVacancies: include?.includes("assignedVacancies"),
         },
@@ -91,7 +115,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   async putMe(
     @Request() req: JwtModel,
-    @Body() body: ApplicantPutMeRequest
+    @Body() body: PutMeApplicantRequest
   ): Promise<BasicApplicant> {
     const applicant = await prisma.applicant.update({
       where: { id: req.user.id },
@@ -105,7 +129,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<ApplicantPutMeRequest>
+    @Body() body: Partial<PutMeApplicantRequest>
   ): Promise<BasicApplicant> {
     const applicant = await prisma.applicant.update({
       where: { id: req.user.id },
@@ -118,9 +142,9 @@ export class ApplicantController extends Controller {
   @Put("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async put(
+  async putById(
     @Path() id: string,
-    @Body() body: ApplicantPutByIdRequest
+    @Body() body: PutByIdApplicantRequest
   ): Promise<BasicApplicant> {
     const applicant = await prisma.applicant.update({
       where: { id },
@@ -133,9 +157,9 @@ export class ApplicantController extends Controller {
   @Patch("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async patch(
+  async patchById(
     @Path() id: string,
-    @Body() body: Partial<ApplicantPutByIdRequest>
+    @Body() body: Partial<PutByIdApplicantRequest>
   ): Promise<BasicApplicant> {
     const applicant = await prisma.applicant.update({
       where: { id },
@@ -153,14 +177,18 @@ export class ApplicantController extends Controller {
   ): Promise<GetApplicantStatusResponse> {
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
-      include: { meetings: true },
+      select: {
+        isEmailConfirmed: true,
+        resume: true,
+        meetings: true,
+      },
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
 
     return {
       "isEmailConfirmed": applicant.isEmailConfirmed,
-      "hasResume": !!applicant.resumeId,
+      "hasResume": !!applicant.resume,
       "hasMeeting": applicant.meetings.length > 0,
     };
   }
@@ -168,14 +196,21 @@ export class ApplicantController extends Controller {
   @Get("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
-  async get(
+  async getById(
+    @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
   ): Promise<GetApplicantResponse> {
+    let includeResume: any = false;
+    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
+      includeResume = true;
+    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
+      includeResume = { where: { isVisibleToEmployers: true } };
+
     const applicant = await prisma.applicant.findUnique({
       where: { id },
       include: {
-        resume: include?.includes("resume"),
+        resume: includeResume,
         meetings: include?.includes("meetings"),
         assignedVacancies: include?.includes("assignedVacancies"),
       },

@@ -30,12 +30,12 @@ model Applicant {
   isReadyToRelocate    Boolean?
   isVisibleToEmployers Boolean   @default(false)
   isConfirmedByManager Boolean   @default(false)
-  resumeId             String?   @unique
-  resume               Resume?   @relation(fields: [resumeId], references: [id])
+  resume               Resume?
   meetings             Meeting[]
   assignedVacancies    Vacancy[] @relation("ApplicantToVacancy")
   offers               Offer[]
   isEmailConfirmed     Boolean   @default(false)
+  hhToken              HhToken?
 }
 
 model Employer {
@@ -80,6 +80,16 @@ model Password {
   manager   Manager?
   applicant Applicant?
   employer  Employer?
+}
+
+model HhToken {
+  createdAt     DateTime  @default(now())
+  applicant     Applicant @relation(fields: [applicantId], references: [id])
+  applicantId   String    @unique
+  hhApplicantId String
+  accessToken   String
+  refreshToken  String
+  expiresIn     Int
 }
 
 model EmailVerification {
@@ -146,7 +156,8 @@ model Resume {
   city                 String?
   skills               String[]
   isVisibleToEmployers Boolean                      @default(false)
-  applicant            Applicant?
+  applicant            Applicant                    @relation(fields: [applicantId], references: [id])
+  applicantId          String                       @unique
   certificates         ResumeCertificate[]
   contacts             ResumeContact[]
   education            ResumeEducation[]
