@@ -1,7 +1,7 @@
 import { dadataConfig } from "./dadata.config";
 import axios from 'axios';
-import BasicDadataCompany from './dadata.dto'
 import { singleton } from 'tsyringe';
+import { BasicDadataCompany } from "./dadata.dto";
 
 
 const BaseDadataURL = "http://suggestions.dadata.ru/suggestions/api/4_1/"
