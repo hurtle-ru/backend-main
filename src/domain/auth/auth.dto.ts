@@ -42,7 +42,7 @@ export class RegisterApplicantRequest {
   constructor(
     public email: string,
     public contact: string,
-    public birthDate: UtcDate,
+    public birthDate: DateWithoutTime,
     public password: string,
     public lastName: string,
     public firstName: string,
