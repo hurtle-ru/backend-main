@@ -1,18 +1,20 @@
 import { dadataConfig } from "./dadata.config";
 import axios from 'axios';
 import BasicDadataCompany from './dadata.dto'
+import { singleton } from 'tsyringe';
+
 
 const BaseDadataURL = "http://suggestions.dadata.ru/suggestions/api/4_1/"
 
 
-export default {
+@singleton()
+export class DadataService {
   async getBasicCompanyInfoByInn(inn: string): Promise<BasicDadataCompany | null> {
     const response = await axios.post(
       BaseDadataURL + "rs/suggest/party",
       JSON.stringify({query: inn}),
       {
         method: "POST",
-        // mode: "cors",
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -20,12 +22,12 @@ export default {
         },
       }
     )
-    if (response.data["suggestions"].length == 0) {console.log("blyat");return null}
+    if (response.data["suggestions"].length == 0) return null
 
     const data = response.data["suggestions"][0]
     return {
       "name": data["value"],
       "ogrn": data["data"]["ogrn"],
     }
-  },
+  }
 }

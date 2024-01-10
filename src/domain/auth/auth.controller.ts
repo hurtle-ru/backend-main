@@ -10,14 +10,17 @@ import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
-import DadataService from "../../external/dadata/dadata.service"
+import { DadataService } from "../../external/dadata/dadata.service"
 
 
 @injectable()
 @Route("api/v1/auth")
 @Tags("Auth: вход и регистрация")
 export class AuthController extends Controller {
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly dadataService: DadataService
+  ) {
     super();
   }
 
@@ -93,7 +96,7 @@ export class AuthController extends Controller {
     const existingEmployer = await prisma.employer.findUnique({ where: { email: body.email } });
     if(existingEmployer) throw new HttpError(409, "User with this email already exists");
 
-    const DadataEmployer = await DadataService.getBasicCompanyInfoByInn(body.inn);
+    const DadataEmployer = await this.dadataService.getBasicCompanyInfoByInn(body.inn);
     if (!DadataEmployer) {throw new HttpError(404, "Company with this inn not found");}
 
     await prisma.employer.create({
