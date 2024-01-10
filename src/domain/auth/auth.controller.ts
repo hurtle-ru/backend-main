@@ -97,7 +97,7 @@ export class AuthController extends Controller {
     if(existingEmployer) throw new HttpError(409, "User with this email already exists");
 
     const DadataEmployer = await this.dadataService.getBasicCompanyInfoByInn(body.inn);
-    if (!DadataEmployer) {throw new HttpError(404, "Company with this inn not found");}
+    if (!DadataEmployer) throw new HttpError(404, "Company with this inn not found");
 
     await prisma.employer.create({
       data: {
