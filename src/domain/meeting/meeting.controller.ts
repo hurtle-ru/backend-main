@@ -232,14 +232,14 @@ export class MeetingController extends Controller {
     await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
   }
 
-  @Get("/{id}/record")
+  @Get("/{id}/video")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
-  public async getRecord(
+  public async getVideo(
       @Request() req: ExpressRequest & JwtModel,
       @Path() id: string,
   ): Promise<Readable | any> {
-      const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'record')
+      const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'video')
       const filePath = `meeting/${id}/${fileName}`
 
       if(fileName == null) throw new HttpError(404, "File not found")
@@ -264,26 +264,26 @@ export class MeetingController extends Controller {
       }
   }
 
-  @Put("/{id}/record")
+  @Put("/{id}/video")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
-  public async uploadRecord(
+  public async uploadVideo(
       @Request() req: JwtModel,
       @UploadedFile() file: Express.Multer.File,
       @Path() id: string,
   ): Promise<void> {
-    const recordExtension = path.extname(file.originalname)
-    const recordDirectory = `meeting/${id}/`
-    const recordPath = recordDirectory + `record${recordExtension}`
+    const videoExtension = path.extname(file.originalname)
+    const videoDirectory = `meeting/${id}/`
+    const videoPath = videoDirectory + `video${videoExtension}`
 
     await this.artifactService.validateFileAttributes(file, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE)
-    const oldRecordFileName = await this.artifactService.getFullFileName(recordDirectory, 'record')
+    const oldVideoFileName = await this.artifactService.getFullFileName(videoDirectory, 'video')
 
-    if (oldRecordFileName !== null) {
-      this.artifactService.deleteFile(recordDirectory + oldRecordFileName)
+    if (oldVideoFileName !== null) {
+      this.artifactService.deleteFile(videoDirectory + oldVideoFileName)
       console.log("succed delete file")
     }
-    await this.artifactService.saveVideoFile(file, recordPath);
+    await this.artifactService.saveVideoFile(file, videoPath);
   }
 }
