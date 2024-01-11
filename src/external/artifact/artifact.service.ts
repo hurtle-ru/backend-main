@@ -3,7 +3,7 @@ import * as path from 'path';
 import { HttpError } from '../../infrastructure/error/httpError';
 import { BaseFileOptions } from './artifact.dto'
 import { promisify } from 'util';
-import { createReadStream, stat, unlinkSync } from 'fs';
+import { createReadStream, stat, unlinkSync} from 'fs';
 import {
   MAX_IMAGE_FILE_SIZE,
   MAX_DOCUMENT_FILE_SIZE,
@@ -22,34 +22,41 @@ export const ARTIFACT_ROOT_DIR = "data/";
 
 const statPromisified = promisify(stat);
 
+async function saveMulterFile(file: Express.Multer.File, filePath: string): Promise<string> {
+  filePath = ARTIFACT_ROOT_DIR + filePath;
+  const directory = path.dirname(filePath);
+
+  try {
+    await fs.mkdir(directory, { recursive: true });
+    await fs.writeFile(filePath, file.buffer);
+
+    console.log(`succeed save save file ${filePath}`, directory)
+    return filePath;
+  } catch (err) {
+    console.log(err);
+    throw new Error(`Error while saving file: ${err}`);
+  }
+}
+
 @singleton()
 export class ArtifactService {
-  async saveMulterFile(file: Express.Multer.File, filePath: string): Promise<string> {
-    filePath = ARTIFACT_ROOT_DIR + filePath;
-    const directory = path.dirname(filePath);
-
-    try {
-      await fs.mkdir(directory, { recursive: true });
-      await fs.writeFile(filePath, file.buffer);
-
-      console.log(`succeed save save file ${filePath}`, directory)
-      return filePath;
-    } catch (err) {
-      console.log(err);
-      throw new Error(`Error while saving file: ${err}`);
-    }
+  async saveFile(
+    file: Express.Multer.File,
+    filePath: string,
+    availableMimeTypes?: string[],
+    maxSize?: number
+  ): Promise<string> {
+    await this.validateFileAttributes(file, availableMimeTypes, maxSize);
+    return saveMulterFile(file, filePath)
   }
-  async saveImageFile (file: Express.Multer.File, filePath: string): Promise<string> {
-    await this.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
-    return this.saveMulterFile(file, filePath)
+  async saveImageFile(file: Express.Multer.File, filePath: string): Promise<string> {
+    return this.saveFile(file, filePath, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
   }
-  async saveVideoFile (file: Express.Multer.File, filePath: string): Promise<string> {
-    await this.validateFileAttributes(file, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE);
-    return this.saveMulterFile(file, filePath)
+  async saveVideoFile(file: Express.Multer.File, filePath: string): Promise<string> {
+    return this.saveFile(file, filePath, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE)
   }
-  async saveDocumentFile (file: Express.Multer.File, filePath: string): Promise<string> {
-    await this.validateFileAttributes(file, AVAILABLE_DOCUMENT_FILE_MIME_TYPES, MAX_DOCUMENT_FILE_SIZE);
-    return this.saveMulterFile(file, filePath)
+  async saveDocumentFile(file: Express.Multer.File, filePath: string): Promise<string> {
+    return this.saveFile(file, filePath, AVAILABLE_DOCUMENT_FILE_MIME_TYPES, MAX_DOCUMENT_FILE_SIZE)
   }
   async loadFile(originFilePath: string): Promise<[Readable, BaseFileOptions]> {
     const filePath = ARTIFACT_ROOT_DIR + originFilePath;
@@ -57,7 +64,6 @@ export class ArtifactService {
     if(!await this.exists(originFilePath)) throw new HttpError(404, "File not found")
 
     try {
-      const stream = createReadStream(path.join(process.cwd(), filePath), {highWaterMark: READ_STREAM_HIGH_WATER_MARK});
       const stat = await statPromisified(filePath);
 
       let fileType: string | null = null
@@ -66,6 +72,8 @@ export class ArtifactService {
         fileType = FILE_EXTENSION_MIME_TYPES[path.extname(filePath)];
       }
       catch {}
+
+      const stream = createReadStream(path.join(process.cwd(), filePath), {highWaterMark: READ_STREAM_HIGH_WATER_MARK});
 
       return [
         stream,
