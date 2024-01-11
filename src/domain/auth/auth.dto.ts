@@ -1,7 +1,7 @@
 import * as yup from "yup";
 import { setLocale } from "yup";
 import { ru } from "yup-locales";
-import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
+import { DateWithoutTime, UtcDate } from "../../infrastructure/controller/date/date.dto";
 
 setLocale(ru);
 

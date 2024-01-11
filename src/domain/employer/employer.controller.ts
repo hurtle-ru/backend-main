@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
-import { BasicEmployer, EmployerPutByIdRequest, EmployerPutMeRequest, GetEmployerResponse } from "./employer.dto";
+import { BasicEmployer, PutByIdEmployerRequest, PutMeEmployerRequest, GetEmployerResponse } from "./employer.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
@@ -85,7 +85,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   async putMe(
     @Request() req: JwtModel,
-    @Body() body: EmployerPutMeRequest
+    @Body() body: PutMeEmployerRequest
   ): Promise<BasicEmployer> {
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
@@ -99,7 +99,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<EmployerPutMeRequest>
+    @Body() body: Partial<PutMeEmployerRequest>
   ): Promise<BasicEmployer> {
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
@@ -112,9 +112,9 @@ export class EmployerController extends Controller {
   @Put("{id}")
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async put(
+  async putById(
     @Path() id: string,
-    @Body() body: EmployerPutByIdRequest
+    @Body() body: PutByIdEmployerRequest
   ): Promise<BasicEmployer> {
     const employer = await prisma.employer.update({
       where: { id },
@@ -127,9 +127,9 @@ export class EmployerController extends Controller {
   @Patch("{id}")
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async patch(
+  async patchById(
     @Path() id: string,
-    @Body() body: Partial<EmployerPutByIdRequest>
+    @Body() body: Partial<PutByIdEmployerRequest>
   ): Promise<BasicEmployer> {
     const employer = await prisma.employer.update({
       where: { id },
@@ -142,7 +142,7 @@ export class EmployerController extends Controller {
   @Get("{id}")
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async get(
+  async getById(
     @Path() id: string,
     @Query() include?: ("meetings" | "vacancies")[]
   ): Promise<GetEmployerResponse> {

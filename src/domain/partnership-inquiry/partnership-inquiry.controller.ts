@@ -72,7 +72,7 @@ export class PartnershipInquiryController extends Controller {
   @Get("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
-  public async get(
+  public async getById(
     @Path() id: string,
   ): Promise<BasicPartnershipInquiry> {
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({

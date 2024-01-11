@@ -7,6 +7,7 @@ import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from 'moment-timezone';
 import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
+import { MailService } from "../../external/mail/mail.service";
 
 
 @injectable()
@@ -15,6 +16,7 @@ export class MeetingService {
   constructor(
     private readonly jazzService: SberJazzService,
     private readonly telegramService: TelegramService,
+    private readonly mailService: MailService,
   ) {}
 
   doesUserHaveAccessToMeetingSlot(userRole: UserRole, slotTypes: MeetingType[]): boolean {
@@ -60,5 +62,23 @@ export class MeetingService {
       `\nРоль: <b>${user.role}</b>`;
 
     await this.telegramService.sendMessage(text, { parse_mode: "HTML" });
+  }
+  async sendMeetingCreatedToEmail(
+    userEmail: string,
+    meeting: { name: string, link: string, dateTime: Date },
+  )  {
+    const date = moment(meeting.dateTime)
+      .locale("ru")
+      .tz(appConfig.TZ)
+      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+
+    await this.mailService.sendEmail(
+      userEmail,
+      "Встреча забронирована!",
+      {
+        name: "meeting-create",
+        context: { name: meeting.name, date, link: meeting.link},
+      }
+    );
   }
 }

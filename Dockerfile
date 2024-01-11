@@ -18,8 +18,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY package.json ./
 COPY package-lock.json ./
 RUN apt-get update -y && apt-get install -y openssl
-RUN npm install
 
+RUN npm install
+RUN npm config set strict-ssl false
 
 # Устанавливаем Prisma и генерируем клиента
 RUN npm install -g prisma
