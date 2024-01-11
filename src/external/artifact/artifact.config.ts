@@ -3,7 +3,7 @@ const MB = 2**20
 export const MAX_IMAGE_FILE_SIZE = 5 * MB
 export const MAX_DOCUMENT_FILE_SIZE = 15 * MB
 export const MAX_VIDEO_FILE_SIZE = 800 * MB
-export const READ_STREAM_HIGH_WATER_MARK = 1000 * MB;
+export const READ_STREAM_HIGH_WATER_MARK = 1000 * MB
 
 export const AVAILABLE_IMAGE_FILE_MIME_TYPES = [
   "image/png",
@@ -25,11 +25,9 @@ export const AVAILABLE_DOCUMENT_FILE_MIME_TYPES = [
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
-  "application/vnd.ms-powerpoint",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "application/vnd.openxmlformats-officedocument.presentationml.template",
   "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
-  "application/vnd.ms-access",
 ]
 
 export const FILE_EXTENSION_MIME_TYPES: { [key: string]: string } = {

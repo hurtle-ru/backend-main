@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Path, Post, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Get, Path, Post, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { MeetingService } from "./meeting.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
@@ -7,13 +7,25 @@ import { prisma } from "../../infrastructure/database/prismaClient";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
+import {Request as ExpressRequest} from 'express';
+import { ArtifactService } from "../../external/artifact/artifact.service";
+import { Readable } from 'stream';
+import path from "path";
+import {AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE, MAX_VIDEO_FILE_SIZE } from "../../external/artifact/artifact.config";
+import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
+import { BasicApplicant } from "../applicant/applicant.dto";
+import { BasicEmployer } from "../employer/employer.dto";
+import { BasicMeetingSlot } from "./slot/slot.dto";
 
 
 @injectable()
 @Route("api/v1/meetings")
 @Tags("Meeting")
 export class MeetingController extends Controller {
-  constructor(private readonly meetingService: MeetingService) {
+  constructor(
+    private readonly meetingService: MeetingService,
+    private readonly artifactService: ArtifactService,
+  ) {
     super();
   }
 
@@ -176,5 +188,106 @@ export class MeetingController extends Controller {
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
     return meeting;
+  }
+
+  @Get("/{id}/passport")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  public async getPassport(
+      @Request() req: ExpressRequest & JwtModel,
+      @Path() id: string,
+  ): Promise<Readable | any> {
+      const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'passport')
+      const filePath = `meeting/${id}/${fileName}`
+
+      if(fileName == null) throw new HttpError(404, "File not found")
+
+      const response = req.res;
+      if (response) {
+        const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+
+        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
+        response.setHeader('Content-Length', fileOptions.size.toString());
+
+        stream.pipe(response)
+        return stream
+      }
+  }
+
+  @Put("/{id}/passport")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
+  public async uploadPassport(
+      @Request() req: JwtModel,
+      @UploadedFile() file: Express.Multer.File,
+      @Path() id: string,
+  ): Promise<void> {
+    const passportExtension = path.extname(file.originalname)
+    const passportDirectory = `meeting/${id}/`
+    const passportPath = passportDirectory + `passport${passportExtension}`
+
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
+    const oldPassportFileName = await this.artifactService.getFullFileName(passportDirectory, 'passport')
+
+    if (oldPassportFileName !== null) {
+      this.artifactService.deleteFile(passportDirectory + oldPassportFileName)
+    }
+    await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+  }
+
+  @Get("/{id}/video")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  public async getVideo(
+      @Request() req: ExpressRequest & JwtModel,
+      @Path() id: string,
+  ): Promise<Readable | any> {
+      const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'video')
+      const filePath = `meeting/${id}/${fileName}`
+
+      if(fileName == null) throw new HttpError(404, "File not found")
+
+      const response = req.res;
+      if (response) {
+        const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+
+        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
+        response.setHeader('Content-Length', fileOptions.size.toString());
+
+        stream.pipe(response)
+        response.on('close', () => {
+          try {
+            stream.destroy();
+          }
+          catch (e) {
+            console.log("Error:", e)
+          }
+        });
+        return stream
+      }
+  }
+
+  @Put("/{id}/video")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
+  public async uploadVideo(
+      @Request() req: JwtModel,
+      @UploadedFile() file: Express.Multer.File,
+      @Path() id: string,
+  ): Promise<void> {
+    const videoExtension = path.extname(file.originalname)
+    const videoDirectory = `meeting/${id}/`
+    const videoPath = videoDirectory + `video${videoExtension}`
+
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE)
+    const oldVideoFileName = await this.artifactService.getFullFileName(videoDirectory, 'video')
+
+    if (oldVideoFileName !== null) {
+      this.artifactService.deleteFile(videoDirectory + oldVideoFileName)
+      console.log("succed delete file")
+    }
+    await this.artifactService.saveVideoFile(file, videoPath);
   }
 }
