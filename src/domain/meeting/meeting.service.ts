@@ -74,7 +74,7 @@ export class MeetingService {
 
     await this.mailService.sendEmail(
       userEmail,
-      "A new meeting has been created.",
+      "Встреча забронирована!",
       {
         name: "meeting-create",
         context: { name: meeting.name, date, link: meeting.link},
