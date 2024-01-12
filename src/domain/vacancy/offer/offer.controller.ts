@@ -38,6 +38,7 @@ export class OfferController extends Controller {
     return prisma.offer.create({
       data: {
         ...body,
+        status: OfferStatus.PENDING,
       },
     });
   }
