@@ -165,6 +165,15 @@ model Resume {
   languages            ResumeLanguage[]
 }
 
+model ResumeCertificate {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  year        Int?
+  resumeId    String
+  resume      Resume  @relation(fields: [resumeId], references: [id])
+}
+
 model ResumeContact {
   id        String      @id @default(uuid())
   name      String?
@@ -173,14 +182,6 @@ model ResumeContact {
   preferred Boolean     @default(false)
   resumeId  String
   resume    Resume      @relation(fields: [resumeId], references: [id])
-}
-
-model ResumeLanguage {
-  id       String        @id @default(uuid())
-  name     String
-  level    LanguageLevel
-  resumeId String
-  resume   Resume        @relation(fields: [resumeId], references: [id])
 }
 
 model ResumeEducation {
@@ -205,13 +206,12 @@ model ResumeExperience {
   resume      Resume    @relation(fields: [resumeId], references: [id])
 }
 
-model ResumeCertificate {
-  id          String  @id @default(uuid())
-  name        String
-  description String?
-  year        Int?
-  resumeId    String
-  resume      Resume  @relation(fields: [resumeId], references: [id])
+model ResumeLanguage {
+  id       String        @id @default(uuid())
+  name     String
+  level    LanguageLevel
+  resumeId String
+  resume   Resume        @relation(fields: [resumeId], references: [id])
 }
 
 model Meeting {
