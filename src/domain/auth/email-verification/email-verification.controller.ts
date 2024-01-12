@@ -17,7 +17,7 @@ export class EmailVerificationController extends Controller {
 
   @Post()
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
-  async createEmailVerification(@Request() req: JwtModel) {
+  public async createEmailVerification(@Request() req: JwtModel) {
     try {
       await prisma.emailVerification.delete({ where: { userId: req.user.id, role: req.user.role } });
     } catch (e) {}
@@ -45,7 +45,7 @@ export class EmailVerificationController extends Controller {
   @Post("{code}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   @Response<HttpErrorBody & {"error": "Invalid code"}>(404)
-  async verifyEmail(
+  public async verifyEmail(
     @Request() req: JwtModel,
     @Path() code: string,
   ): Promise<void> {

@@ -13,9 +13,6 @@ import { Readable } from 'stream';
 import path from "path";
 import {AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE, MAX_VIDEO_FILE_SIZE } from "../../external/artifact/artifact.config";
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
-import { BasicApplicant } from "../applicant/applicant.dto";
-import { BasicEmployer } from "../employer/employer.dto";
-import { BasicMeetingSlot } from "./slot/slot.dto";
 
 
 @injectable()
@@ -190,7 +187,7 @@ export class MeetingController extends Controller {
     return meeting;
   }
 
-  @Get("/{id}/passport")
+  @Get("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
   public async getPassport(
@@ -214,7 +211,7 @@ export class MeetingController extends Controller {
       }
   }
 
-  @Put("/{id}/passport")
+  @Put("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -236,7 +233,7 @@ export class MeetingController extends Controller {
     await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
   }
 
-  @Get("/{id}/video")
+  @Get("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
   public async getVideo(
@@ -268,7 +265,7 @@ export class MeetingController extends Controller {
       }
   }
 
-  @Put("/{id}/video")
+  @Put("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
