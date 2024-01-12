@@ -45,7 +45,7 @@ export class ApplicantController extends Controller {
   @Get("me")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.APPLICANT])
-  async getMe(
+  public async getMe(
     @Request() req: JwtModel,
     @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
   ): Promise<GetApplicantResponse> {
@@ -65,7 +65,7 @@ export class ApplicantController extends Controller {
 
   @Get("")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
-  async getAll(
+  public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
@@ -100,20 +100,20 @@ export class ApplicantController extends Controller {
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async delete(@Path() id: string): Promise<void> {
+  public async deleteById(@Path() id: string): Promise<void> {
     throw new HttpError(503, "Method temporarily unavailable");
   }
 
   @Delete("me")
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Security("jwt", [UserRole.APPLICANT])
-  async deleteMe(@Request() req: JwtModel): Promise<void> {
+  public async deleteMe(@Request() req: JwtModel): Promise<void> {
     throw new HttpError(503, "Method temporarily unavailable");
   }
 
   @Put("me")
   @Security("jwt", [UserRole.APPLICANT])
-  async putMe(
+  public async putMe(
     @Request() req: JwtModel,
     @Body() body: PutMeApplicantRequest
   ): Promise<BasicApplicant> {
@@ -127,7 +127,7 @@ export class ApplicantController extends Controller {
 
   @Patch("me")
   @Security("jwt", [UserRole.APPLICANT])
-  async patchMe(
+  public async patchMe(
     @Request() req: JwtModel,
     @Body() body: Partial<PutMeApplicantRequest>
   ): Promise<BasicApplicant> {
@@ -142,7 +142,7 @@ export class ApplicantController extends Controller {
   @Put("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async putById(
+  public async putById(
     @Path() id: string,
     @Body() body: PutByIdApplicantRequest
   ): Promise<BasicApplicant> {
@@ -157,7 +157,7 @@ export class ApplicantController extends Controller {
   @Patch("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async patchById(
+  public async patchById(
     @Path() id: string,
     @Body() body: Partial<PutByIdApplicantRequest>
   ): Promise<BasicApplicant> {
@@ -172,7 +172,7 @@ export class ApplicantController extends Controller {
   @Get("{id}/status")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  async getApplicantStatus(
+  public async getApplicantStatus(
     @Request() req: JwtModel,
   ): Promise<GetApplicantStatusResponse> {
     const applicant = await prisma.applicant.findUnique({
@@ -196,7 +196,7 @@ export class ApplicantController extends Controller {
   @Get("{id}")
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
-  async getById(
+  public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
@@ -220,7 +220,7 @@ export class ApplicantController extends Controller {
     return applicant;
   }
 
-  @Get("/{id}/avatar")
+  @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
   public async getAvatar(
@@ -245,7 +245,7 @@ export class ApplicantController extends Controller {
       }
   }
 
-  @Put("/{id}/avatar")
+  @Put("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT])
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)

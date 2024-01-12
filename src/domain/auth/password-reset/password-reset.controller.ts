@@ -18,7 +18,7 @@ export class PasswordResetController extends Controller {
 
   @Post()
   @Response<HttpErrorBody & {"error": "User not found"}>(404)
-  async initiateReset(
+  public async initiateReset(
     @Query() email: string,
     @Query() role: "APPLICANT" | "EMPLOYER",
   ): Promise<void> {
@@ -41,7 +41,7 @@ export class PasswordResetController extends Controller {
 
   @Post("{code}")
   @Response<HttpErrorBody & {"error": "Invalid code"}>(404)
-  async verifyCode(
+  public async verifyCode(
     @Path() code: string,
     @Body() body: { password: string },
   ): Promise<void> {

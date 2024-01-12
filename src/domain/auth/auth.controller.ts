@@ -26,7 +26,7 @@ export class AuthController extends Controller {
 
   @Post("accessToken")
   @Response<HttpErrorBody & {"error": "Invalid login or password"}>(401)
-  async createAccessToken(
+  public async createAccessToken(
     @Body() body: CreateAccessTokenRequest,
     @Query() role: UserRole,
   ): Promise<CreateAccessTokenResponse> {
@@ -64,7 +64,7 @@ export class AuthController extends Controller {
 
   @Post("applicant")
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
-  async registerApplicant(@Body() body: RegisterApplicantRequest): Promise<void> {
+  public async registerApplicant(@Body() body: RegisterApplicantRequest): Promise<void> {
     RegisterApplicantRequest.schema.validateSync(body);
 
     const existingApplicant = await prisma.applicant.findUnique({ where: { email: body.email } });
@@ -91,7 +91,7 @@ export class AuthController extends Controller {
   @Post("employer")
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   @Response<HttpErrorBody & {"error": "Company with this inn not found"}>(404)
-  async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
+  public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
     RegisterEmployerRequest.schema.validateSync(body);
 
     const existingEmployer = await prisma.employer.findUnique({ where: { email: body.email } });

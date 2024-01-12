@@ -22,7 +22,7 @@ export class ManagerController extends Controller {
   @Get("me")
   @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  async getMe(
+  public async getMe(
     @Request() req: JwtModel,
     @Query() include?: ("slots")[]
   ): Promise<GetManagerResponse> {
@@ -41,13 +41,13 @@ export class ManagerController extends Controller {
   @Delete("me")
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Security("jwt", [UserRole.MANAGER])
-  async deleteMe(@Request() req: JwtModel): Promise<void> {
+  public async deleteMe(@Request() req: JwtModel): Promise<void> {
     throw new HttpError(503, "Method temporarily unavailable");
   }
 
   @Put("me")
   @Security("jwt", [UserRole.MANAGER])
-  async putMe(
+  public async putMe(
     @Request() req: JwtModel,
     @Body() body: PutMeManagerRequest
   ): Promise<BasicManager> {
@@ -61,7 +61,7 @@ export class ManagerController extends Controller {
 
   @Patch("me")
   @Security("jwt", [UserRole.MANAGER])
-  async patchMe(
+  public async patchMe(
     @Request() req: JwtModel,
     @Body() body: Partial<PutMeManagerRequest>
   ): Promise<BasicManager> {
@@ -72,7 +72,7 @@ export class ManagerController extends Controller {
 
     return manager;
   }
-  @Get("/{id}/avatar")
+  @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
   public async getAvatar(
@@ -96,7 +96,7 @@ export class ManagerController extends Controller {
       }
   }
 
-  @Put("/{id}/avatar")
+  @Put("{id}/avatar")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)

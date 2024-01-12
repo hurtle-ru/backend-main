@@ -113,7 +113,7 @@ export class MeetingSlotController extends Controller {
   @Delete("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "MeetingSlot not found"}>(404)
-  public async delete(
+  public async deleteById(
     @Request() req: JwtModel,
     @Path() id: string,
   ): Promise<void> {

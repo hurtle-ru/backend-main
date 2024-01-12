@@ -110,7 +110,7 @@ export class VacancyController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async delete(
+  public async deleteById(
     @Request() req: JwtModel,
     @Path() id: string,
   ): Promise<void> {
@@ -120,7 +120,7 @@ export class VacancyController extends Controller {
   @Put("{id}/isConfirmedByManager")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async setIsConfirmedByManager(
+  public async putIsConfirmedByManager(
     @Path() id: string,
     @Body() isConfirmedByManager: boolean,
   ): Promise<void> {
