@@ -1,4 +1,10 @@
 import { Resume } from "@prisma/client";
+import { BasicApplicant } from "../applicant/applicant.dto";
+import { BasicResumeCertificate } from "./certificate/certificate.dto";
+import { BasicResumeContact } from "./contact/contact.dto";
+import { BasicResumeLanguage } from "./language/language.dto";
+import { BasicResumeExperience } from "./experience/experience.dto";
+import { BasicResumeEducation } from "./education/education.dto";
 
 
 export type BasicResume = Omit<
@@ -25,9 +31,14 @@ export type PutResumeRequest = Pick<
   | "isVisibleToEmployers"
 >;
 
-// type GetResumeResponse = BasicResume & {
-//
-// }
+export type GetResumeResponse = BasicResume & {
+  applicant?: BasicApplicant;
+  certificates?: BasicResumeCertificate[];
+  contacts?: BasicResumeContact[];
+  education?: BasicResumeEducation[];
+  experience?: BasicResumeExperience[];
+  languages?: BasicResumeLanguage[];
+}
 
 export type GetReadyToImportResumesResponse = {
   resumes: {

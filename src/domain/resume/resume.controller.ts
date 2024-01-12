@@ -3,7 +3,13 @@ import { Body, Controller, Delete, Get, Path, Post, Put, Query, Request, Respons
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
-import { BasicResume, CreateResumeRequest, GetReadyToImportResumesResponse, PutResumeRequest } from "./resume.dto";
+import {
+  BasicResume,
+  CreateResumeRequest,
+  GetReadyToImportResumesResponse,
+  GetResumeResponse,
+  PutResumeRequest,
+} from "./resume.dto";
 import { ResumeService } from "./resume.service";
 
 @injectable()
@@ -16,7 +22,7 @@ export class ResumeController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT])
-  public async createEmptyResume(
+  public async createEmpty(
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
@@ -32,7 +38,7 @@ export class ResumeController extends Controller {
   @Get("readyToImport")
   @Security("jwt", [UserRole.APPLICANT])
   @Response<HttpErrorBody>(401, "Not authorized in hh.ru")
-  public async getReadyToImportResumes(
+  public async getReadyToImport(
     @Request() req: JwtModel,
   ): Promise<GetReadyToImportResumesResponse> {
     const hhToken = await prisma.hhToken.findUnique({
@@ -54,7 +60,7 @@ export class ResumeController extends Controller {
   @Put("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "Resume not found")
-  public async putResume(
+  public async putById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PutResumeRequest,
@@ -76,10 +82,10 @@ export class ResumeController extends Controller {
   @Get("my")
   @Security("jwt", [UserRole.APPLICANT])
   @Response<HttpErrorBody>(404, "Resume not found")
-  public async getMyResume(
+  public async getMy(
     @Request() req: JwtModel,
     @Query() include?: ("applicant" | "certificates" | "contacts" | "education" | "experience" | "languages")[],
-  ): Promise<BasicResume> {
+  ): Promise<GetResumeResponse> {
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
       include: {
@@ -100,7 +106,7 @@ export class ResumeController extends Controller {
   @Delete("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "Resume not found")
-  public async deleteResume(
+  public async deleteById(
     @Request() req: JwtModel,
     @Path() id: string,
   ): Promise<void> {
@@ -122,7 +128,7 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("applicant" | "certificates" | "contacts" | "education" | "experience" | "languages")[],
-  ): Promise<BasicResume> {
+  ): Promise<GetResumeResponse> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
