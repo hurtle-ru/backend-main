@@ -157,32 +157,40 @@ export class EmployerController extends Controller {
     if (!employer) throw new HttpError(404, "Employer not found");
     return employer;
   }
+
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  @Response<HttpErrorBody & {"error": "File not found" | "Employer not found"}>(404)
   public async getAvatar(
       @Request() req: ExpressRequest & JwtModel,
       @Path() id: string,
   ): Promise<Readable | any> {
-      const fileName = await this.ArtifactService.getFullFileName(`employer/${id}/`, 'avatar')
-      const filePath = `employer/${id}/${fileName}`
+    const employer = await prisma.employer.findUnique({
+      where: {id},
+    })
+    if (!employer) throw new HttpError(404, "Employer not found")
 
-      if(fileName == null) throw new HttpError(404, "File not found")
+    const fileName = await this.ArtifactService.getFullFileName(`employer/${id}/`, 'avatar')
+    const filePath = `employer/${id}/${fileName}`
 
-      const response = req.res;
-      if (response) {
-        const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
+    if(fileName == null) throw new HttpError(404, "File not found")
 
-        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
-        response.setHeader('Content-Length', fileOptions.size.toString());
+    const response = req.res;
+    if (response) {
+      const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
-        stream.pipe(response)
-        return stream
-      }
+      if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
+      response.setHeader('Content-Length', fileOptions.size.toString());
+
+      stream.pipe(response)
+      return stream
+    }
   }
 
   @Put("{id}/avatar")
-  @Security("jwt", [UserRole.EMPLOYER])
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another employer"}>(403)
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadAvatar(
@@ -190,6 +198,16 @@ export class EmployerController extends Controller {
       @UploadedFile() file: Express.Multer.File,
       @Path() id: string,
   ): Promise<void> {
+    const employer = await prisma.employer.findUnique({
+      where: {id},
+    })
+
+    if (!employer) throw new HttpError(404, "Employer not found")
+
+    if (req.user.role !== UserRole.MANAGER && req.user.id !== id) {
+      throw new HttpError(403, "Not enough rights to edit another employer")
+    }
+
     const avatarExtension = path.extname(file.originalname)
     const avatarDirectory = `employer/${id}/`
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`

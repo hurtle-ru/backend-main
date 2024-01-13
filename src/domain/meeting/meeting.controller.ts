@@ -189,13 +189,17 @@ export class MeetingController extends Controller {
 
   @Get("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getPassport(
       @Request() req: ExpressRequest & JwtModel,
       @Path() id: string,
   ): Promise<Readable | any> {
       const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'passport')
       const filePath = `meeting/${id}/${fileName}`
+
+      const meeting = await prisma.meeting.findUnique({where: {id}})
+
+      if (!meeting) throw new HttpError(404, "Meeting not found")
 
       if(fileName == null) throw new HttpError(404, "File not found")
 
@@ -213,6 +217,8 @@ export class MeetingController extends Controller {
 
   @Put("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
+  @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadPassport(
@@ -224,6 +230,17 @@ export class MeetingController extends Controller {
     const passportDirectory = `meeting/${id}/`
     const passportPath = passportDirectory + `passport${passportExtension}`
 
+    const meeting = await prisma.meeting.findUnique({
+      where: {id},
+      include: {slot: true},
+    })
+
+    if (!meeting) throw new HttpError(404, "Meeting not found")
+
+    if (req.user.id !== meeting?.slot.managerId) {
+      throw new HttpError(403, "Not enough rights to edit another applicant")
+    }
+
     await this.artifactService.validateFileAttributes(file, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
     const oldPassportFileName = await this.artifactService.getFullFileName(passportDirectory, 'passport')
 
@@ -234,8 +251,9 @@ export class MeetingController extends Controller {
   }
 
   @Get("{id}/video")
-  @Security("jwt", [UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   public async getVideo(
       @Request() req: ExpressRequest & JwtModel,
       @Path() id: string,
@@ -245,15 +263,19 @@ export class MeetingController extends Controller {
 
       if(fileName == null) throw new HttpError(404, "File not found")
 
+      const meeting = await prisma.meeting.findUnique({where: {id}})
+
+      if (!meeting) throw new HttpError(404, "Meeting not found")
+
       const response = req.res;
       if (response) {
         const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
-        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
-        response.setHeader('Content-Length', fileOptions.size.toString());
+        if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
+        response.setHeader("Content-Length", fileOptions.size.toString());
 
         stream.pipe(response)
-        response.on('close', () => {
+        response.on("close", () => {
           try {
             stream.destroy();
           }
@@ -267,6 +289,8 @@ export class MeetingController extends Controller {
 
   @Put("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
+  @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadVideo(
@@ -274,6 +298,17 @@ export class MeetingController extends Controller {
       @UploadedFile() file: Express.Multer.File,
       @Path() id: string,
   ): Promise<void> {
+    const meeting = await prisma.meeting.findUnique({
+      where: {id},
+      include: {slot: true},
+    })
+
+    if (!meeting) throw new HttpError(404, "Meeting not found")
+
+    if (req.user.id !== meeting?.slot.managerId) {
+      throw new HttpError(403, "Not enough rights to edit another applicant")
+    }
+
     const videoExtension = path.extname(file.originalname)
     const videoDirectory = `meeting/${id}/`
     const videoPath = videoDirectory + `video${videoExtension}`
@@ -283,7 +318,6 @@ export class MeetingController extends Controller {
 
     if (oldVideoFileName !== null) {
       this.artifactService.deleteFile(videoDirectory + oldVideoFileName)
-      console.log("succed delete file")
     }
     await this.artifactService.saveVideoFile(file, videoPath);
   }

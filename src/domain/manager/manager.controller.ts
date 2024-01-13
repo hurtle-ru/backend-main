@@ -74,11 +74,16 @@ export class ManagerController extends Controller {
   }
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "File not found"}>(404)
+  @Response<HttpErrorBody & {"error": "File not found" | "Manager not found"}>(404)
   public async getAvatar(
       @Request() req: ExpressRequest & JwtModel,
       @Path() id: string,
   ): Promise<Readable | any> {
+      const manager = await prisma.manager.findUnique({
+        where: {id},
+      })
+      if (!manager) throw new HttpError(404, "Manager not found")
+
       const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, 'avatar')
       const filePath = `manager/${id}/${fileName}`
 
@@ -98,6 +103,8 @@ export class ManagerController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another manager"}>(403)
+  @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadAvatar(
@@ -105,6 +112,16 @@ export class ManagerController extends Controller {
       @UploadedFile() file: Express.Multer.File,
       @Path() id: string,
   ): Promise<void> {
+    const manager = await prisma.manager.findUnique({
+      where: {id},
+    })
+
+    if (!manager) throw new HttpError(404, "Manager not found")
+
+    if (req.user.id !== id) {
+      throw new HttpError(403, "Not enough rights to edit another manager")
+    }
+
     const avatarExtension = path.extname(file.originalname)
     const avatarDirectory = `manager/${id}/`
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`
@@ -116,6 +133,5 @@ export class ManagerController extends Controller {
       this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)
     }
     await this.ArtifactService.saveImageFile(file, avatarPath);
-
   }
 }
