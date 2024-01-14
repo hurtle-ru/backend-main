@@ -38,11 +38,24 @@ export class ManagerController extends Controller {
     return manager;
   }
 
-  @Delete("me")
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
+  @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
-  public async deleteMe(@Request() req: JwtModel): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const manager = await prisma.manager.findUnique({where: { id }})
+    if(!manager) throw new HttpError(400, "Manager not found")
+
+    await prisma.manager.archive(id);
+  }
+
+  @Delete("me")
+  @Security("jwt", [UserRole.MANAGER])
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.manager.archive(req.user.id);
   }
 
   @Put("me")

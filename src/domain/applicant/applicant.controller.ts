@@ -97,18 +97,29 @@ export class ApplicantController extends Controller {
   }
 
   @Delete("{id}")
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async deleteById(@Path() id: string): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const applicant = await prisma.applicant.findUnique({where: { id }})
+    if(!applicant) throw new HttpError(400, "Applicant not found");
+
+    if (req.user.id != id && req.user.role != UserRole.MANAGER) {
+      throw new HttpError(403, "Not enough rights to edit another applicant");
+    }
+
+    await prisma.applicant.archive(id);
   }
 
   @Delete("me")
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Security("jwt", [UserRole.APPLICANT])
-  public async deleteMe(@Request() req: JwtModel): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.applicant.archive(req.user.id);
   }
 
   @Put("me")

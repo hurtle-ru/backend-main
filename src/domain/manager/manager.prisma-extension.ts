@@ -12,4 +12,11 @@ export const managerPrismaExtension = Prisma.defineExtension({
       },
     },
   },
+  model: {
+    manager: {
+      async archive(id: string) {
+        return {"test": "testing"}
+      },
+    },
+  },
 })

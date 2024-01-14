@@ -12,4 +12,11 @@ export const employerPrismaExtension = Prisma.defineExtension({
       },
     },
   },
+  model: {
+    employer: {
+      async archive(id: string) {
+        return {"test": "testing"}
+      },
+    },
+  },
 })
