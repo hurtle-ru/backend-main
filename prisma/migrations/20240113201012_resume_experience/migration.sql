@@ -7,6 +7,14 @@
   - Added the required column `startYear` to the `ResumeExperience` table without a default value. This is not possible if the table is not empty.
 
 */
+
+-- DataMigration
+UPDATE "ResumeExperience"
+SET "startMonth" = EXTRACT(MONTH FROM CAST("startDate" AS DATE)),
+    "startYear" = EXTRACT(YEAR FROM CAST("startDate" AS DATE)),
+    "endMonth" = EXTRACT(MONTH FROM CAST("endDate" AS DATE)),
+    "endYear" = EXTRACT(YEAR FROM CAST("endDate" AS DATE));
+
 -- AlterTable
 ALTER TABLE "ResumeExperience" DROP COLUMN "endDate",
 DROP COLUMN "startDate",
