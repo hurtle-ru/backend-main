@@ -9,6 +9,14 @@
 */
 
 -- DataMigration
+-- AlterTable
+ALTER TABLE "ResumeExperience"
+    ADD COLUMN "endMonth" INTEGER,
+    ADD COLUMN "endYear" INTEGER,
+    ADD COLUMN "startMonth" INTEGER,
+    ADD COLUMN "startYear" INTEGER;
+
+-- DataMigration
 UPDATE "ResumeExperience"
 SET "startMonth" = EXTRACT(MONTH FROM CAST("startDate" AS DATE)),
     "startYear" = EXTRACT(YEAR FROM CAST("startDate" AS DATE)),
@@ -16,9 +24,9 @@ SET "startMonth" = EXTRACT(MONTH FROM CAST("startDate" AS DATE)),
     "endYear" = EXTRACT(YEAR FROM CAST("endDate" AS DATE));
 
 -- AlterTable
+ALTER TABLE "ResumeExperience"
+    ALTER COLUMN "startMonth" SET NOT NULL,
+    ALTER COLUMN "startYear" SET NOT NULL;
+
 ALTER TABLE "ResumeExperience" DROP COLUMN "endDate",
-DROP COLUMN "startDate",
-ADD COLUMN     "endMonth" INTEGER,
-ADD COLUMN     "endYear" INTEGER,
-ADD COLUMN     "startMonth" INTEGER NOT NULL,
-ADD COLUMN     "startYear" INTEGER NOT NULL;
+                               DROP COLUMN "startDate";
