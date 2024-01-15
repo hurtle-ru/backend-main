@@ -21,7 +21,7 @@ model Applicant {
   lastName             String
   phone                String?   @unique
   birthDate            DateTime?
-  gender               String?
+  gender               Gender?
   city                 String?
   country              String?
   aboutMe              String?
@@ -422,4 +422,9 @@ enum MeetingStatus {
   PLANNED
   CANCELED
   COMPLETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
