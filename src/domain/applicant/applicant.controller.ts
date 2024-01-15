@@ -67,11 +67,14 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
   public async getAll(
     @Request() req: JwtModel,
+    @Query() nickname?: string,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
-    const where = {};
+    const where = {
+      nickname,
+    };
 
     let includeResume: any = false;
     if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
@@ -90,7 +93,7 @@ export class ApplicantController extends Controller {
           assignedVacancies: include?.includes("assignedVacancies"),
         },
       }),
-      prisma.employer.count( { where }),
+      prisma.applicant.count( { where } ),
     ]);
 
     return new PageResponse(applicants, page, size, applicantsCount);
@@ -193,33 +196,6 @@ export class ApplicantController extends Controller {
     };
   }
 
-  @Get("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
-  public async getById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
-  ): Promise<GetApplicantResponse> {
-    let includeResume: any = false;
-    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
-      includeResume = true;
-    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
-      includeResume = { where: { isVisibleToEmployers: true } };
-
-    const applicant = await prisma.applicant.findUnique({
-      where: { id },
-      include: {
-        resume: includeResume,
-        meetings: include?.includes("meetings"),
-        assignedVacancies: include?.includes("assignedVacancies"),
-      },
-    });
-
-    if (!applicant) throw new HttpError(404, "Applicant not found");
-    return applicant;
-  }
-
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found" | "Applicant not found"}>(404)
@@ -280,5 +256,32 @@ export class ApplicantController extends Controller {
     if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
 
     await this.ArtifactService.saveImageFile(file, avatarPath);
+  }
+
+  @Get("{id}")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  public async getById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Query() include?: ("resume" | "meetings" | "assignedVacancies")[]
+  ): Promise<GetApplicantResponse> {
+    let includeResume: any = false;
+    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
+      includeResume = true;
+    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
+      includeResume = { where: { isVisibleToEmployers: true } };
+
+    const applicant = await prisma.applicant.findUnique({
+      where: { id },
+      include: {
+        resume: includeResume,
+        meetings: include?.includes("meetings"),
+        assignedVacancies: include?.includes("assignedVacancies"),
+      },
+    });
+
+    if (!applicant) throw new HttpError(404, "Applicant not found");
+    return applicant;
   }
 }
