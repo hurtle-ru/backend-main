@@ -1,5 +1,20 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Delete, Get, Path, Post, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Path,
+  Post,
+  Put,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  Tags,
+} from "tsoa";
 import { prisma } from "../../infrastructure/database/prismaClient";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
@@ -33,7 +48,7 @@ export class ResumeController extends Controller {
     });
   }
 
-  @Put("{id}")
+  @Patch("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "Resume not found")
   public async patchById(
