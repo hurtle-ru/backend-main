@@ -17,7 +17,6 @@ export class HhAuthService {
     return `https://hh.ru/oauth/authorize?response_type=code&client_id=${hhConfig.HH_CLIENT_ID}&redirect_uri=${hhConfig.HH_REDIRECT_URI}`;
   }
 
-
   async createToken(code: string): Promise<BasicHhToken> {
     const params = {
       client_id: hhConfig.HH_CLIENT_ID,
