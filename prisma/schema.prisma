@@ -130,7 +130,7 @@ model Vacancy {
   keySkills            String[]
   employerId           String
   employer             Employer              @relation(fields: [employerId], references: [id])
-  candidates           Applicant[]           @relation("ApplicantToVacancy")
+  candidates           Applicant[]        @relation("ApplicantToVacancy")
   offers               Offer[]
   isDeleted            Boolean   @default(false)
 }
@@ -312,7 +312,7 @@ model PartnershipInquiry {
 }
 
 
-model SoftArchieve {
+model SoftArchive {
   id                 String                   @id @default(uuid())
   createdAt          DateTime                 @default(now())
   originalId         String
