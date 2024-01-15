@@ -80,7 +80,7 @@ export class MeetingController extends Controller {
       { name: body.name, id: meeting.id, dateTime: slot.dateTime },
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
-      );
+    );
     await this.meetingService.sendMeetingCreatedToEmail(
       user!.email,
       { name: body.name, link: roomUrl, dateTime: slot.dateTime },
@@ -104,8 +104,8 @@ export class MeetingController extends Controller {
       applicantId: applicantId ?? undefined,
       employerId: employerId ?? undefined,
       feedback: hasFeedback === true ? { some: {} }
-              : hasFeedback === false ? { none: {} }
-              : undefined,
+        : hasFeedback === false ? { none: {} }
+        : undefined,
     }
 
     const [meetings, meetingsCount] = await Promise.all([
@@ -191,24 +191,24 @@ export class MeetingController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
   public async getPassport(
-      @Request() req: ExpressRequest & JwtModel,
-      @Path() id: string,
+    @Request() req: ExpressRequest & JwtModel,
+    @Path() id: string,
   ): Promise<Readable | any> {
-      const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'passport')
-      const filePath = `meeting/${id}/${fileName}`
+    const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'passport')
+    const filePath = `meeting/${id}/${fileName}`
 
-      if(fileName == null) throw new HttpError(404, "File not found")
+    if(fileName == null) throw new HttpError(404, "File not found")
 
-      const response = req.res;
-      if (response) {
-        const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+    const response = req.res;
+    if (response) {
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
-        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
-        response.setHeader('Content-Length', fileOptions.size.toString());
+      if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
+      response.setHeader('Content-Length', fileOptions.size.toString());
 
-        stream.pipe(response)
-        return stream
-      }
+      stream.pipe(response)
+      return stream
+    }
   }
 
   @Put("{id}/passport")
@@ -216,9 +216,9 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadPassport(
-      @Request() req: JwtModel,
-      @UploadedFile() file: Express.Multer.File,
-      @Path() id: string,
+    @Request() req: JwtModel,
+    @UploadedFile() file: Express.Multer.File,
+    @Path() id: string,
   ): Promise<void> {
     const passportExtension = path.extname(file.originalname)
     const passportDirectory = `meeting/${id}/`
@@ -237,32 +237,32 @@ export class MeetingController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found"}>(404)
   public async getVideo(
-      @Request() req: ExpressRequest & JwtModel,
-      @Path() id: string,
+    @Request() req: ExpressRequest & JwtModel,
+    @Path() id: string,
   ): Promise<Readable | any> {
-      const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'video')
-      const filePath = `meeting/${id}/${fileName}`
+    const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, 'video')
+    const filePath = `meeting/${id}/${fileName}`
 
-      if(fileName == null) throw new HttpError(404, "File not found")
+    if(fileName == null) throw new HttpError(404, "File not found")
 
-      const response = req.res;
-      if (response) {
-        const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+    const response = req.res;
+    if (response) {
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
-        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
-        response.setHeader('Content-Length', fileOptions.size.toString());
+      if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
+      response.setHeader('Content-Length', fileOptions.size.toString());
 
-        stream.pipe(response)
-        response.on('close', () => {
-          try {
-            stream.destroy();
-          }
-          catch (e) {
-            console.log("Error:", e)
-          }
-        });
-        return stream
-      }
+      stream.pipe(response)
+      response.on('close', () => {
+        try {
+          stream.destroy();
+        }
+        catch (e) {
+          console.log("Error:", e)
+        }
+      });
+      return stream
+    }
   }
 
   @Put("{id}/video")
@@ -270,9 +270,9 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadVideo(
-      @Request() req: JwtModel,
-      @UploadedFile() file: Express.Multer.File,
-      @Path() id: string,
+    @Request() req: JwtModel,
+    @UploadedFile() file: Express.Multer.File,
+    @Path() id: string,
   ): Promise<void> {
     const videoExtension = path.extname(file.originalname)
     const videoDirectory = `meeting/${id}/`

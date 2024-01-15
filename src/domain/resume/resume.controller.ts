@@ -6,17 +6,15 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
 import {
   BasicResume,
   CreateResumeRequest,
-  GetReadyToImportResumesResponse,
   GetResumeResponse,
   PutResumeRequest,
 } from "./resume.dto";
-import { ResumeService } from "./resume.service";
 
 @injectable()
 @Route("api/v1/resumes")
 @Tags("Resume")
 export class ResumeController extends Controller {
-  constructor(private readonly resumeService: ResumeService) {
+  constructor() {
     super();
   }
 
@@ -33,28 +31,6 @@ export class ResumeController extends Controller {
         isVisibleToEmployers: false,
       },
     });
-  }
-
-  @Get("readyToImport")
-  @Security("jwt", [UserRole.APPLICANT])
-  @Response<HttpErrorBody>(401, "Not authorized in hh.ru")
-  public async getReadyToImport(
-    @Request() req: JwtModel,
-  ): Promise<GetReadyToImportResumesResponse> {
-    const hhToken = await prisma.hhToken.findUnique({
-      where: { applicantId: req.user.id },
-    });
-
-    if(!hhToken) throw new HttpError(401, "Not authorized in hh.ru");
-    const readyToImportResumes = await this.resumeService.loadMine(hhToken);
-
-    return {
-      resumes: readyToImportResumes.map(resume => ({
-        id: resume.id,
-        title: resume.title,
-        createdAt: resume.createdAt,
-      })),
-    }
   }
 
   @Put("{id}")

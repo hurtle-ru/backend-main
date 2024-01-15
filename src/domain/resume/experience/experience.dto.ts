@@ -10,8 +10,10 @@ export type CreateResumeExperienceRequest = Pick<
   ResumeExperience,
   | "company"
   | "position"
-  | "startDate"
-  | "endDate"
+  | "startMonth"
+  | "startYear"
+  | "endMonth"
+  | "endYear"
   | "description"
   | "resumeId"
 >;
@@ -20,7 +22,9 @@ export type PutResumeExperienceRequest = Pick<
   ResumeExperience,
   | "company"
   | "position"
-  | "startDate"
-  | "endDate"
+  | "startMonth"
+  | "startYear"
+  | "endMonth"
+  | "endYear"
   | "description"
 >;
