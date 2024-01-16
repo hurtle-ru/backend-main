@@ -31,7 +31,6 @@ model Applicant {
   isVisibleToEmployers Boolean   @default(false)
   isConfirmedByManager Boolean   @default(false)
   isEmailConfirmed     Boolean   @default(false)
-  isDeleted            Boolean   @default(false)
   resume               Resume?
   meetings             Meeting[]
   assignedVacancies    Vacancy[] @relation("ApplicantToVacancy")
@@ -59,7 +58,6 @@ model Employer {
   agreementNumber      String?
   agreementDate        DateTime?
   isConfirmedByManager Boolean            @default(false)
-  isDeleted            Boolean   @default(false)
   meetings             Meeting[]
   vacancies            Vacancy[]
 }
@@ -132,7 +130,6 @@ model Vacancy {
   employer             Employer              @relation(fields: [employerId], references: [id])
   candidates           Applicant[]        @relation("ApplicantToVacancy")
   offers               Offer[]
-  isDeleted            Boolean   @default(false)
 }
 
 model Offer {
@@ -234,7 +231,6 @@ model Meeting {
   employerId      String?
   slot            MeetingSlot             @relation(fields: [slotId], references: [id])
   slotId          String                  @unique
-  isDeleted       Boolean                 @default(false)
 }
 
 model MeetingSlot {
