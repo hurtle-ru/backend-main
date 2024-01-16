@@ -158,10 +158,10 @@ export class MeetingSlotController extends Controller {
     @Path() id: string,
     @Query() include?: ("meeting" | "manager")[]
   ): Promise<GetMeetingSlotResponse> {
-    let where;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, meeting: { employerId: req.user.id } };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, meeting: { applicantId: req.user.id }};
+    let where: any = { dateTime: {  gte: new Date() } };
+    if(req.user.role === UserRole.MANAGER) where = {...where, id };
+    else if(req.user.role === UserRole.EMPLOYER) where = {...where, id, meeting: { employerId: req.user.id } };
+    else if(req.user.role === UserRole.APPLICANT) where = {...where, id, meeting: { applicantId: req.user.id }};
 
     const meetingSlot = await prisma.meetingSlot.findUnique({
       where: where!,
