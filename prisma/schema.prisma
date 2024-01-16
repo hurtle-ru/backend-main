@@ -21,7 +21,7 @@ model Applicant {
   lastName             String
   phone                String?   @unique
   birthDate            DateTime?
-  gender               String?
+  gender               Gender?
   city                 String?
   country              String?
   aboutMe              String?
@@ -196,14 +196,16 @@ model ResumeEducation {
 }
 
 model ResumeExperience {
-  id          String    @id @default(uuid())
+  id          String  @id @default(uuid())
   company     String?
   position    String
-  startDate   DateTime
-  endDate     DateTime?
+  startMonth  Int
+  startYear   Int
+  endMonth    Int?
+  endYear     Int?
   description String?
   resumeId    String
-  resume      Resume    @relation(fields: [resumeId], references: [id])
+  resume      Resume  @relation(fields: [resumeId], references: [id])
 }
 
 model ResumeLanguage {
@@ -430,4 +432,9 @@ enum MeetingStatus {
   PLANNED
   CANCELED
   COMPLETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }

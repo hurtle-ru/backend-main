@@ -39,11 +39,3 @@ export type GetResumeResponse = BasicResume & {
   experience?: BasicResumeExperience[];
   languages?: BasicResumeLanguage[];
 }
-
-export type GetReadyToImportResumesResponse = {
-  resumes: {
-    id: string;
-    title?: string | null;
-    createdAt: Date;
-  }[]
-}
