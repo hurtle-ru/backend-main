@@ -55,10 +55,10 @@ export const applicantPrismaExtension = Prisma.defineExtension({
           prisma.meetingFeedback.deleteMany( {  where: {  meeting: { applicantId: id } } } ),
           prisma.meetingScriptAnswer.deleteMany( { where: { protocol: {meeting: {applicantId: applicant.id } } } } ),
           prisma.meetingScriptProtocol.deleteMany( { where: { meeting: {applicantId: applicant.id} } } ),
-
           prisma.meeting.deleteMany( { where: { applicantId: id} } ),
 
           prisma.offer.deleteMany( { where: { candidateId: id} } ),
+
           prisma.applicant.delete( { where: { id } } ),
         ])
       },
