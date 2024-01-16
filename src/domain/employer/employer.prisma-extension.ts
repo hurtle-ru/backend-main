@@ -45,7 +45,6 @@ export const employerPrismaExtension = Prisma.defineExtension({
           prisma.meetingScriptAnswer.deleteMany( { where: { protocol: { meeting: { employerId: employer.id } } } } ),
           prisma.meetingScriptProtocol.deleteMany( { where: { meeting: { employerId: employer.id} } } ),
           prisma.meeting.deleteMany( { where: { employerId: id} } ),
-          prisma.meeting.deleteMany( { where: { employerId: id} } ),
 
           prisma.offer.deleteMany( { where: { vacancy: {employerId: employer.id} } } ),
           prisma.vacancy.deleteMany( {where: { employerId: id} } ),
