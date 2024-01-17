@@ -33,16 +33,8 @@ export const applicantPrismaExtension = Prisma.defineExtension({
 
         if (!applicant) throw new HttpError(404, "Applicant not found");
 
-        await prisma.softArchive.create({
-          data: {
-            modelName: context.name,
-            originalId: applicant.id,
-            payload: applicant,
-          },
-        })
-
         await prisma.$transaction([
-          prisma.hhToken.delete({ where: { applicantId: id } }),
+          prisma.hhToken.deleteMany({ where: { applicantId: id } }),
           prisma.password.deleteMany({ where: { applicant: { id: applicant.id } } }),
 
           prisma.resumeCertificate.deleteMany({ where: { resumeId: applicant.resume?.id } }),
@@ -50,7 +42,7 @@ export const applicantPrismaExtension = Prisma.defineExtension({
           prisma.resumeEducation.deleteMany({ where: { resumeId: applicant.resume?.id } }),
           prisma.resumeExperience.deleteMany({ where: { resumeId: applicant.resume?.id } }),
           prisma.resumeLanguage.deleteMany({ where: { resumeId: applicant.resume?.id } }),
-          prisma.resume.delete({ where: { applicantId: id } }),
+          prisma.resume.deleteMany({ where: { applicantId: id } }),
 
           prisma.meetingFeedback.deleteMany({ where: { meeting: { applicantId: id } } }),
           prisma.meetingScriptAnswer.deleteMany({ where: { protocol: { meeting: { applicantId: applicant.id } } } }),
@@ -61,6 +53,14 @@ export const applicantPrismaExtension = Prisma.defineExtension({
 
           prisma.applicant.delete({ where: { id } }),
         ])
+
+        await prisma.softArchive.create({
+          data: {
+            modelName: context.name,
+            originalId: applicant.id,
+            payload: applicant,
+          },
+        })
       },
     },
   },

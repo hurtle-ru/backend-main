@@ -19,22 +19,21 @@ export const meetingPrismaExtension = Prisma.defineExtension({
 
         if (!meeting) throw new HttpError(404, "Meeting not found");
 
-        await prisma.softArchive.create({
-          data: {
-            modelName: context.name,
-            originalId: meeting.id,
-            payload: meeting,
-          },
-        })
-
         await prisma.$transaction([
           prisma.meetingFeedback.deleteMany( { where: { meeting: { id } } } ),
           prisma.meetingScriptAnswer.deleteMany( { where: { protocol: { meeting: { id } } } } ),
           prisma.meetingScriptProtocol.deleteMany( { where: { meeting: { id } } } ),
 
           prisma.meeting.delete( { where: { id } } ),
+        ]);
 
-        ])
+        await prisma.softArchive.create({
+          data: {
+            modelName: context.name,
+            originalId: meeting.id,
+            payload: meeting,
+          },
+        });
       },
     },
   },

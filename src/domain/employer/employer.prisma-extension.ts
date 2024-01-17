@@ -30,14 +30,6 @@ export const employerPrismaExtension = Prisma.defineExtension({
 
         if (!employer) throw new HttpError(404, "Employer not found");
 
-        await prisma.softArchive.create({
-          data: {
-            modelName: context.name,
-            originalId: employer.id,
-            payload: employer,
-          },
-        })
-
         await prisma.$transaction([
           prisma.password.deleteMany({where: {employer: { id: employer.id} } } ),
 
@@ -50,7 +42,15 @@ export const employerPrismaExtension = Prisma.defineExtension({
           prisma.vacancy.deleteMany( {where: { employerId: id} } ),
 
           prisma.employer.delete({ where: { id } } ),
-        ])
+        ]);
+
+        await prisma.softArchive.create({
+          data: {
+            modelName: context.name,
+            originalId: employer.id,
+            payload: employer,
+          },
+        });
       },
     },
   },

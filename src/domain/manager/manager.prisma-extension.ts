@@ -29,14 +29,6 @@ export const managerPrismaExtension = Prisma.defineExtension({
 
         if (!manager) throw new HttpError(404, "Manager not found");
 
-        await prisma.softArchive.create({
-          data: {
-            modelName: context.name,
-            originalId: manager.id,
-            payload: manager,
-          },
-        })
-
         await prisma.$transaction([
           prisma.password.deleteMany( { where: { manager: { id: manager.id} } } ),
 
@@ -46,7 +38,15 @@ export const managerPrismaExtension = Prisma.defineExtension({
           prisma.meeting.deleteMany( { where: { slot: { managerId: manager.id } } } ),
 
           prisma.manager.delete( { where: {id} } ),
-        ])
+        ]);
+
+        await prisma.softArchive.create({
+          data: {
+            modelName: context.name,
+            originalId: manager.id,
+            payload: manager,
+          },
+        });
       },
     },
   },
