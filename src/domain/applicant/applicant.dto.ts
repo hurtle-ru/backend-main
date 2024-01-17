@@ -2,6 +2,7 @@ import { Applicant } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
 import { boolean } from "yup";
+import { BasicResume } from "../resume/resume.dto";
 
 
 export type BasicApplicant = Omit<
@@ -14,7 +15,7 @@ export type BasicApplicant = Omit<
 >;
 
 export type GetApplicantResponse = BasicApplicant & {
-  resume?: any,
+  resume?: BasicResume | null,
   meetings?: BasicMeeting[],
   assignedVacancies?: BasicVacancy[]
 };

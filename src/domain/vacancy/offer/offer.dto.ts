@@ -18,7 +18,6 @@ export type CreateOfferRequest = Pick<
   | "message"
   | "salary"
   | "salaryCurrency"
-  | "status"
   | "vacancyId"
   | "candidateId"
 >

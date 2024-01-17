@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client'
+import { Prisma } from "@prisma/client";
 import { prisma } from '../../infrastructure/database/prismaClient';
 import { HttpError } from '../../infrastructure/error/httpError';
 
@@ -52,14 +52,19 @@ export const applicantPrismaExtension = Prisma.defineExtension({
           (context as any).resumeLanguage.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
           (context as any).resume.delete( { where: { applicantId: id } } ),
 
+          prisma.meetingFeedback.deleteMany( {  where: {  meeting: { applicantId: id } } } ),
+          prisma.meetingScriptAnswer.deleteMany( { where: { protocol: {meeting: {applicantId: applicant.id } } } } ),
+          prisma.meetingScriptProtocol.deleteMany( { where: { meeting: {applicantId: applicant.id} } } ),
+          prisma.meeting.deleteMany( { where: { applicantId: id} } ),
           (context as any).meetingFeedback.deleteMany( {  where: {  meeting: { applicantId: id } } } ),
           (context as any).meetingScriptAnswer.deleteMany( { where: { protocol: {meeting: {applicantId: applicant.id } } } } ),
           (context as any).meetingScriptProtocol.deleteMany( { where: { meeting: {applicantId: applicant.id} } } ),
 
           (context as any).meeting.deleteMany( { where: { applicantId: id} } ),
 
-          (context as any).offer.deleteMany( { where: { candidateId: id} } ),
-          (context as any).applicant.delete( { where: { id } } ),
+          prisma.offer.deleteMany( { where: { candidateId: id} } ),
+
+          prisma.applicant.delete( { where: { id } } ),
         ])
       },
     },
