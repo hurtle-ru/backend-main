@@ -66,6 +66,14 @@ export class EmployerController extends Controller {
     return new PageResponse(employers, page, size, employersCount);
   }
 
+  @Delete("me")
+  @Security("jwt", [UserRole.EMPLOYER])
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.employer.archive(req.user.id);
+  }
+
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another employer"}>(403)
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
@@ -75,21 +83,13 @@ export class EmployerController extends Controller {
     @Request() req: JwtModel,
   ): Promise<void> {
     const employer = await prisma.employer.findUnique({where: { id }})
-    if(!employer) throw new HttpError(400, "Employer not found");
+    if(!employer) throw new HttpError(404, "Employer not found");
 
     if (req.user.id != id && req.user.role != UserRole.MANAGER) {
       throw new HttpError(403, "Not enough rights to edit another employer");
     }
 
     await prisma.employer.archive(id);
-  }
-
-  @Delete("me")
-  @Security("jwt", [UserRole.EMPLOYER])
-  public async deleteMe(
-    @Request() req: JwtModel
-  ): Promise<void> {
-    await prisma.employer.archive(req.user.id);
   }
 
   @Put("me")

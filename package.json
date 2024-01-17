@@ -10,7 +10,7 @@
     "build": "npm run build:tsc && npm run build:post && npm run sentry:sourcemaps",
     "prisma:studio": "npx prisma db pull && npx prisma studio",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org hurtle --project hurtle-main ./dist && sentry-cli sourcemaps upload --org hurtle --project hurtle-main ./dist"
+    "sentry:sourcemaps": ""
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",

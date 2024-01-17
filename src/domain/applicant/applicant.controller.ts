@@ -96,6 +96,14 @@ export class ApplicantController extends Controller {
     return new PageResponse(applicants, page, size, applicantsCount);
   }
 
+  @Delete("me")
+  @Security("jwt", [UserRole.APPLICANT])
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.applicant.archive(req.user.id);
+  }
+
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
@@ -105,21 +113,13 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
   ): Promise<void> {
     const applicant = await prisma.applicant.findUnique({where: { id }})
-    if(!applicant) throw new HttpError(400, "Applicant not found");
+    if(!applicant) throw new HttpError(404, "Applicant not found");
 
     if (req.user.id != id && req.user.role != UserRole.MANAGER) {
       throw new HttpError(403, "Not enough rights to edit another applicant");
     }
 
     await prisma.applicant.archive(id);
-  }
-
-  @Delete("me")
-  @Security("jwt", [UserRole.APPLICANT])
-  public async deleteMe(
-    @Request() req: JwtModel
-  ): Promise<void> {
-    await prisma.applicant.archive(req.user.id);
   }
 
   @Put("me")

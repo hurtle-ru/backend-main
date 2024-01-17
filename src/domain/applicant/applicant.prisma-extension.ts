@@ -18,7 +18,7 @@ export const applicantPrismaExtension = Prisma.defineExtension({
     applicant: {
       async archive(id: string) {
         const context = Prisma.getExtensionContext(this);
-        const applicant = await prisma.applicant.findUnique(
+        const applicant = await (context as any).applicant.findUnique(
           {
             where: {id},
             include: {
@@ -33,7 +33,7 @@ export const applicantPrismaExtension = Prisma.defineExtension({
 
         if (!applicant) throw new HttpError(404, "Applicant not found");
 
-        await prisma.softArchive.create({
+        await (context as any).softArchive.create({
           data: {
             modelName: context.name,
             originalId: applicant.id,
@@ -41,25 +41,25 @@ export const applicantPrismaExtension = Prisma.defineExtension({
           },
         })
 
-        await prisma.$transaction([
-          prisma.hhToken.delete( { where: { applicantId: id } } ),
-          prisma.password.deleteMany( { where: { applicant: { id: applicant.id}} } ),
+        await (context as any).$transaction([
+          (context as any).hhToken.delete( { where: { applicantId: id } } ),
+          (context as any).password.deleteMany( { where: { applicant: { id: applicant.id}} } ),
 
-          prisma.resumeCertificate.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
-          prisma.resumeContact.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
-          prisma.resumeEducation.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
-          prisma.resumeExperience.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
-          prisma.resumeLanguage.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
-          prisma.resume.delete( { where: { applicantId: id } } ),
+          (context as any).resumeCertificate.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
+          (context as any).resumeContact.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
+          (context as any).resumeEducation.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
+          (context as any).resumeExperience.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
+          (context as any).resumeLanguage.deleteMany( { where: { resumeId: applicant.resume?.id } } ),
+          (context as any).resume.delete( { where: { applicantId: id } } ),
 
-          prisma.meetingFeedback.deleteMany( {  where: {  meeting: { applicantId: id } } } ),
-          prisma.meetingScriptAnswer.deleteMany( { where: { protocol: {meeting: {applicantId: applicant.id } } } } ),
-          prisma.meetingScriptProtocol.deleteMany( { where: { meeting: {applicantId: applicant.id} } } ),
+          (context as any).meetingFeedback.deleteMany( {  where: {  meeting: { applicantId: id } } } ),
+          (context as any).meetingScriptAnswer.deleteMany( { where: { protocol: {meeting: {applicantId: applicant.id } } } } ),
+          (context as any).meetingScriptProtocol.deleteMany( { where: { meeting: {applicantId: applicant.id} } } ),
 
-          prisma.meeting.deleteMany( { where: { applicantId: id} } ),
+          (context as any).meeting.deleteMany( { where: { applicantId: id} } ),
 
-          prisma.offer.deleteMany( { where: { candidateId: id} } ),
-          prisma.applicant.delete( { where: { id } } ),
+          (context as any).offer.deleteMany( { where: { candidateId: id} } ),
+          (context as any).applicant.delete( { where: { id } } ),
         ])
       },
     },

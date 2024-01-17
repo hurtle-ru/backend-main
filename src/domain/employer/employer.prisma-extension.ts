@@ -18,7 +18,7 @@ export const employerPrismaExtension = Prisma.defineExtension({
     employer: {
       async archive(id: string) {
         const context = Prisma.getExtensionContext(this);
-        const employer = await prisma.employer.findUnique(
+        const employer = await (context as any).employer.findUnique(
           {
             where: {id},
             include: {
@@ -30,7 +30,7 @@ export const employerPrismaExtension = Prisma.defineExtension({
 
         if (!employer) throw new HttpError(404, "Employer not found");
 
-        await prisma.softArchive.create({
+        await (context as any).softArchive.create({
           data: {
             modelName: context.name,
             originalId: employer.id,
@@ -38,19 +38,18 @@ export const employerPrismaExtension = Prisma.defineExtension({
           },
         })
 
-        await prisma.$transaction([
-          prisma.password.deleteMany({where: {employer: { id: employer.id} } } ),
+        await (context as any).$transaction([
+          (context as any).password.deleteMany({where: {employer: { id: employer.id} } } ),
 
-          prisma.meetingFeedback.deleteMany( { where: { meeting: { employerId: id } } }),
-          prisma.meetingScriptAnswer.deleteMany( { where: { protocol: { meeting: { employerId: employer.id } } } } ),
-          prisma.meetingScriptProtocol.deleteMany( { where: { meeting: { employerId: employer.id} } } ),
-          prisma.meeting.deleteMany( { where: { employerId: id} } ),
-          prisma.meeting.deleteMany( { where: { employerId: id} } ),
+          (context as any).meetingFeedback.deleteMany( { where: { meeting: { employerId: id } } }),
+          (context as any).meetingScriptAnswer.deleteMany( { where: { protocol: { meeting: { employerId: employer.id } } } } ),
+          (context as any).meetingScriptProtocol.deleteMany( { where: { meeting: { employerId: employer.id} } } ),
+          (context as any).meeting.deleteMany( { where: { employerId: id} } ),
 
-          prisma.offer.deleteMany( { where: { vacancy: {employerId: employer.id} } } ),
-          prisma.vacancy.deleteMany( {where: { employerId: id} } ),
+          (context as any).offer.deleteMany( { where: { vacancy: {employerId: employer.id} } } ),
+          (context as any).vacancy.deleteMany( {where: { employerId: id} } ),
 
-          prisma.employer.delete({ where: { id } } ),
+          (context as any).employer.delete({ where: { id } } ),
         ])
       },
     },

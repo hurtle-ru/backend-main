@@ -324,28 +324,20 @@ export class MeetingController extends Controller {
 
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another meeting"}>(403)
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
   public async deleteById(
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
     const meeting = await prisma.meeting.findUnique({where: { id }, include: {slot: true}})
-    if(!meeting) throw new HttpError(400, "Meeting not found");
+    if(!meeting) throw new HttpError(404, "Meeting not found");
 
     if (req.user.id !== meeting?.slot.managerId) {
       throw new HttpError(403, "Not enough rights to edit another meeting")
     }
 
     await prisma.meeting.archive(id);
-  }
-
-  @Delete("me")
-  @Security("jwt", [UserRole.EMPLOYER])
-  public async deleteMe(
-    @Request() req: JwtModel
-  ): Promise<void> {
-    await prisma.meeting.archive(req.user.id);
   }
 
 }
