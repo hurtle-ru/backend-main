@@ -317,6 +317,11 @@ model SoftArchive {
   payload    Json
 }
 
+model University {
+  id         String   @id @default(uuid())
+  name       String
+}
+
 enum ContactType {
   PHONE
   EMAIL
