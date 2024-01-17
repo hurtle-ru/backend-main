@@ -286,6 +286,14 @@ export class MeetingController extends Controller {
     await this.artifactService.saveVideoFile(file, videoPath);
   }
 
+  @Delete("me")
+  @Security("jwt", [UserRole.EMPLOYER])
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.meeting.archive(req.user.id);
+  }
+
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "Not enough rights to delete another meeting"}>(403)
@@ -302,14 +310,6 @@ export class MeetingController extends Controller {
     }
 
     await prisma.meeting.archive(id);
-  }
-
-  @Delete("me")
-  @Security("jwt", [UserRole.EMPLOYER])
-  public async deleteMe(
-    @Request() req: JwtModel
-  ): Promise<void> {
-    await prisma.meeting.archive(req.user.id);
   }
   
   @Get("{id}")

@@ -66,24 +66,6 @@ export class EmployerController extends Controller {
     return new PageResponse(employers, page, size, employersCount);
   }
 
-  @Delete("{id}")
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another employer"}>(403)
-  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  public async deleteById(
-    @Path() id: string,
-    @Request() req: JwtModel,
-  ): Promise<void> {
-    const employer = await prisma.employer.findUnique({where: { id }})
-    if(!employer) throw new HttpError(400, "Employer not found");
-
-    if (req.user.id != id && req.user.role != UserRole.MANAGER) {
-      throw new HttpError(403, "Not enough rights to edit another employer");
-    }
-
-    await prisma.employer.archive(id);
-  }
-
   @Delete("me")
   @Security("jwt", [UserRole.EMPLOYER])
   public async deleteMe(
@@ -117,55 +99,6 @@ export class EmployerController extends Controller {
       data: body,
     });
 
-    return employer;
-  }
-
-  @Put("{id}")
-  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async putById(
-    @Path() id: string,
-    @Body() body: PutByIdEmployerRequest
-  ): Promise<BasicEmployer> {
-    const employer = await prisma.employer.update({
-      where: { id },
-      data: body,
-    });
-
-    return employer;
-  }
-
-  @Patch("{id}")
-  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async patchById(
-    @Path() id: string,
-    @Body() body: Partial<PutByIdEmployerRequest>
-  ): Promise<BasicEmployer> {
-    const employer = await prisma.employer.update({
-      where: { id },
-      data: body,
-    });
-
-    return employer;
-  }
-
-  @Get("{id}")
-  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async getById(
-    @Path() id: string,
-    @Query() include?: ("meetings" | "vacancies")[]
-  ): Promise<GetEmployerResponse> {
-    const employer = await prisma.employer.findUnique({
-      where: { id },
-      include: {
-        meetings: include?.includes("meetings"),
-        vacancies: include?.includes("vacancies"),
-      },
-    });
-
-    if (!employer) throw new HttpError(404, "Employer not found");
     return employer;
   }
 
@@ -230,5 +163,72 @@ export class EmployerController extends Controller {
       this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)
     }
     await this.ArtifactService.saveImageFile(file, avatarPath);
+  }
+
+  @Delete("{id}")
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another employer"}>(403)
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const employer = await prisma.employer.findUnique({where: { id }})
+    if(!employer) throw new HttpError(400, "Employer not found");
+
+    if (req.user.id != id && req.user.role != UserRole.MANAGER) {
+      throw new HttpError(403, "Not enough rights to edit another employer");
+    }
+
+    await prisma.employer.archive(id);
+  }
+
+  @Put("{id}")
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async putById(
+    @Path() id: string,
+    @Body() body: PutByIdEmployerRequest
+  ): Promise<BasicEmployer> {
+    const employer = await prisma.employer.update({
+      where: { id },
+      data: body,
+    });
+
+    return employer;
+  }
+
+  @Patch("{id}")
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async patchById(
+    @Path() id: string,
+    @Body() body: Partial<PutByIdEmployerRequest>
+  ): Promise<BasicEmployer> {
+    const employer = await prisma.employer.update({
+      where: { id },
+      data: body,
+    });
+
+    return employer;
+  }
+
+  @Get("{id}")
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async getById(
+    @Path() id: string,
+    @Query() include?: ("meetings" | "vacancies")[]
+  ): Promise<GetEmployerResponse> {
+    const employer = await prisma.employer.findUnique({
+      where: { id },
+      include: {
+        meetings: include?.includes("meetings"),
+        vacancies: include?.includes("vacancies"),
+      },
+    });
+
+    if (!employer) throw new HttpError(404, "Employer not found");
+    return employer;
   }
 }
