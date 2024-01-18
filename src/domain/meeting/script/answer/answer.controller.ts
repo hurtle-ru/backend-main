@@ -47,6 +47,37 @@ export class MeetingScriptAnswerController extends Controller {
     });
   }
 
+  @Get("")
+  @Security("jwt", [UserRole.MANAGER])
+  public async getAll(
+    @Request() req: JwtModel,
+    @Query() page: PageNumber = 1,
+    @Query() size: PageSizeNumber = 20,
+    @Query() include?: ("protocol" | "question")[],
+    @Query() protocolId?: string,
+    @Query() questionId?: string,
+  ): Promise<PageResponse<GetMeetingScriptAnswerResponse>> {
+    const where = {
+      protocolId: protocolId ?? undefined,
+      questionId: questionId ?? undefined,
+    }
+
+    const [answers, answersCount] = await Promise.all([
+      prisma.meetingScriptAnswer.findMany({
+        skip: (page - 1) * size,
+        take: size,
+        where,
+        include: {
+          protocol: include?.includes("protocol"),
+          question: include?.includes("question"),
+        },
+      }),
+      prisma.meetingScriptAnswer.count({ where }),
+    ])
+
+    return new PageResponse(answers, page, size, answersCount);
+  }
+
   @Patch("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & { "error": "MeetingScriptAnswer not found" }>(404)
@@ -85,37 +116,6 @@ export class MeetingScriptAnswerController extends Controller {
     await prisma.meetingScriptAnswer.delete({
       where: { id },
     });
-  }
-
-  @Get("")
-  @Security("jwt", [UserRole.MANAGER])
-  public async getAll(
-    @Request() req: JwtModel,
-    @Query() page: PageNumber = 1,
-    @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("protocol" | "question")[],
-    @Query() protocolId?: string,
-    @Query() questionId?: string,
-  ): Promise<PageResponse<GetMeetingScriptAnswerResponse>> {
-    const where = {
-      protocolId: protocolId ?? undefined,
-      questionId: questionId ?? undefined,
-    }
-
-    const [answers, answersCount] = await Promise.all([
-      prisma.meetingScriptAnswer.findMany({
-        skip: (page - 1) * size,
-        take: size,
-        where,
-        include: {
-          protocol: include?.includes("protocol"),
-          question: include?.includes("question"),
-        },
-      }),
-      prisma.meetingScriptAnswer.count({ where }),
-    ])
-
-    return new PageResponse(answers, page, size, answersCount);
   }
 
   @Get("{id}")
