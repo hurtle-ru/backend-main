@@ -12,6 +12,9 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org hurtle --project hurtle-main ./dist && sentry-cli sourcemaps upload --org hurtle --project hurtle-main ./dist"
   },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed/university.seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.7.0",
     "@sentry/cli": "^2.23.0",
@@ -23,6 +26,7 @@
     "camelcase": "^6.0.0",
     "copyfiles": "^2.4.1",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "dotenv": "^16.3.1",
     "envalid": "^8.0.0",
     "express": "^4.18.2",
@@ -54,7 +58,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/lodash": "^4.14.202",
-    "@types/node": "^20.10.4",
+    "@types/node": "^20.11.5",
     "@types/node-telegram-bot-api": "^0.64.1",
     "@types/nodemailer": "^6.4.14",
     "@types/otp-generator": "^4.0.2",

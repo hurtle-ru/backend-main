@@ -32,7 +32,7 @@ export class AuthController extends Controller {
   ): Promise<CreateAccessTokenResponse> {
     const { login, password } = body;
 
-    let user: { id: string, password: { hash: string } } | null = null;
+    let user: { id: string, password: { hash: string } | null } | null = null;
     const findQuery = {
       where: { login },
       select: {
@@ -45,11 +45,11 @@ export class AuthController extends Controller {
       },
     }
 
-    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery);
+    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery)
     if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findQuery);
     if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery);
 
-    if (!user || !(await this.authService.comparePasswords(password, user.password.hash))) {
+    if (!user || !(await this.authService.comparePasswords(password, user.password!.hash))) {
       throw new HttpError(401, "Invalid login or password");
     }
 

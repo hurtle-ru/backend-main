@@ -5,8 +5,8 @@ import { BasicManager, GetManagerResponse, PutMeManagerRequest } from "./manager
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { injectable } from "tsyringe";
 import { ArtifactService} from "../../external/artifact/artifact.service";
-import { Readable } from 'stream';
-import {Request as ExpressRequest} from 'express';
+import { Readable } from "stream";
+import {Request as ExpressRequest} from "express";
 import path from "path";
 import { AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE } from "../../external/artifact/artifact.config";
 
@@ -39,10 +39,24 @@ export class ManagerController extends Controller {
   }
 
   @Delete("me")
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Security("jwt", [UserRole.MANAGER])
-  public async deleteMe(@Request() req: JwtModel): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.manager.archive(req.user.id);
+  }
+
+  @Delete("{id}")
+  @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const manager = await prisma.manager.findUnique({where: { id }})
+    if(!manager) throw new HttpError(404, "Manager not found")
+
+    await prisma.manager.archive(id);
   }
 
   @Put("me")
@@ -84,7 +98,7 @@ export class ManagerController extends Controller {
       })
       if (!manager) throw new HttpError(404, "Manager not found")
 
-      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, 'avatar')
+      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, "avatar")
       const filePath = `manager/${id}/${fileName}`
 
       if(fileName == null) throw new HttpError(404, "File not found")
@@ -93,8 +107,8 @@ export class ManagerController extends Controller {
       if (response) {
         const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
-        if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
-        response.setHeader('Content-Length', fileOptions.size.toString());
+        if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
+        response.setHeader("Content-Length", fileOptions.size.toString());
 
         stream.pipe(response)
         return stream
@@ -127,7 +141,7 @@ export class ManagerController extends Controller {
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`
 
     await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, 'avatar')
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
 
     if (oldAvatarFileName !== null) {
       this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)

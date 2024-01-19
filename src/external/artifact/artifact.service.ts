@@ -1,9 +1,9 @@
-import fs from 'fs/promises';
-import * as path from 'path';
-import { HttpError } from '../../infrastructure/error/httpError';
-import { BaseFileOptions } from './artifact.dto'
-import { promisify } from 'util';
-import { createReadStream, stat, unlinkSync} from 'fs';
+import fs from "fs/promises";
+import * as path from "path";
+import { HttpError } from "../../infrastructure/error/httpError";
+import { BaseFileOptions } from "./artifact.dto"
+import { promisify } from "util";
+import { createReadStream, stat, unlinkSync} from "fs";
 import {
   MAX_IMAGE_FILE_SIZE,
   MAX_DOCUMENT_FILE_SIZE,
@@ -13,9 +13,9 @@ import {
   AVAILABLE_VIDEO_FILE_MIME_TYPES,
   READ_STREAM_HIGH_WATER_MARK,
   FILE_EXTENSION_MIME_TYPES,
-} from './artifact.config';
-import { singleton } from 'tsyringe';
-import { Readable } from 'stream';
+} from "./artifact.config";
+import { singleton } from "tsyringe";
+import { Readable } from "stream";
 
 
 export const ARTIFACT_ROOT_DIR = "data/";
@@ -78,8 +78,8 @@ export class ArtifactService {
       return [
         stream,
         {
-          'mimeType': fileType,
-          'size': stat.size,
+          "mimeType": fileType,
+          "size": stat.size,
         },
       ];
     }

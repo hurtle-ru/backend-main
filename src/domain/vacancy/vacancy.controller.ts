@@ -106,17 +106,6 @@ export class VacancyController extends Controller {
     return new PageResponse(vacancies, page, size, vacanciesCount);
   }
 
-  @Delete("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async deleteById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-  ): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
-  }
-
   @Put("{id}/isConfirmedByManager")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
@@ -239,5 +228,23 @@ export class VacancyController extends Controller {
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
     return vacancy;
+  }
+
+  @Delete("{id}")
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another vacancy"}>(403)
+  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const vacancy = await prisma.vacancy.findUnique({where: { id }})
+    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+
+    if (req.user.id !== vacancy.employerId && req.user.role != UserRole.MANAGER) {
+      throw new HttpError(403, "Not enough rights to edit another vacancy")
+    }
+
+    await prisma.vacancy.delete({where: { id }});
   }
 }

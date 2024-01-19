@@ -1,6 +1,6 @@
 import { dadataConfig } from "./dadata.config";
-import axios from 'axios';
-import { singleton } from 'tsyringe';
+import axios from "axios";
+import { singleton } from "tsyringe";
 import { BasicDadataCompany } from "./dadata.dto";
 
 

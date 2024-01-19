@@ -93,25 +93,18 @@ export class ApplicantController extends Controller {
           assignedVacancies: include?.includes("assignedVacancies"),
         },
       }),
-      prisma.applicant.count( { where } ),
+      prisma.applicant.count({ where }),
     ]);
 
     return new PageResponse(applicants, page, size, applicantsCount);
   }
 
-  @Delete("{id}")
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async deleteById(@Path() id: string): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
-  }
-
   @Delete("me")
-  @Response<HttpErrorBody & {"error": "Method temporarily unavailable"}>(503)
   @Security("jwt", [UserRole.APPLICANT])
-  public async deleteMe(@Request() req: JwtModel): Promise<void> {
-    throw new HttpError(503, "Method temporarily unavailable");
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.applicant.archive(req.user.id);
   }
 
   @Put("me")
@@ -136,36 +129,6 @@ export class ApplicantController extends Controller {
   ): Promise<BasicApplicant> {
     const applicant = await prisma.applicant.update({
       where: { id: req.user.id },
-      data: body,
-    });
-
-    return applicant;
-  }
-
-  @Put("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async putById(
-    @Path() id: string,
-    @Body() body: PutByIdApplicantRequest
-  ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
-      where: { id },
-      data: body,
-    });
-
-    return applicant;
-  }
-
-  @Patch("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async patchById(
-    @Path() id: string,
-    @Body() body: Partial<PutByIdApplicantRequest>
-  ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
-      where: { id },
       data: body,
     });
 
@@ -208,7 +171,7 @@ export class ApplicantController extends Controller {
     })
     if (!applicant) throw new HttpError(404, "Applicant not found")
 
-    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, 'avatar')
+    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, "avatar")
     const filePath = `applicant/${id}/${fileName}`
 
     if(fileName == null) throw new HttpError(404, "File not found")
@@ -218,8 +181,8 @@ export class ApplicantController extends Controller {
       console.log("File path: ", filePath)
       const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
-      if (fileOptions.mimeType) response.setHeader('Content-Type', fileOptions.mimeType);
-      response.setHeader('Content-Length', fileOptions.size.toString());
+      if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
+      response.setHeader("Content-Length", fileOptions.size.toString());
 
       stream.pipe(response)
       return stream
@@ -251,11 +214,27 @@ export class ApplicantController extends Controller {
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`
 
     await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, 'avatar')
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
 
     if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
 
     await this.ArtifactService.saveImageFile(file, avatarPath);
+  }
+
+  @Delete("{id}")
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const applicant = await prisma.applicant.findUnique({ where: { id } });
+
+    if(!applicant) throw new HttpError(404, "Applicant not found");
+    if (req.user.id != id && req.user.role != UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another applicant");
+
+    await prisma.applicant.archive(id);
   }
 
   @Get("{id}")
@@ -282,6 +261,36 @@ export class ApplicantController extends Controller {
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
+    return applicant;
+  }
+
+  @Patch("{id}")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async patchById(
+    @Path() id: string,
+    @Body() body: Partial<PutByIdApplicantRequest>
+  ): Promise<BasicApplicant> {
+    const applicant = await prisma.applicant.update({
+      where: { id },
+      data: body,
+    });
+
+    return applicant;
+  }
+
+  @Put("{id}")
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async putById(
+    @Path() id: string,
+    @Body() body: PutByIdApplicantRequest
+  ): Promise<BasicApplicant> {
+    const applicant = await prisma.applicant.update({
+      where: { id },
+      data: body,
+    });
+
     return applicant;
   }
 }

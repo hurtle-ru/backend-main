@@ -33,6 +33,32 @@ export class MeetingScriptTemplateController extends Controller {
     });
   }
 
+  @Get("")
+  @Security("jwt", [UserRole.MANAGER])
+  public async getAll(
+    @Request() req: JwtModel,
+    @Query() page: PageNumber = 1,
+    @Query() size: PageSizeNumber = 20,
+    @Query() include?: ("protocols" | "questions")[],
+  ): Promise<PageResponse<GetMeetingScriptTemplateResponse>> {
+    const where = {}
+
+    const [templates, templatesCount] = await Promise.all([
+      prisma.meetingScriptTemplate.findMany({
+        skip: (page - 1) * size,
+        take: size,
+        where,
+        include: {
+          protocols: include?.includes("protocols"),
+          questions: include?.includes("questions"),
+        },
+      }),
+      prisma.meetingScriptTemplate.count({ where }),
+    ])
+
+    return new PageResponse(templates, page, size, templatesCount);
+  }
+
   @Put("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404)
@@ -78,32 +104,6 @@ export class MeetingScriptTemplateController extends Controller {
     await prisma.meetingScriptTemplate.delete({
       where: { id },
     });
-  }
-
-  @Get("")
-  @Security("jwt", [UserRole.MANAGER])
-  public async getAll(
-    @Request() req: JwtModel,
-    @Query() page: PageNumber = 1,
-    @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("protocols" | "questions")[],
-  ): Promise<PageResponse<GetMeetingScriptTemplateResponse>> {
-    const where = {}
-
-    const [templates, templatesCount] = await Promise.all([
-      prisma.meetingScriptTemplate.findMany({
-        skip: (page - 1) * size,
-        take: size,
-        where,
-        include: {
-          protocols: include?.includes("protocols"),
-          questions: include?.includes("questions"),
-        },
-      }),
-      prisma.meetingScriptTemplate.count({ where }),
-    ])
-
-    return new PageResponse(templates, page, size, templatesCount);
   }
 
   @Get("{id}")

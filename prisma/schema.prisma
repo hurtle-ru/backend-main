@@ -13,8 +13,6 @@ model Applicant {
   updatedAt            DateTime  @updatedAt
   email                String    @unique
   login                String    @unique
-  password             Password  @relation(fields: [passwordId], references: [id])
-  passwordId           String    @unique
   contact              String
   firstName            String
   middleName           String?
@@ -30,12 +28,13 @@ model Applicant {
   isReadyToRelocate    Boolean?
   isVisibleToEmployers Boolean   @default(false)
   isConfirmedByManager Boolean   @default(false)
+  isEmailConfirmed     Boolean   @default(false)
   resume               Resume?
   meetings             Meeting[]
   assignedVacancies    Vacancy[] @relation("ApplicantToVacancy")
   offers               Offer[]
-  isEmailConfirmed     Boolean   @default(false)
   hhToken              HhToken?
+  password             Password?
 }
 
 model Employer {
@@ -44,8 +43,6 @@ model Employer {
   updatedAt            DateTime           @updatedAt
   email                String             @unique
   login                String             @unique
-  password             Password           @relation(fields: [passwordId], references: [id])
-  passwordId           String             @unique
   contact              String
   firstName            String
   middleName           String?
@@ -60,6 +57,7 @@ model Employer {
   isConfirmedByManager Boolean            @default(false)
   meetings             Meeting[]
   vacancies            Vacancy[]
+  password             Password?
 }
 
 model Manager {
@@ -67,25 +65,32 @@ model Manager {
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
   login        String                @unique
-  password     Password              @relation(fields: [passwordId], references: [id])
-  passwordId   String                @unique
   name         String
   accessScopes ManagerAccessScopes[]
   slots        MeetingSlot[]
+  password     Password?
 }
 
 model Password {
-  id        String     @id @default(uuid())
-  hash      String
-  manager   Manager?
-  applicant Applicant?
-  employer  Employer?
+  id   String @id @default(uuid())
+  hash String
+
+  applicant   Applicant? @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String?    @unique
+
+  employer   Employer? @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId String?   @unique
+
+  manager   Manager? @relation(fields: [managerId], references: [id], onDelete: Cascade)
+  managerId String?  @unique
 }
 
 model HhToken {
-  createdAt     DateTime  @default(now())
-  applicant     Applicant @relation(fields: [applicantId], references: [id])
-  applicantId   String    @unique
+  createdAt DateTime @default(now())
+
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String    @unique
+
   hhApplicantId String
   accessToken   String
   refreshToken  String
@@ -126,10 +131,10 @@ model Vacancy {
   workplaceModel       VacancyWorkplaceModel
   isConfirmedByManager Boolean               @default(false)
   keySkills            String[]
-  employerId           String
-  employer             Employer              @relation(fields: [employerId], references: [id])
   candidates           Applicant[]           @relation("ApplicantToVacancy")
   offers               Offer[]
+  employer             Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId           String
 }
 
 model Offer {
@@ -140,10 +145,12 @@ model Offer {
   salary         Int
   salaryCurrency Currency
   status         OfferStatus @default(PENDING)
-  vacancyId      String
-  vacancy        Vacancy     @relation(fields: [vacancyId], references: [id])
-  candidateId    String
-  candidate      Applicant   @relation(fields: [candidateId], references: [id])
+
+  vacancyId String
+  vacancy   Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  candidateId String
+  candidate   Applicant @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 }
 
 model Resume {
@@ -156,13 +163,13 @@ model Resume {
   city                 String?
   skills               String[]
   isVisibleToEmployers Boolean                      @default(false)
-  applicant            Applicant                    @relation(fields: [applicantId], references: [id])
-  applicantId          String                       @unique
   certificates         ResumeCertificate[]
   contacts             ResumeContact[]
   education            ResumeEducation[]
   experience           ResumeExperience[]
   languages            ResumeLanguage[]
+  applicant            Applicant                    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId          String                       @unique
 }
 
 model ResumeCertificate {
@@ -170,8 +177,8 @@ model ResumeCertificate {
   name        String
   description String?
   year        Int?
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
-  resume      Resume  @relation(fields: [resumeId], references: [id])
 }
 
 model ResumeContact {
@@ -180,8 +187,8 @@ model ResumeContact {
   type      ContactType
   value     String
   preferred Boolean     @default(false)
+  resume    Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId  String
-  resume    Resume      @relation(fields: [resumeId], references: [id])
 }
 
 model ResumeEducation {
@@ -191,8 +198,8 @@ model ResumeEducation {
   degree      String?
   startYear   Int?
   endYear     Int
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
-  resume      Resume  @relation(fields: [resumeId], references: [id])
 }
 
 model ResumeExperience {
@@ -204,16 +211,16 @@ model ResumeExperience {
   endMonth    Int?
   endYear     Int?
   description String?
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
-  resume      Resume  @relation(fields: [resumeId], references: [id])
 }
 
 model ResumeLanguage {
   id       String        @id @default(uuid())
   name     String
   level    LanguageLevel
+  resume   Resume        @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId String
-  resume   Resume        @relation(fields: [resumeId], references: [id])
 }
 
 model Meeting {
@@ -227,12 +234,12 @@ model Meeting {
   status          MeetingStatus           @default(PLANNED)
   feedback        MeetingFeedback[]
   scriptProtocols MeetingScriptProtocol[]
-  applicant       Applicant?              @relation(fields: [applicantId], references: [id])
-  applicantId     String?
-  employer        Employer?               @relation(fields: [employerId], references: [id])
-  employerId      String?
   slot            MeetingSlot             @relation(fields: [slotId], references: [id])
   slotId          String                  @unique
+  applicant       Applicant?              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId     String?
+  employer        Employer?               @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId      String?
 }
 
 model MeetingSlot {
@@ -241,20 +248,20 @@ model MeetingSlot {
   updatedAt DateTime      @updatedAt
   dateTime  DateTime
   types     MeetingType[]
-  managerId String
   meeting   Meeting?
   manager   Manager       @relation(fields: [managerId], references: [id])
+  managerId String
 }
 
 model MeetingScriptProtocol {
   id         String                @id @default(uuid())
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
-  meetingId  String
-  templateId String
-  meeting    Meeting               @relation(fields: [meetingId], references: [id])
-  template   MeetingScriptTemplate @relation(fields: [templateId], references: [id])
   answers    MeetingScriptAnswer[]
+  meeting    Meeting               @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId  String
+  template   MeetingScriptTemplate @relation(fields: [templateId], references: [id])
+  templateId String
 }
 
 model MeetingScriptTemplate {
@@ -282,10 +289,10 @@ model MeetingScriptAnswer {
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
   text       String
+  protocol   MeetingScriptProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
   protocolId String
-  questionId String
-  protocol   MeetingScriptProtocol @relation(fields: [protocolId], references: [id])
   question   MeetingScriptQuestion @relation(fields: [questionId], references: [id])
+  questionId String
 }
 
 model MeetingFeedback {
@@ -294,8 +301,8 @@ model MeetingFeedback {
   updatedAt DateTime @updatedAt
   name      String
   text      String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId String
-  meeting   Meeting  @relation(fields: [meetingId], references: [id])
 }
 
 model PartnershipInquiry {
@@ -307,6 +314,19 @@ model PartnershipInquiry {
   contact            String
   email              String
   status             PartnershipInquiryStatus @default(PENDING)
+}
+
+model SoftArchive {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  originalId String
+  modelName  String
+  payload    Json
+}
+
+model University {
+  id   Int    @id @default(autoincrement())
+  name String @unique
 }
 
 enum ContactType {
@@ -399,6 +419,12 @@ enum VacancyWorkplaceModel {
   OFFICE
   HYBRID
   REMOTE
+}
+
+enum VacancyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 enum OfferStatus {

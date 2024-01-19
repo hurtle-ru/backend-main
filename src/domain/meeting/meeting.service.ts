@@ -4,7 +4,7 @@ import { MeetingTypeByRole } from "./meeting.dto";
 import { MeetingType } from "@prisma/client";
 import { UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
-import moment from 'moment-timezone';
+import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { MailService } from "../../external/mail/mail.service";

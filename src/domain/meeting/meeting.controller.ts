@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Path, Post, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { MeetingService } from "./meeting.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
@@ -282,8 +282,34 @@ export class MeetingController extends Controller {
     const oldVideoFileName = await this.artifactService.getFullFileName(videoDirectory, "video");
 
     if (oldVideoFileName !== null) this.artifactService.deleteFile(videoDirectory + oldVideoFileName);
-    
+
     await this.artifactService.saveVideoFile(file, videoPath);
+  }
+
+  @Delete("me")
+  @Security("jwt", [UserRole.EMPLOYER])
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.meeting.archive(req.user.id);
+  }
+
+  @Delete("{id}")
+  @Response<HttpErrorBody & {"error": "Not enough rights to delete another meeting"}>(403)
+  @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
+  @Security("jwt", [UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true } })
+    if(!meeting) throw new HttpError(404, "Meeting not found");
+
+    if (req.user.id !== meeting?.slot.managerId) {
+      throw new HttpError(403, "Not enough rights to delete another meeting")
+    }
+
+    await prisma.meeting.archive(id);
   }
 
   @Get("{id}")
