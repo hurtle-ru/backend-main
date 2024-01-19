@@ -16,6 +16,11 @@ export const managerPrismaExtension = Prisma.defineExtension({
   },
   model: {
     manager: {
+
+      /*
+      * На момент 19.01.2024+ каскадное удаление не проводится для slots.
+      * Но они будет включены в архив во избежание потери данных об авторстве слотов.
+      **/
       async archive(id: string) {
         const context = Prisma.getExtensionContext(this);
         const manager = await prisma.manager.findUnique(
@@ -29,17 +34,7 @@ export const managerPrismaExtension = Prisma.defineExtension({
 
         if (!manager) throw new HttpError(404, "Manager not found");
 
-        await prisma.$transaction([
-          prisma.password.deleteMany( { where: { manager: { id: manager.id} } } ),
-
-          prisma.meetingFeedback.deleteMany( { where: { meeting: { employerId: id } } } ),
-          prisma.meetingScriptAnswer.deleteMany( { where: { protocol: { meeting: { slot: { managerId: manager.id} } } } } ),
-          prisma.meetingScriptProtocol.deleteMany( { where: { meeting: { slot: { managerId: manager.id} } } } ),
-          prisma.meeting.deleteMany( { where: { slot: { managerId: manager.id } } } ),
-
-          prisma.manager.delete( { where: {id} } ),
-        ]);
-
+        await prisma.manager.delete({ where: {id} });
         await prisma.softArchive.create({
           data: {
             modelName: context.name,

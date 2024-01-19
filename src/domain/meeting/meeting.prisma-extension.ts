@@ -8,25 +8,21 @@ export const meetingPrismaExtension = Prisma.defineExtension({
     meeting: {
       async archive(id: string) {
         const context = Prisma.getExtensionContext(this);
-        const meeting = await prisma.meeting.findUnique(
-          {
-            where: {id},
+        const meeting = await prisma.meeting.findUnique({
+            where: { id },
             include: {
               feedback: true,
-              scriptProtocols: true,
+              scriptProtocols: {
+                include: {
+                  answers: true,
+                },
+              },
             },
-          })
+        });
 
         if (!meeting) throw new HttpError(404, "Meeting not found");
 
-        await prisma.$transaction([
-          prisma.meetingFeedback.deleteMany( { where: { meeting: { id } } } ),
-          prisma.meetingScriptAnswer.deleteMany( { where: { protocol: { meeting: { id } } } } ),
-          prisma.meetingScriptProtocol.deleteMany( { where: { meeting: { id } } } ),
-
-          prisma.meeting.delete( { where: { id } } ),
-        ]);
-
+        await prisma.meeting.delete({ where: { id } });
         await prisma.softArchive.create({
           data: {
             modelName: context.name,

@@ -231,7 +231,6 @@ export class VacancyController extends Controller {
   }
 
   @Delete("{id}")
-
   @Response<HttpErrorBody & {"error": "Not enough rights to delete another vacancy"}>(403)
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
