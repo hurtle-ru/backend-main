@@ -5,8 +5,7 @@ import * as yup from "yup";
 export type BasicResume = Omit<
   University,
   | "id"
-  | "shortName"
-  | "fullName"
+  | "name"
 >;
 
 export class GetUniversitiesRequest {
