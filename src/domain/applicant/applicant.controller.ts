@@ -229,7 +229,7 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const applicant = await prisma.applicant.findUnique({ where: { id } })
+    const applicant = await prisma.applicant.findUnique({ where: { id } });
 
     if(!applicant) throw new HttpError(404, "Applicant not found");
     if (req.user.id != id && req.user.role != UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another applicant");

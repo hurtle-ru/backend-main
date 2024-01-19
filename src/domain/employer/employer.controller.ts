@@ -173,12 +173,10 @@ export class EmployerController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const employer = await prisma.employer.findUnique({where: { id }})
-    if(!employer) throw new HttpError(404, "Employer not found");
+    const employer = await prisma.employer.findUnique({ where: { id } })
 
-    if (req.user.id != id && req.user.role != UserRole.MANAGER) {
-      throw new HttpError(403, "Not enough rights to edit another employer");
-    }
+    if(!employer) throw new HttpError(404, "Employer not found");
+    if (req.user.id != id && req.user.role != UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another employer");
 
     await prisma.employer.archive(id);
   }

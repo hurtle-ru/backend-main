@@ -231,7 +231,7 @@ export class VacancyController extends Controller {
   }
 
   @Delete("{id}")
-  @Response<HttpErrorBody & {"error": "Not enough rights to delete another vacancy"}>(403)
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another vacancy"}>(403)
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   public async deleteById(
@@ -242,9 +242,9 @@ export class VacancyController extends Controller {
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
     if (req.user.id !== vacancy.employerId && req.user.role != UserRole.MANAGER) {
-      throw new HttpError(403, "Not enough rights to delete another vacancy")
+      throw new HttpError(403, "Not enough rights to edit another vacancy")
     }
 
-    await prisma.vacancy.delete({where: { id } });
+    await prisma.vacancy.delete({where: { id }});
   }
 }

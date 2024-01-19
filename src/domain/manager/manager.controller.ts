@@ -38,6 +38,15 @@ export class ManagerController extends Controller {
     return manager;
   }
 
+  @Delete("me")
+  @Security("jwt", [UserRole.MANAGER])
+  public async deleteMe(
+    @Request() req: JwtModel
+  ): Promise<void> {
+    await prisma.manager.archive(req.user.id);
+  }
+
+  @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
   @Security("jwt", [UserRole.MANAGER])
   public async deleteById(
@@ -48,14 +57,6 @@ export class ManagerController extends Controller {
     if(!manager) throw new HttpError(404, "Manager not found")
 
     await prisma.manager.archive(id);
-  }
-
-  @Delete("me")
-  @Security("jwt", [UserRole.MANAGER])
-  public async deleteMe(
-    @Request() req: JwtModel
-  ): Promise<void> {
-    await prisma.manager.archive(req.user.id);
   }
 
   @Put("me")
