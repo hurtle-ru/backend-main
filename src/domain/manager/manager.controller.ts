@@ -45,7 +45,7 @@ export class ManagerController extends Controller {
     @Request() req: JwtModel,
   ): Promise<void> {
     const manager = await prisma.manager.findUnique({where: { id }})
-    if(!manager) throw new HttpError(400, "Manager not found")
+    if(!manager) throw new HttpError(404, "Manager not found")
 
     await prisma.manager.archive(id);
   }
