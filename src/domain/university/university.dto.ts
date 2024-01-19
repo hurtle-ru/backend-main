@@ -10,6 +10,6 @@ export type BasicUniversity = Omit<
 
 export class GetAllUniversitiesRequest {
   static schema = yup.object({
-    search: yup.string().trim().min(2),
+    search: yup.string().trim().min(3),
   });
 }
