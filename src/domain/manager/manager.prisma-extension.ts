@@ -1,6 +1,6 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from '../../infrastructure/database/prismaClient';
-import { HttpError } from '../../infrastructure/error/httpError';
+import { Prisma } from "@prisma/client"
+import { prisma } from "../../infrastructure/database/prismaClient";
+import { HttpError } from "../../infrastructure/error/httpError";
 
 
 export const managerPrismaExtension = Prisma.defineExtension({
