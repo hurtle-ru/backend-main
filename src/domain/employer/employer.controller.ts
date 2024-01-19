@@ -60,7 +60,7 @@ export class EmployerController extends Controller {
           vacancies: include?.includes("vacancies"),
         },
       }),
-      prisma.employer.count( { where }),
+      prisma.employer.count({ where }),
     ]);
 
     return new PageResponse(employers, page, size, employersCount);

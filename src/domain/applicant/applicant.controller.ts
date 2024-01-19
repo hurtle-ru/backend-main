@@ -93,7 +93,7 @@ export class ApplicantController extends Controller {
           assignedVacancies: include?.includes("assignedVacancies"),
         },
       }),
-      prisma.applicant.count( { where } ),
+      prisma.applicant.count({ where }),
     ]);
 
     return new PageResponse(applicants, page, size, applicantsCount);
