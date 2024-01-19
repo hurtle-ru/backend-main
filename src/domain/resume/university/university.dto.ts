@@ -2,14 +2,14 @@ import { University } from "@prisma/client";
 import * as yup from "yup";
 
 
-export type BasicResume = Omit<
+export type BasicUniversity = Omit<
   University,
   | "id"
   | "name"
 >;
 
-export class GetUniversitiesRequest {
+export class GetAllUniversitiesRequest {
   static schema = yup.object({
-    search: yup.string().email().min(2),
+    search: yup.string().trim().min(2),
   });
-}
+};

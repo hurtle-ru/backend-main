@@ -1,24 +1,23 @@
-import { Route, Get, Tags, Query, Security } from "tsoa";
+import { Get, Query, Route, Security, Tags } from "tsoa";
 import { prisma } from "../../../infrastructure/database/prismaClient";
 import { UserRole } from "../../auth/auth.dto";
-import { BasicResume, GetUniversitiesRequest } from "./university.dto"
+import { BasicUniversity, GetAllUniversitiesRequest } from "./university.dto";
 
 @Route("universities")
 @Tags("University")
 export class UniversityController {
   @Get("")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
-  async getUniversities(
+  @Security("jwt", [UserRole.APPLICANT])
+  async getAll(
     @Query() search: string,
-): Promise<BasicResume[]> {
-  GetUniversitiesRequest.schema.validateSync({search})
+): Promise<BasicUniversity[]> {
+    GetAllUniversitiesRequest.schema.validateSync({ search });
 
-  const universities = await prisma.university.findMany({
-    where: {
-      name: { startsWith: search },
-    },
-    take: 5,
-  });
-  return universities;
+    return prisma.university.findMany({
+      where: {
+        name: { startsWith: search },
+      },
+      take: 5,
+    });
   }
 }
