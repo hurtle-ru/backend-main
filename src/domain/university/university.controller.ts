@@ -20,7 +20,7 @@ export class UniversityController {
       where: {
         name: {
           contains: search,
-          mode: 'insensitive',
+          mode: "insensitive",
         },
       },
       take: 5,

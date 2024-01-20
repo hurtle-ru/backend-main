@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import csvParser from 'csv-parser';
-import { PrismaClient } from '.prisma/client';
+import * as fs from "fs";
+import csvParser from "csv-parser";
+import { PrismaClient } from ".prisma/client";
 
 const prisma = new PrismaClient();
 const TRANSACTION_BATCH_SIZE = 200; // To avoid Postgres 54000 error
@@ -10,11 +10,11 @@ const seedUniversities = async () => {
 
   try {
     await new Promise<void>((resolve, reject) => {
-      fs.createReadStream('./prisma/seed/universities.csv')
+      fs.createReadStream("./prisma/seed/universities.csv")
         .pipe(csvParser())
-        .on('data', (data) => universities.push({ name: data.name }))
-        .on('end', resolve)
-        .on('error', reject);
+        .on("data", (data) => universities.push({ name: data.name }))
+        .on("end", resolve)
+        .on("error", reject);
     });
 
     for (let i = 0; i < universities.length; i += TRANSACTION_BATCH_SIZE) {
