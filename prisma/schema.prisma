@@ -26,7 +26,7 @@ model Applicant {
   specialty            String?
   nickname             String?   @unique
   isReadyToRelocate    Boolean?
-  isVisibleToEmployers Boolean   @default(false)
+  isVisibleToEmployers Boolean   @default(true)
   isConfirmedByManager Boolean   @default(false)
   isEmailConfirmed     Boolean   @default(false)
   resume               Resume?
@@ -154,22 +154,24 @@ model Offer {
 }
 
 model Resume {
-  id                   String                       @id @default(uuid())
-  createdAt            DateTime                     @default(now())
-  importedFrom         ResumeImportExternalService?
-  importedId           String?
-  title                String
-  summary              String?
-  city                 String?
-  skills               String[]
-  isVisibleToEmployers Boolean                      @default(false)
-  certificates         ResumeCertificate[]
-  contacts             ResumeContact[]
-  education            ResumeEducation[]
-  experience           ResumeExperience[]
-  languages            ResumeLanguage[]
-  applicant            Applicant                    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  applicantId          String                       @unique
+  id                    String                       @id @default(uuid())
+  createdAt             DateTime                     @default(now())
+  importedFrom          ResumeImportExternalService?
+  importedId            String?
+  title                 String
+  summary               String?
+  city                  String?
+  skills                String[]
+  isVisibleToEmployers  Boolean                      @default(true)
+  desiredSalary         Int?
+  desiredSalaryCurrency Currency?
+  certificates          ResumeCertificate[]
+  contacts              ResumeContact[]
+  education             ResumeEducation[]
+  experience            ResumeExperience[]
+  languages             ResumeLanguage[]
+  applicant             Applicant                    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId           String                       @unique
 }
 
 model ResumeCertificate {
