@@ -1,7 +1,7 @@
 import momentTimezone from "moment-timezone";
 import moment from "moment";
 import {
-  ContactType,
+  ContactType, Currency,
   LanguageLevel,
   Resume,
   ResumeCertificate,
@@ -27,6 +27,11 @@ type MappedLanguage = Omit<ResumeLanguage, "resumeId" | "id">;
 type MappedExperience = Omit<ResumeExperience, "resumeId" | "id">
 type MappedEducation = Omit<ResumeEducation, "resumeId" | "id" | "startYear">
 type MappedCertificate = Omit<ResumeCertificate, "resumeId" | "id">
+type MappedDesiredSalary = {
+  desiredSalary: number | null;
+  desiredSalaryCurrency: MappedCurrency | null;
+}
+type MappedCurrency = Currency;
 
 @injectable()
 @singleton()
@@ -41,6 +46,7 @@ export class HhResumeMapper {
       city: hhResume.area?.name ?? null,
       skills: hhResume.skillSet,
       summary: hhResume.skills ?? null,
+      ...this.mapDesiredSalary(hhResume.salary),
       contacts: hhResume.contact.map(this.mapContact),
       languages: hhResume.language.map(this.mapLanguage),
       experience: hhResume.experience.map(this.mapExperience),
@@ -53,6 +59,20 @@ export class HhResumeMapper {
       ],
       isVisibleToEmployers: false,
     };
+  }
+
+  mapDesiredSalary(hhSalary: hh.Salary): MappedDesiredSalary {
+    return {
+      desiredSalary: hhSalary.amount,
+      desiredSalaryCurrency: this.mapCurrency(hhSalary.currency),
+    }
+  }
+
+  mapCurrency(hhCurrency: hh.Currency): MappedCurrency | null {
+    if(hhCurrency.code === "RUR") return "RUB";
+    if (!Object.values(Currency).includes(hhCurrency.code as keyof typeof Currency)) return null;
+
+    return hhCurrency.code as Currency;
   }
 
   mapContact(hhContact: hh.Contact): MappedContact {
