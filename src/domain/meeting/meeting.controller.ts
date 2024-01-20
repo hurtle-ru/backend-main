@@ -285,6 +285,7 @@ export class MeetingController extends Controller {
 
     await this.artifactService.saveVideoFile(file, videoPath);
   }
+
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "Not enough rights to delete another meeting"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)

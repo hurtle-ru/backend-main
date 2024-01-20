@@ -13,22 +13,34 @@ export namespace hh {
     middleName?: string;
   }
 
-  export interface Gender {
-    id: string;
-    name: string;
-  }
-
   export interface Resume extends ResumePreview {
     createdAt: string; // @see DateTimeFormat
     area?: Area | null;
     skillSet: string[];
     skills?: string;
+    salary: Salary;
     contact: Contact[];
     language: Language[];
     totalExperience: { months: number };
     education: Education;
     experience: Experience[];
   }
+
+  export interface Gender {
+    id: string;
+    name: string;
+  }
+
+  export interface Salary {
+    amount: number;
+    currency: Currency;
+  }
+
+  export interface Currency {
+    "code": typeof currencyCodes[number];
+  }
+
+  export const currencyCodes = ["AZN", "BYR", "EUR", "GEL", "KGS", "KZT", "RUR", "UAH", "USD", "UZS"] as const;
 
   export interface Contact {
     comment?: string;
