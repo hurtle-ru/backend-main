@@ -23,14 +23,13 @@ export const managerPrismaExtension = Prisma.defineExtension({
       **/
       async archive(id: string) {
         const context = Prisma.getExtensionContext(this);
-        const manager = await prisma.manager.findUnique(
-          {
-            where: {id},
-            include: {
-              password: true,
-              slots: true,
-            },
-          })
+        const manager = await prisma.manager.findUnique({
+          where: { id },
+          include: {
+            password: true,
+            slots: true,
+          },
+        });
 
         if (!manager) throw new HttpError(404, "Manager not found");
 
