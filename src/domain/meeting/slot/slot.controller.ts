@@ -55,19 +55,19 @@ export class MeetingSlotController extends Controller {
     @Query() size: PageSizeNumber = 60,
     @Query() types?: MeetingType[],
     @Query() available: boolean = true,
-    @Query() fromDateTime?: Date,
-    @Query() toDateTime?: Date,
+    @Query() afterDateTime?: Date,
+    @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
-    if(!available && req.user.role !== UserRole.MANAGER)
+    if(req.user.role !== UserRole.MANAGER && !available)
       throw new HttpError(403, "Only available slots are accessible to employers and applicants");
 
     const where = {
       meeting: available ? null : undefined,
       types: types ? { hasSome: types } : undefined,
       dateTime: {
-        ...(fromDateTime && { gte: fromDateTime }),
-        ...(toDateTime && { lte: toDateTime }),
-        ...(available && { gte: new Date() }),
+        ...(afterDateTime && { gte: afterDateTime }),
+        ...(beforeDateTime && { lte: beforeDateTime }),
+        ...(available && (!afterDateTime || afterDateTime < new Date()) && { gte: new Date() }),
       },
     }
 
@@ -90,9 +90,8 @@ export class MeetingSlotController extends Controller {
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 60,
     @Query() types?: MeetingType[],
-    @Query() available: boolean = true,
-    @Query() fromDateTime?: Date,
-    @Query() toDateTime?: Date,
+    @Query() afterDateTime?: Date,
+    @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
     const where = {
       managerId: req.user.role === UserRole.MANAGER ? req.user.id : undefined,
@@ -102,9 +101,8 @@ export class MeetingSlotController extends Controller {
       },
       types: types ? { hasSome: types } : undefined,
       dateTime: {
-        ...(fromDateTime && { gte: fromDateTime }),
-        ...(toDateTime && { lte: toDateTime }),
-        ...(available && { gte: new Date() }),
+        ...(afterDateTime && { gte: afterDateTime }),
+        ...(beforeDateTime && { lte: beforeDateTime }),
       },
     };
 
