@@ -16,11 +16,11 @@ import {
   Tags,
 } from "tsoa";
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
-import { CreateAccessTokenRequest, CreateAccessTokenResponse, JwtModel, UserRole } from "../../auth/auth.dto";
-import { HttpErrorBody } from "../../../infrastructure/error/httpError";
-import { CreateHhAccessTokenResponse } from "./auth.dto";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { JwtModel, UserRole } from "../../auth/auth.dto";
+import { HttpErrorBody } from "../../../infrastructure/error/http.error";
+import { PutMeHhAuthorizationCodeRequest } from "./auth.dto";
 import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 
 
 @injectable()
@@ -44,11 +44,11 @@ export class HhAuthController extends Controller {
   @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
   @Security("jwt", [UserRole.APPLICANT])
-  public async putMeAuthorizationCode(
+  public async putMeHhAuthorizationCode(
     @Request() req: JwtModel,
-    @Body() authorizationCode: string,
+    @Body() body: PutMeHhAuthorizationCodeRequest,
   ): Promise<void> {
-    const hhToken = await this.hhAuthService.createToken(authorizationCode);
+    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
 
     await prisma.hhToken.create({

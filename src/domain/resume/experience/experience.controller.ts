@@ -16,8 +16,8 @@ import {
   Tags,
   TsoaResponse,
 } from "tsoa";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeExperience, CreateResumeExperienceRequest, PutResumeExperienceRequest } from "./experience.dto";
 
@@ -84,7 +84,7 @@ export class ResumeExperienceController extends Controller {
     if (!experience) throw new HttpError(404, "ResumeExperience not found");
 
     await prisma.resumeExperience.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

@@ -6,8 +6,8 @@ import {
   RegisterEmployerRequest,
   UserRole,
 } from "./auth.dto";
-import { prisma } from "../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
@@ -45,7 +45,7 @@ export class AuthController extends Controller {
       },
     }
 
-    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery)
+    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery);
     if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findQuery);
     if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery);
 

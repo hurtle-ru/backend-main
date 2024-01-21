@@ -16,8 +16,8 @@ import {
   Tags,
   TsoaResponse,
 } from "tsoa";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeContact, CreateResumeContactRequest, PutResumeContactRequest } from "./contact.dto";
 
@@ -84,7 +84,7 @@ export class ResumeContactController extends Controller {
     if (!contact) throw new HttpError(404, "ResumeContact not found");
 
     await prisma.resumeContact.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

@@ -1,6 +1,6 @@
 import { singleton } from "tsyringe";
 import axios from "axios";
-import { HttpError } from "../../../infrastructure/error/httpError";
+import { HttpError } from "../../../infrastructure/error/http.error";
 import camelize from "../../../util/camelize";
 import { BasicApplicant, ExtendedApplicant } from "./applicant.dto";
 import { HhResumeService } from "../resume/resume.service";
@@ -32,10 +32,10 @@ export class HhApplicantService {
       birthDate: null,
     };
 
-    const response = await this.hhResumeService.getMine(accessToken)
+    const response = await this.hhResumeService.getMine(accessToken);
     response.forEach((resume) => {
-      extendedApplicant.birthDate = resume.birthDate ?? extendedApplicant.birthDate
-      extendedApplicant.gender = resume.gender ?? extendedApplicant.gender
+      extendedApplicant.birthDate = resume.birthDate ?? extendedApplicant.birthDate;
+      extendedApplicant.gender = resume.gender ?? extendedApplicant.gender;
     });
 
     return extendedApplicant;

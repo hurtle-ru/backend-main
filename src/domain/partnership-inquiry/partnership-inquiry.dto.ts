@@ -1,4 +1,5 @@
 import { PartnershipInquiry } from "@prisma/client";
+import { PartnershipInquiryStatus } from "@prisma/client";
 
 export type BasicPartnershipInquiry = PartnershipInquiry;
 
@@ -10,3 +11,7 @@ export type CreatePartnershipInquiryRequest = Pick<
   | "email"
   | "status"
 >
+
+export type PutByIdPartnershipInquiryStatus = {
+  status: PartnershipInquiryStatus
+}

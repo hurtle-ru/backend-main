@@ -1,13 +1,16 @@
 import { Body, Controller, Get, Path, Post, Put, Query, Response, Route, Security, Tags } from "tsoa";
-import { BasicPartnershipInquiry, CreatePartnershipInquiryRequest } from "./partnership-inquiry.dto";
-import { prisma } from "../../infrastructure/database/prismaClient";
+import {
+  BasicPartnershipInquiry,
+  CreatePartnershipInquiryRequest,
+  PutByIdPartnershipInquiryStatus,
+} from "./partnership-inquiry.dto";
 import { UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
-import { PartnershipInquiryStatus } from "@prisma/client";
 import { injectable } from "tsyringe";
 import { PartnershipInquiryService } from "./partnership-inquiry.service";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 
 
 @injectable()
@@ -55,7 +58,7 @@ export class PartnershipInquiryController extends Controller {
   @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
   public async putStatus(
     @Path() id: string,
-    @Body() status: PartnershipInquiryStatus,
+    @Body() body: PutByIdPartnershipInquiryStatus,
   ): Promise<BasicPartnershipInquiry> {
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
       where: { id },
@@ -65,7 +68,7 @@ export class PartnershipInquiryController extends Controller {
 
     return prisma.partnershipInquiry.update({
       where: { id },
-      data: { status },
+      data: { status: body.status },
     });
   }
 

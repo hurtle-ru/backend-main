@@ -16,13 +16,12 @@ import {
 } from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
-import { prisma } from "../../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { MeetingType } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
-import { UtcDate } from "../../../infrastructure/controller/date/date.dto";
 
 
 @injectable()
@@ -54,17 +53,22 @@ export class MeetingSlotController extends Controller {
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 60,
-    @Query() available: boolean = true,
     @Query() types?: MeetingType[],
-    @Query() date?: UtcDate,
+    @Query() available: boolean = true,
+    @Query() afterDateTime?: Date,
+    @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
-    if(!available && req.user.role !== UserRole.MANAGER)
+    if(req.user.role !== UserRole.MANAGER && !available)
       throw new HttpError(403, "Only available slots are accessible to employers and applicants");
 
     const where = {
       meeting: available ? null : undefined,
       types: types ? { hasSome: types } : undefined,
-      dateTime: date ? this.slotService.createFullDayUtcDateRange(date) : undefined,
+      dateTime: {
+        ...(afterDateTime && { gte: afterDateTime }),
+        ...(beforeDateTime && { lte: beforeDateTime }),
+        ...(available && (!afterDateTime || afterDateTime < new Date()) && { gte: new Date() }),
+      },
     }
 
     const [meetingSlots, meetingSlotsCount] = await Promise.all([
@@ -74,7 +78,7 @@ export class MeetingSlotController extends Controller {
         take: size,
       }),
       prisma.meetingSlot.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(meetingSlots, page, size, meetingSlotsCount)
   }
@@ -86,7 +90,8 @@ export class MeetingSlotController extends Controller {
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 60,
     @Query() types?: MeetingType[],
-    @Query() date?: UtcDate,
+    @Query() afterDateTime?: Date,
+    @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
     const where = {
       managerId: req.user.role === UserRole.MANAGER ? req.user.id : undefined,
@@ -95,8 +100,11 @@ export class MeetingSlotController extends Controller {
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
       },
       types: types ? { hasSome: types } : undefined,
-      dateTime: date ? this.slotService.createFullDayUtcDateRange(date) : undefined,
-    }
+      dateTime: {
+        ...(afterDateTime && { gte: afterDateTime }),
+        ...(beforeDateTime && { lte: beforeDateTime }),
+      },
+    };
 
     const [meetingSlots, meetingSlotsCount] = await Promise.all([
       prisma.meetingSlot.findMany({
@@ -158,13 +166,10 @@ export class MeetingSlotController extends Controller {
     @Path() id: string,
     @Query() include?: ("meeting" | "manager")[]
   ): Promise<GetMeetingSlotResponse> {
-    let where: any = { dateTime: {  gte: new Date() } };
-    if(req.user.role === UserRole.MANAGER) where = {...where, id };
-    else if(req.user.role === UserRole.EMPLOYER) where = {...where, id, meeting: { employerId: req.user.id } };
-    else if(req.user.role === UserRole.APPLICANT) where = {...where, id, meeting: { applicantId: req.user.id }};
+    const where = this.slotService.buildAccessWhereQuery(req.user.role, req.user.id, id);
 
     const meetingSlot = await prisma.meetingSlot.findUnique({
-      where: where!,
+      where,
       include: {
         meeting: include?.includes("meeting"),
         manager: include?.includes("manager"),

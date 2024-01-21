@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 export namespace hh {
   export const DateTimeFormatWithTimeZone = "YYYY-MM-DDTHH:mm:ssZ";
-  export const DateFormat = "YYYY-MM-DD";
 
   export interface ResumePreview {
     id: string;

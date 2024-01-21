@@ -16,9 +16,9 @@ import {
   Tags,
 } from "tsoa";
 import { BasicVacancy, CreateVacancyRequest, GetVacancyResponse, PutVacancyRequest } from "./vacancy.dto";
-import { prisma } from "../../infrastructure/database/prismaClient";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../auth/auth.dto";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 
@@ -238,11 +238,11 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const vacancy = await prisma.vacancy.findUnique({where: { id }})
+    const vacancy = await prisma.vacancy.findUnique({where: { id }});
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
     if (req.user.id !== vacancy.employerId && req.user.role != UserRole.MANAGER) {
-      throw new HttpError(403, "Not enough rights to edit another vacancy")
+      throw new HttpError(403, "Not enough rights to edit another vacancy");
     }
 
     await prisma.vacancy.delete({where: { id }});

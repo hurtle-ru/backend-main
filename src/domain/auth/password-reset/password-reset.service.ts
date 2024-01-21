@@ -14,6 +14,6 @@ export class PasswordResetService {
     await this.mailService.sendEmail(email, "Сброс пароля", {
       name: "reset-password",
       context: { link },
-    })
+    });
   }
 }

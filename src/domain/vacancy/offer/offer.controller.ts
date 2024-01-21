@@ -1,9 +1,9 @@
 import { injectable } from "tsyringe";
 import { Body, Controller, Get, Patch, Path, Post, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { BasicOffer, CreateOfferRequest, GetOfferResponse, PutOfferRequest } from "./offer.dto";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { OfferStatus } from "@prisma/client";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";

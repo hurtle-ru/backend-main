@@ -1,7 +1,6 @@
 import { Applicant } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
-import { boolean } from "yup";
 import { BasicResume } from "../resume/resume.dto";
 
 

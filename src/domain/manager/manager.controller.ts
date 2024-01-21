@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
-import { prisma } from "../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { BasicManager, GetManagerResponse, PutMeManagerRequest } from "./manager.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { injectable } from "tsyringe";
@@ -53,8 +53,8 @@ export class ManagerController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const manager = await prisma.manager.findUnique({where: { id }})
-    if(!manager) throw new HttpError(404, "Manager not found")
+    const manager = await prisma.manager.findUnique({ where: { id } });
+    if(!manager) throw new HttpError(404, "Manager not found");
 
     await prisma.manager.archive(id);
   }
@@ -79,13 +79,12 @@ export class ManagerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: Partial<PutMeManagerRequest>
   ): Promise<BasicManager> {
-    const manager = await prisma.manager.update({
+    return prisma.manager.update({
       where: { id: req.user.id },
       data: body,
     });
-
-    return manager;
   }
+
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found" | "Manager not found"}>(404)
@@ -95,13 +94,14 @@ export class ManagerController extends Controller {
   ): Promise<Readable | any> {
       const manager = await prisma.manager.findUnique({
         where: {id},
-      })
-      if (!manager) throw new HttpError(404, "Manager not found")
+      });
 
-      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, "avatar")
-      const filePath = `manager/${id}/${fileName}`
+      if (!manager) throw new HttpError(404, "Manager not found");
 
-      if(fileName == null) throw new HttpError(404, "File not found")
+      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, "avatar");
+      const filePath = `manager/${id}/${fileName}`;
+
+      if(fileName == null) throw new HttpError(404, "File not found");
 
       const response = req.res;
       if (response) {
@@ -110,8 +110,8 @@ export class ManagerController extends Controller {
         if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
         response.setHeader("Content-Length", fileOptions.size.toString());
 
-        stream.pipe(response)
-        return stream
+        stream.pipe(response);
+        return stream;
       }
   }
 
@@ -130,22 +130,18 @@ export class ManagerController extends Controller {
       where: {id},
     })
 
-    if (!manager) throw new HttpError(404, "Manager not found")
+    if (!manager) throw new HttpError(404, "Manager not found");
 
-    if (req.user.id !== id) {
-      throw new HttpError(403, "Not enough rights to edit another manager")
-    }
+    if (req.user.id !== id) throw new HttpError(403, "Not enough rights to edit another manager");
 
-    const avatarExtension = path.extname(file.originalname)
-    const avatarDirectory = `manager/${id}/`
-    const avatarPath = avatarDirectory + `avatar${avatarExtension}`
+    const avatarExtension = path.extname(file.originalname);
+    const avatarDirectory = `manager/${id}/`;
+    const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
 
-    if (oldAvatarFileName !== null) {
-      this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)
-    }
+    if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
     await this.ArtifactService.saveImageFile(file, avatarPath);
   }
 }
