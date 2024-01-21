@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
-import { prisma } from "../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { BasicEmployer, PutByIdEmployerRequest, PutMeEmployerRequest, GetEmployerResponse } from "./employer.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";

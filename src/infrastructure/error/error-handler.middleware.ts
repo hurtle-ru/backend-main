@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ValidateError } from "@tsoa/runtime";
-import { HttpError, HttpErrorBody } from "./httpError";
+import { HttpError, HttpErrorBody } from "./http.error";
 import { ValidationError } from "yup";
 
 export default (err: any, req: Request, res: Response, next: NextFunction) => {

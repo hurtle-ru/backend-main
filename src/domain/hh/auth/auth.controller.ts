@@ -17,9 +17,9 @@ import {
 } from "tsoa";
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
 import { CreateAccessTokenRequest, CreateAccessTokenResponse, JwtModel, UserRole } from "../../auth/auth.dto";
-import { HttpErrorBody } from "../../../infrastructure/error/httpError";
+import { HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { CreateHhAccessTokenResponse } from "./auth.dto";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
 
 

@@ -3,8 +3,8 @@ import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Respons
 import { MeetingService } from "./meeting.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
-import { prisma } from "../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import {Request as ExpressRequest} from "express";

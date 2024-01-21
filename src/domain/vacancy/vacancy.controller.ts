@@ -16,9 +16,9 @@ import {
   Tags,
 } from "tsoa";
 import { BasicVacancy, CreateVacancyRequest, GetVacancyResponse, PutVacancyRequest } from "./vacancy.dto";
-import { prisma } from "../../infrastructure/database/prismaClient";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../auth/auth.dto";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 

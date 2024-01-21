@@ -1,6 +1,6 @@
 import { Body, Controller, Path, Post, Query, Response, Route, Tags } from "tsoa";
-import { prisma } from "../../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { Applicant, Employer } from "@prisma/client";
 import { UserRole } from "../auth.dto";
 import { injectable } from "tsyringe";

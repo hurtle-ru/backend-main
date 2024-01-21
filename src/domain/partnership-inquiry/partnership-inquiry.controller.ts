@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Path, Post, Put, Query, Response, Route, Security, Tags } from "tsoa";
 import { BasicPartnershipInquiry, CreatePartnershipInquiryRequest } from "./partnership-inquiry.dto";
-import { prisma } from "../../infrastructure/database/prismaClient";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 import { UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PartnershipInquiryStatus } from "@prisma/client";
 import { injectable } from "tsyringe";
 import { PartnershipInquiryService } from "./partnership-inquiry.service";

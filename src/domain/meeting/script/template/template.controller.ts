@@ -2,8 +2,8 @@ import { injectable } from "tsyringe";
 import { Body, Controller, Delete, Get, Path, Post, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
 import { MeetingScriptTemplateService } from "./template.service";
 import { JwtModel, UserRole } from "../../../auth/auth.dto";
-import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/httpError";
-import { prisma } from "../../../../infrastructure/database/prismaClient";
+import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.error";
+import { prisma } from "../../../../infrastructure/database/prisma.provider";
 import {
   BasicMeetingScriptTemplate,
   CreateMeetingScriptTemplateRequest, GetMeetingScriptTemplateResponse,

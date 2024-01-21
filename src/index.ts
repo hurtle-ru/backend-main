@@ -1,11 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
-import requestLogger from "./infrastructure/logger/requestLogger";
-import errorHandler from "./infrastructure/error/errorHandler";
+import requestLogger from "./infrastructure/logger/request-logger.middleware";
+import errorHandler from "./infrastructure/error/error-handler.middleware";
 import { setupSwaggerRoutes } from "./infrastructure/openapi/openapiRoutes";
 import { RegisterRoutes } from "./route/routes";
 import { appConfig } from "./infrastructure/app.config";
-import cors from "./infrastructure/cors/cors";
+import cors from "./infrastructure/cors/cors.provider";
 import * as Sentry from "@sentry/node";
 import { ProfilingIntegration } from "@sentry/profiling-node";
 

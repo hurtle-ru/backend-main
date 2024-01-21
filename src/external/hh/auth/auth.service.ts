@@ -2,10 +2,10 @@ import { singleton } from "tsyringe";
 import axios from "axios";
 import qs from "qs";
 import { hhConfig } from "../hh.config";
-import { HttpError } from "../../../infrastructure/error/httpError";
+import { HttpError } from "../../../infrastructure/error/http.error";
 import { BasicHhToken } from "./auth.dto";
 import { HhToken } from "@prisma/client";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 
 
 @singleton()

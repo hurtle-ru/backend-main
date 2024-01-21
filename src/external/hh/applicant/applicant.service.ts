@@ -1,6 +1,6 @@
 import { singleton } from "tsyringe";
 import axios from "axios";
-import { HttpError } from "../../../infrastructure/error/httpError";
+import { HttpError } from "../../../infrastructure/error/http.error";
 import camelize from "../../../util/camelize";
 import { BasicApplicant, ExtendedApplicant } from "./applicant.dto";
 import { HhResumeService } from "../resume/resume.service";

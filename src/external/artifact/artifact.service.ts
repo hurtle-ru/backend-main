@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import * as path from "path";
-import { HttpError } from "../../infrastructure/error/httpError";
+import { HttpError } from "../../infrastructure/error/http.error";
 import { BaseFileOptions } from "./artifact.dto"
 import { promisify } from "util";
 import { createReadStream, stat, unlinkSync} from "fs";
