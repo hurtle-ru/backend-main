@@ -84,7 +84,7 @@ export class ResumeExperienceController extends Controller {
     if (!experience) throw new HttpError(404, "ResumeExperience not found");
 
     await prisma.resumeExperience.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

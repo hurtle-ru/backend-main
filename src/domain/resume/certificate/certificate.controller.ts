@@ -84,7 +84,7 @@ export class ResumeCertificateController extends Controller {
     if (!certificate) throw new HttpError(404, "ResumeCertificate not found");
 
     await prisma.resumeCertificate.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

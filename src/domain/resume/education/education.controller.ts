@@ -84,7 +84,7 @@ export class ResumeEducationController extends Controller {
     if (!education) throw new HttpError(404, "ResumeEducation not found");
 
     await prisma.resumeEducation.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

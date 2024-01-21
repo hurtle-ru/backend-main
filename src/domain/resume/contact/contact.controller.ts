@@ -84,7 +84,7 @@ export class ResumeContactController extends Controller {
     if (!contact) throw new HttpError(404, "ResumeContact not found");
 
     await prisma.resumeContact.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

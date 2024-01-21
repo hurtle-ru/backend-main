@@ -84,7 +84,7 @@ export class ResumeLanguageController extends Controller {
     if (!language) throw new HttpError(404, "ResumeLanguage not found");
 
     await prisma.resumeLanguage.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }
