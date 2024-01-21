@@ -15,9 +15,7 @@ const app = express();
 Sentry.init({
   dsn: appConfig.SENTRY_DSN,
   integrations: [
-    // enable HTTP calls tracing
     new Sentry.Integrations.Http({ tracing: true }),
-    // enable Express.js middleware tracing
     new Sentry.Integrations.Express({ app }),
     new ProfilingIntegration(),
   ],
@@ -27,10 +25,7 @@ Sentry.init({
   environment: appConfig.NODE_ENV,
 });
 
-// The request handler must be the first middleware on the app
 app.use(Sentry.Handlers.requestHandler());
-
-// TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
 app.use(requestLogger);
