@@ -136,13 +136,17 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}/status")
+  @Response<HttpErrorBody & {"error": "Applicant can only get his own status"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   public async getApplicantStatus(
     @Request() req: JwtModel,
+    @Path() id: string,
   ): Promise<GetApplicantStatusResponse> {
+    if(req.user.role === UserRole.APPLICANT && req.user.id !== id) throw new HttpError(403, "Applicant can only get his own status");
+
     const applicant = await prisma.applicant.findUnique({
-      where: { id: req.user.id },
+      where: { id },
       select: {
         isEmailConfirmed: true,
         resume: true,
