@@ -27,10 +27,6 @@ type MappedLanguage = Omit<ResumeLanguage, "resumeId" | "id">;
 type MappedExperience = Omit<ResumeExperience, "resumeId" | "id">
 type MappedEducation = Omit<ResumeEducation, "resumeId" | "id" | "startYear">
 type MappedCertificate = Omit<ResumeCertificate, "resumeId" | "id">
-type MappedDesiredSalary = {
-  desiredSalary: number | null;
-  desiredSalaryCurrency: MappedCurrency | null;
-}
 type MappedCurrency = Currency;
 
 @injectable()
