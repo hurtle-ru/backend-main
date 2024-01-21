@@ -171,24 +171,25 @@ export class ApplicantController extends Controller {
   ): Promise<Readable | any> {
     const applicant = await prisma.applicant.findUnique({
       where: {id},
-    })
-    if (!applicant) throw new HttpError(404, "Applicant not found")
+    });
 
-    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, "avatar")
-    const filePath = `applicant/${id}/${fileName}`
+    if (!applicant) throw new HttpError(404, "Applicant not found");
 
-    if(fileName == null) throw new HttpError(404, "File not found")
+    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, "avatar");
+    const filePath = `applicant/${id}/${fileName}`;
+
+    if(fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
-      console.log("File path: ", filePath)
+      console.log("File path: ", filePath);
       const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
 
-      stream.pipe(response)
-      return stream
+      stream.pipe(response);
+      return stream;
     }
   }
 
@@ -203,21 +204,18 @@ export class ApplicantController extends Controller {
       @UploadedFile() file: Express.Multer.File,
       @Path() id: string,
   ): Promise<void> {
-    const applicant = await prisma.applicant.findUnique({
-      where: {id},
-    })
-    if (!applicant) throw new HttpError(404, "Applicant not found")
+    const applicant = await prisma.applicant.findUnique({ where: { id } });
+    if (!applicant) throw new HttpError(404, "Applicant not found");
 
-    if (req.user.role !== UserRole.MANAGER && req.user.id !== id) {
-      throw new HttpError(403, "Not enough rights to edit another applicant")
-    }
+    if (req.user.role !== UserRole.MANAGER && req.user.id !== id)
+      throw new HttpError(403, "Not enough rights to edit another applicant");
 
-    const avatarExtension = path.extname(file.originalname)
-    const avatarDirectory = `applicant/${id}/`
-    const avatarPath = avatarDirectory + `avatar${avatarExtension}`
+    const avatarExtension = path.extname(file.originalname);
+    const avatarDirectory = `applicant/${id}/`;
+    const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
 
     if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
 

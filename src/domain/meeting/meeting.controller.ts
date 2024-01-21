@@ -63,8 +63,8 @@ export class MeetingController extends Controller {
       select: { firstName: true, lastName: true, email: true },
     };
 
-    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs)
-    else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs)
+    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs);
+    else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs);
 
     const roomUrl = await this.meetingService.createRoom(body.type, user!);
     const meeting = await prisma.meeting.create({
@@ -167,13 +167,13 @@ export class MeetingController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
   ): Promise<Readable | any> {
-    const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport")
-    const filePath = `meeting/${id}/${fileName}`
+    const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport");
+    const filePath = `meeting/${id}/${fileName}`;
     
-    const meeting = await prisma.meeting.findUnique({where: {id}})
+    const meeting = await prisma.meeting.findUnique({where: {id}});
 
-    if (!meeting) throw new HttpError(404, "Meeting not found")
-    if(fileName == null) throw new HttpError(404, "File not found")
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+    if(fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
@@ -182,8 +182,8 @@ export class MeetingController extends Controller {
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
 
-      stream.pipe(response)
-      return stream
+      stream.pipe(response);
+      return stream;
     }
   }
 
@@ -227,13 +227,13 @@ export class MeetingController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
   ): Promise<Readable | any> {
-    const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video")
-    const filePath = `meeting/${id}/${fileName}`
+    const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video");
+    const filePath = `meeting/${id}/${fileName}`;
 
-    if(fileName == null) throw new HttpError(404, "File not found")
-    const meeting = await prisma.meeting.findUnique({where: {id}})
+    if(fileName == null) throw new HttpError(404, "File not found");
+    const meeting = await prisma.meeting.findUnique({where: {id}});
 
-    if (!meeting) throw new HttpError(404, "Meeting not found")
+    if (!meeting) throw new HttpError(404, "Meeting not found");
 
     const response = req.res;
     if (response) {
@@ -242,16 +242,16 @@ export class MeetingController extends Controller {
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
 
-      stream.pipe(response)
+      stream.pipe(response);
       response.on("close", () => {
         try {
           stream.destroy();
         }
         catch (e) {
-          console.log("Error:", e)
+          console.log("Error:", e);
         }
       });
-      return stream
+      return stream;
     }
   }
 
@@ -269,14 +269,14 @@ export class MeetingController extends Controller {
     const meeting = await prisma.meeting.findUnique({
       where: {id},
       include: {slot: true},
-    })
+    });
 
-    if (!meeting) throw new HttpError(404, "Meeting not found")
+    if (!meeting) throw new HttpError(404, "Meeting not found");
     if (req.user.id !== meeting?.slot.managerId) throw new HttpError(403, "Not enough rights to edit another applicant");
 
-    const videoExtension = path.extname(file.originalname)
-    const videoDirectory = `meeting/${id}/`
-    const videoPath = videoDirectory + `video${videoExtension}`
+    const videoExtension = path.extname(file.originalname);
+    const videoDirectory = `meeting/${id}/`;
+    const videoPath = videoDirectory + `video${videoExtension}`;
 
     await this.artifactService.validateFileAttributes(file, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE);
     const oldVideoFileName = await this.artifactService.getFullFileName(videoDirectory, "video");
@@ -294,12 +294,11 @@ export class MeetingController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true } })
+    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true } });
     if(!meeting) throw new HttpError(404, "Meeting not found");
 
-    if (req.user.id !== meeting?.slot.managerId) {
-      throw new HttpError(403, "Not enough rights to delete another meeting")
-    }
+    if (req.user.id !== meeting?.slot.managerId)
+      throw new HttpError(403, "Not enough rights to delete another meeting");
 
     await prisma.meeting.archive(id);
   }

@@ -39,7 +39,7 @@ export class EmailVerificationController extends Controller {
     if(req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { id: req.user.id } });
     if(req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { id: req.user.id } });
 
-    await this.emailVerificationService.sendEmail(user!.email, code)
+    await this.emailVerificationService.sendEmail(user!.email, code);
   }
 
   @Post("{code}")
@@ -57,11 +57,11 @@ export class EmailVerificationController extends Controller {
           code: code,
         },
       });
+
       await prisma.applicant.update({
         where: { id: req.user.id },
-        data: {isEmailConfirmed: true},
-      }
-    )
+        data: { isEmailConfirmed: true },
+      });
     } catch (e) {
       console.log(`Error: ${e}`);
       throw new HttpError(404, "Invalid code");

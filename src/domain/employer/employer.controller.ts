@@ -111,13 +111,14 @@ export class EmployerController extends Controller {
   ): Promise<Readable | any> {
     const employer = await prisma.employer.findUnique({
       where: {id},
-    })
-    if (!employer) throw new HttpError(404, "Employer not found")
+    });
 
-    const fileName = await this.ArtifactService.getFullFileName(`employer/${id}/`, "avatar")
-    const filePath = `employer/${id}/${fileName}`
+    if (!employer) throw new HttpError(404, "Employer not found");
 
-    if(fileName == null) throw new HttpError(404, "File not found")
+    const fileName = await this.ArtifactService.getFullFileName(`employer/${id}/`, "avatar");
+    const filePath = `employer/${id}/${fileName}`;
+
+    if(fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
@@ -126,8 +127,8 @@ export class EmployerController extends Controller {
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
 
-      stream.pipe(response)
-      return stream
+      stream.pipe(response);
+      return stream;
     }
   }
 
@@ -144,24 +145,23 @@ export class EmployerController extends Controller {
   ): Promise<void> {
     const employer = await prisma.employer.findUnique({
       where: {id},
-    })
+    });
 
-    if (!employer) throw new HttpError(404, "Employer not found")
+    if (!employer) throw new HttpError(404, "Employer not found");
 
-    if (req.user.role !== UserRole.MANAGER && req.user.id !== id) {
-      throw new HttpError(403, "Not enough rights to edit another employer")
-    }
+    if (req.user.role !== UserRole.MANAGER && req.user.id !== id)
+      throw new HttpError(403, "Not enough rights to edit another employer");
 
-    const avatarExtension = path.extname(file.originalname)
-    const avatarDirectory = `employer/${id}/`
-    const avatarPath = avatarDirectory + `avatar${avatarExtension}`
+    const avatarExtension = path.extname(file.originalname);
+    const avatarDirectory = `employer/${id}/`;
+    const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
 
-    if (oldAvatarFileName !== null) {
-      this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)
-    }
+    if (oldAvatarFileName !== null)
+      this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
+
     await this.ArtifactService.saveImageFile(file, avatarPath);
   }
 
@@ -173,7 +173,7 @@ export class EmployerController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const employer = await prisma.employer.findUnique({ where: { id } })
+    const employer = await prisma.employer.findUnique({ where: { id } });
 
     if(!employer) throw new HttpError(404, "Employer not found");
     if (req.user.id != id && req.user.role != UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another employer");

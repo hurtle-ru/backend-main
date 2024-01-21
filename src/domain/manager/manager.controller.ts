@@ -53,8 +53,8 @@ export class ManagerController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const manager = await prisma.manager.findUnique({where: { id }})
-    if(!manager) throw new HttpError(404, "Manager not found")
+    const manager = await prisma.manager.findUnique({ where: { id } });
+    if(!manager) throw new HttpError(404, "Manager not found");
 
     await prisma.manager.archive(id);
   }
@@ -94,13 +94,14 @@ export class ManagerController extends Controller {
   ): Promise<Readable | any> {
       const manager = await prisma.manager.findUnique({
         where: {id},
-      })
-      if (!manager) throw new HttpError(404, "Manager not found")
+      });
 
-      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, "avatar")
-      const filePath = `manager/${id}/${fileName}`
+      if (!manager) throw new HttpError(404, "Manager not found");
 
-      if(fileName == null) throw new HttpError(404, "File not found")
+      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, "avatar");
+      const filePath = `manager/${id}/${fileName}`;
+
+      if(fileName == null) throw new HttpError(404, "File not found");
 
       const response = req.res;
       if (response) {
@@ -109,8 +110,8 @@ export class ManagerController extends Controller {
         if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
         response.setHeader("Content-Length", fileOptions.size.toString());
 
-        stream.pipe(response)
-        return stream
+        stream.pipe(response);
+        return stream;
       }
   }
 
@@ -129,22 +130,18 @@ export class ManagerController extends Controller {
       where: {id},
     })
 
-    if (!manager) throw new HttpError(404, "Manager not found")
+    if (!manager) throw new HttpError(404, "Manager not found");
 
-    if (req.user.id !== id) {
-      throw new HttpError(403, "Not enough rights to edit another manager")
-    }
+    if (req.user.id !== id) throw new HttpError(403, "Not enough rights to edit another manager");
 
-    const avatarExtension = path.extname(file.originalname)
-    const avatarDirectory = `manager/${id}/`
-    const avatarPath = avatarDirectory + `avatar${avatarExtension}`
+    const avatarExtension = path.extname(file.originalname);
+    const avatarDirectory = `manager/${id}/`;
+    const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
 
-    if (oldAvatarFileName !== null) {
-      this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName)
-    }
+    if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
     await this.ArtifactService.saveImageFile(file, avatarPath);
   }
 }

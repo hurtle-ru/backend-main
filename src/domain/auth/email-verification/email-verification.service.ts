@@ -18,6 +18,6 @@ export class EmailVerificationService {
     await this.mailService.sendEmail(email, "Подтверждение почты", {
       name: "verify-email",
       context: { link, code },
-    })
+    });
   }
 }

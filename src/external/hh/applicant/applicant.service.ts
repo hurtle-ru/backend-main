@@ -32,10 +32,10 @@ export class HhApplicantService {
       birthDate: null,
     };
 
-    const response = await this.hhResumeService.getMine(accessToken)
+    const response = await this.hhResumeService.getMine(accessToken);
     response.forEach((resume) => {
-      extendedApplicant.birthDate = resume.birthDate ?? extendedApplicant.birthDate
-      extendedApplicant.gender = resume.gender ?? extendedApplicant.gender
+      extendedApplicant.birthDate = resume.birthDate ?? extendedApplicant.birthDate;
+      extendedApplicant.gender = resume.gender ?? extendedApplicant.gender;
     });
 
     return extendedApplicant;

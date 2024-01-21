@@ -30,7 +30,7 @@ async function saveMulterFile(file: Express.Multer.File, filePath: string): Prom
     await fs.mkdir(directory, { recursive: true });
     await fs.writeFile(filePath, file.buffer);
 
-    console.log(`succeed save save file ${filePath}`, directory)
+    console.log(`succeed save save file ${filePath}`, directory);
     return filePath;
   } catch (err) {
     console.log(err);
@@ -123,10 +123,10 @@ export class ArtifactService {
   }
   async validateFileAttributes(file: Express.Multer.File, availableMimeTypes?: string[],  maxSize?: number) {
     if (!!maxSize && file.size > maxSize) {
-      throw new HttpError(413, "File is too large")
+      throw new HttpError(413, "File is too large");
     }
     if (!!availableMimeTypes && !availableMimeTypes.includes(file.mimetype)) {
-      throw new HttpError(415, `Invalid file mime type: "${file.mimetype}"`)
+      throw new HttpError(415, `Invalid file mime type: "${file.mimetype}"`);
     }
   }
 }

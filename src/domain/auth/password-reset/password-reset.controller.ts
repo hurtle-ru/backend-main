@@ -36,7 +36,7 @@ export class PasswordResetController extends Controller {
       data: { email, role },
     });
 
-    await this.passwordResetService.sendEmail(email, passwordResetRequest.code)
+    await this.passwordResetService.sendEmail(email, passwordResetRequest.code);
   }
 
   @Post("{code}")
