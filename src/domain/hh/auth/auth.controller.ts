@@ -16,11 +16,11 @@ import {
   Tags,
 } from "tsoa";
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
-import { CreateAccessTokenRequest, CreateAccessTokenResponse, JwtModel, UserRole } from "../../auth/auth.dto";
+import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { CreateHhAccessTokenResponse } from "./auth.dto";
-import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { PutMeHhAccessTokenRequest } from "./auth.dto";
 import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 
 
 @injectable()
@@ -46,9 +46,9 @@ export class HhAuthController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async putMeAuthorizationCode(
     @Request() req: JwtModel,
-    @Body() authorizationCode: string,
+    @Body() body: PutMeHhAccessTokenRequest,
   ): Promise<void> {
-    const hhToken = await this.hhAuthService.createToken(authorizationCode);
+    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
 
     await prisma.hhToken.create({
