@@ -16,13 +16,13 @@ import {
 } from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
-import { prisma } from "../../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { MeetingType } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
-import { UtcDate } from "../../../infrastructure/controller/date/date.dto";
+import { DateWithoutTime, UtcDate } from "../../../infrastructure/controller/date/date.dto";
 
 
 @injectable()
