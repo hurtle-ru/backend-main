@@ -2,7 +2,7 @@ import { Body, Controller, Get, Path, Post, Put, Query, Response, Route, Securit
 import {
   BasicPartnershipInquiry,
   CreatePartnershipInquiryRequest,
-  PutPartnershipInquiryStatus,
+  PutByIdPartnershipInquiryStatus,
 } from "./partnership-inquiry.dto";
 import { UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -58,7 +58,7 @@ export class PartnershipInquiryController extends Controller {
   @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
   public async putStatus(
     @Path() id: string,
-    @Body() body: PutPartnershipInquiryStatus,
+    @Body() body: PutByIdPartnershipInquiryStatus,
   ): Promise<BasicPartnershipInquiry> {
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
       where: { id },
