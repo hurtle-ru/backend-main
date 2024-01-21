@@ -274,12 +274,13 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutByIdApplicantRequest>
   ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
-      where: { id },
+    const where = { id };
+    if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
+
+    return prisma.applicant.update({
+      where,
       data: body,
     });
-
-    return applicant;
   }
 
   @Put("{id}")
@@ -289,11 +290,12 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: PutByIdApplicantRequest
   ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
-      where: { id },
+    const where = { id };
+    if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
+
+    return prisma.applicant.update({
+      where,
       data: body,
     });
-
-    return applicant;
   }
 }

@@ -79,13 +79,12 @@ export class ManagerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: Partial<PutMeManagerRequest>
   ): Promise<BasicManager> {
-    const manager = await prisma.manager.update({
+    return prisma.manager.update({
       where: { id: req.user.id },
       data: body,
     });
-
-    return manager;
   }
+
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found" | "Manager not found"}>(404)

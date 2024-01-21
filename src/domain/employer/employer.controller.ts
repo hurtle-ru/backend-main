@@ -188,12 +188,13 @@ export class EmployerController extends Controller {
     @Path() id: string,
     @Body() body: PutByIdEmployerRequest
   ): Promise<BasicEmployer> {
-    const employer = await prisma.employer.update({
-      where: { id },
+    const where = { id };
+    if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
+
+    return prisma.employer.update({
+      where,
       data: body,
     });
-
-    return employer;
   }
 
   @Patch("{id}")
@@ -203,12 +204,13 @@ export class EmployerController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutByIdEmployerRequest>
   ): Promise<BasicEmployer> {
-    const employer = await prisma.employer.update({
-      where: { id },
+    const where = { id };
+    if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
+
+    return prisma.employer.update({
+      where,
       data: body,
     });
-
-    return employer;
   }
 
   @Get("{id}")

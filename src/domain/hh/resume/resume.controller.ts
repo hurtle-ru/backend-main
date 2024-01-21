@@ -81,7 +81,7 @@ export class HhResumeController extends Controller {
     const hhResume = await this.hhResumeService.getById(hhToken.accessToken, id);
     const mappedResume = this.hhResumeMapper.mapResume(hhResume);
 
-    return await prisma.resume.create({
+    return prisma.resume.create({
       data: {
         applicantId: req.user.id,
         importedFrom: "HH",
