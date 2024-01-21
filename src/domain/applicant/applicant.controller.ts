@@ -58,7 +58,6 @@ export class ApplicantController extends Controller {
       },
     });
 
-
     if (!applicant) throw new HttpError(404, "Applicant not found");
     return applicant;
   }
