@@ -46,7 +46,8 @@ export class HhResumeMapper {
       city: hhResume.area?.name ?? null,
       skills: hhResume.skillSet,
       summary: hhResume.skills ?? null,
-      ...this.mapDesiredSalary(hhResume.salary),
+      desiredSalary: hhResume.salary?.amount ?? null,
+      desiredSalaryCurrency: hhResume.salary?.currency ? this.mapCurrency(hhResume.salary.currency) : null,
       contacts: hhResume.contact.map(this.mapContact),
       languages: hhResume.language.map(this.mapLanguage),
       experience: hhResume.experience.map(this.mapExperience),
@@ -59,13 +60,6 @@ export class HhResumeMapper {
       ],
       isVisibleToEmployers: false,
     };
-  }
-
-  mapDesiredSalary(hhSalary: hh.Salary): MappedDesiredSalary {
-    return {
-      desiredSalary: hhSalary.amount,
-      desiredSalaryCurrency: this.mapCurrency(hhSalary.currency),
-    }
   }
 
   mapCurrency(hhCurrency: hh.Currency): MappedCurrency | null {
