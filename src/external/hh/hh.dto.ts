@@ -33,7 +33,7 @@ export namespace hh {
 
   export interface Salary {
     amount: number;
-    currency: Currency;
+    currency: typeof currencyCodes[number];
   }
 
   export interface Currency {

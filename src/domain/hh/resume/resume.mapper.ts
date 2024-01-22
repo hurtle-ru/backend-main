@@ -68,11 +68,11 @@ export class HhResumeMapper {
     }
   }
 
-  mapCurrency(hhCurrency: hh.Currency): MappedCurrency | null {
-    if(hhCurrency.code === "RUR") return "RUB";
-    if (!Object.values(Currency).includes(hhCurrency.code as keyof typeof Currency)) return null;
+  mapCurrency(hhCurrency: typeof hh.currencyCodes[number]): MappedCurrency | null {
+    if(hhCurrency === "RUR") return "RUB";
+    if (!Object.values(Currency).includes(hhCurrency)) return null;
 
-    return hhCurrency.code as Currency;
+    return hhCurrency as Currency;
   }
 
   mapContact(hhContact: hh.Contact): MappedContact {
