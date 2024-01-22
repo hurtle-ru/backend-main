@@ -334,8 +334,10 @@ model SoftArchive {
 }
 
 model University {
-  id   Int    @id @default(autoincrement())
-  name String @unique
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  shortName String?
+  logoUrl   String?
 }
 
 enum ContactType {
