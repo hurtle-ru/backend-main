@@ -27,6 +27,11 @@ export type PutMeEmployerRequest = Pick<
   | "inn"
   | "ogrn"
   | "legalForm"
+  | "city"
+  | "isStartup"
+  | "size"
+  | "website"
+  | "description"
 >
 
 export type PutByIdEmployerRequest = Pick<
@@ -45,4 +50,9 @@ export type PutByIdEmployerRequest = Pick<
   | "agreementNumber"
   | "agreementDate"
   | "isConfirmedByManager"
+  | "city"
+  | "isStartup"
+  | "size"
+  | "website"
+  | "description"
 >

@@ -55,6 +55,11 @@ model Employer {
   agreementNumber      String?
   agreementDate        DateTime?
   isConfirmedByManager Boolean            @default(false)
+  city                 String?
+  isStartup            Boolean            @default(false)
+  size                 EmployerSize?
+  website              String?
+  description          String?
   meetings             Meeting[]
   vacancies            Vacancy[]
   password             Password?
@@ -377,8 +382,12 @@ enum EmployerLegalForm {
   NKO
 }
 
-enum ManagerAccessScopes {
-  NONE
+enum EmployerSize {
+  LESS_THAN_15
+  BETWEEN_15_AND_50
+  BETWEEN_50_AND_100
+  BETWEEN_100_AND_500
+  MORE_THAN_500
 }
 
 enum VacancyExperience {
@@ -455,4 +464,8 @@ enum MeetingStatus {
 enum Gender {
   MALE
   FEMALE
+}
+
+enum ManagerAccessScopes {
+  NONE
 }
