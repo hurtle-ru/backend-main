@@ -16,8 +16,8 @@ import {
   Tags,
   TsoaResponse,
 } from "tsoa";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeEducation, CreateResumeEducationRequest, PutResumeEducationRequest } from "./education.dto";
 
@@ -84,7 +84,7 @@ export class ResumeEducationController extends Controller {
     if (!education) throw new HttpError(404, "ResumeEducation not found");
 
     await prisma.resumeEducation.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

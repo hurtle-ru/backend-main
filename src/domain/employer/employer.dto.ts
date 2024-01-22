@@ -6,7 +6,6 @@ import { BasicVacancy } from "../vacancy/vacancy.dto";
 export type BasicEmployer = Omit<
   Employer,
   | "password"
-  | "passwordId"
   | "meetings"
   | "vacancies"
 >;
@@ -27,6 +26,11 @@ export type PutMeEmployerRequest = Pick<
   | "inn"
   | "ogrn"
   | "legalForm"
+  | "city"
+  | "isStartup"
+  | "size"
+  | "website"
+  | "description"
 >
 
 export type PutByIdEmployerRequest = Pick<
@@ -45,4 +49,9 @@ export type PutByIdEmployerRequest = Pick<
   | "agreementNumber"
   | "agreementDate"
   | "isConfirmedByManager"
+  | "city"
+  | "isStartup"
+  | "size"
+  | "website"
+  | "description"
 >

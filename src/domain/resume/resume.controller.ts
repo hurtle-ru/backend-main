@@ -15,9 +15,9 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { prisma } from "../../infrastructure/database/prismaClient";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../auth/auth.dto";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import {
   BasicResume,
   CreateResumeRequest,

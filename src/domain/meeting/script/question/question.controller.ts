@@ -15,8 +15,8 @@ import {
   Tags,
 } from "tsoa";
 import { JwtModel, UserRole } from "../../../auth/auth.dto";
-import { prisma } from "../../../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/httpError";
+import { prisma } from "../../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.error";
 import { MeetingScriptQuestionService } from "./question.service";
 import {
   BasicMeetingScriptQuestion,

@@ -1,9 +1,9 @@
 import { Request } from "express";
 import jwt from "jsonwebtoken";
 import { JwtModel, UserRole } from "./auth.dto";
-import { HttpError } from "../../infrastructure/error/httpError";
+import { HttpError } from "../../infrastructure/error/http.error";
 import { authConfig } from "./auth.config";
-import { prisma } from "../../infrastructure/database/prismaClient";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 
 
 /**

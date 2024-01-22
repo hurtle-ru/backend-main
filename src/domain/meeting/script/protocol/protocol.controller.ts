@@ -16,8 +16,8 @@ import {
 } from "tsoa";
 import { MeetingScriptProtocolService } from "./protocol.service";
 import { JwtModel, UserRole } from "../../../auth/auth.dto";
-import { prisma } from "../../../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/httpError";
+import { prisma } from "../../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.error";
 import {
   BasicMeetingScriptProtocol,
   CreateMeetingScriptProtocolRequest,

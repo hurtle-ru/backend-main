@@ -1,7 +1,5 @@
-export type CreateHhAccessTokenResponse = {
-  "authorizationCode": string,
-}
 
-export type PutMeHhAccessTokenRequest = {
+
+export type PutMeHhAuthorizationCodeRequest = {
   authorizationCode: string,
 }

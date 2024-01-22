@@ -16,8 +16,8 @@ import {
   Tags,
   TsoaResponse,
 } from "tsoa";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
-import { prisma } from "../../../infrastructure/database/prismaClient";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeLanguage, CreateResumeLanguageRequest, PutResumeLanguageRequest } from "./language.dto";
 
@@ -84,7 +84,7 @@ export class ResumeLanguageController extends Controller {
     if (!language) throw new HttpError(404, "ResumeLanguage not found");
 
     await prisma.resumeLanguage.update({
-      where: { id: id },
+      where,
       data: body,
     });
   }

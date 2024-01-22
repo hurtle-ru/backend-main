@@ -11,7 +11,7 @@ ENV DATABASE_URL=$DATABASE_URL
 ENV BACKEND_PORT=$BACKEND_PORT
 
 # Устанавливаем временную зону
-ENV TZ=Europe/Moscow
+ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Копируем только package.json и package-lock.json сначала, чтобы использовать кэш Docker

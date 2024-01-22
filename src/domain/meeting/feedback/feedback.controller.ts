@@ -22,8 +22,8 @@ import {
   GetMeetingFeedbackResponse,
   PutMeetingFeedbackRequest,
 } from "./feedback.dto";
-import { prisma } from "../../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../../infrastructure/error/httpError";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 

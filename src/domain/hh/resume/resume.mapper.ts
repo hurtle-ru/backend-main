@@ -27,10 +27,6 @@ type MappedLanguage = Omit<ResumeLanguage, "resumeId" | "id">;
 type MappedExperience = Omit<ResumeExperience, "resumeId" | "id">
 type MappedEducation = Omit<ResumeEducation, "resumeId" | "id" | "startYear">
 type MappedCertificate = Omit<ResumeCertificate, "resumeId" | "id">
-type MappedDesiredSalary = {
-  desiredSalary: number | null;
-  desiredSalaryCurrency: MappedCurrency | null;
-}
 type MappedCurrency = Currency;
 
 @injectable()
@@ -46,7 +42,8 @@ export class HhResumeMapper {
       city: hhResume.area?.name ?? null,
       skills: hhResume.skillSet,
       summary: hhResume.skills ?? null,
-      ...this.mapDesiredSalary(hhResume.salary),
+      desiredSalary: hhResume.salary?.amount ?? null,
+      desiredSalaryCurrency: hhResume.salary?.currency ? this.mapCurrency(hhResume.salary.currency) : null,
       contacts: hhResume.contact.map(this.mapContact),
       languages: hhResume.language.map(this.mapLanguage),
       experience: hhResume.experience.map(this.mapExperience),

@@ -12,10 +12,10 @@ export class AuthService {
   }
 
   async generatePasswordHash(password: string) {
-    return await bcrypt.hash(password, 12)
+    return await bcrypt.hash(password, 12);
   }
 
   async comparePasswords(password: string, passwordHash: string) {
-    return await bcrypt.compare(password, passwordHash)
+    return await bcrypt.compare(password, passwordHash);
   }
 }

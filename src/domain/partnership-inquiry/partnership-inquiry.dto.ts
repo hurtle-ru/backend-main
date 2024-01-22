@@ -12,6 +12,6 @@ export type CreatePartnershipInquiryRequest = Pick<
   | "status"
 >
 
-export type PutPartnershipInquiryStatus = {
+export type PutByIdPartnershipInquiryStatus = {
   status: PartnershipInquiryStatus
 }

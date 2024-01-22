@@ -46,7 +46,7 @@ export class MailService {
 
   loadTemplate(templateName: string, context: any): string {
     const templatePath = path.join(process.cwd(), `resources/email-templates/${templateName}.template.html`);
-    const templateHtml = fs.readFileSync(templatePath, "utf8")
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
     return renderTemplate(templateHtml, context);
   }
 }

@@ -55,6 +55,11 @@ model Employer {
   agreementNumber      String?
   agreementDate        DateTime?
   isConfirmedByManager Boolean            @default(false)
+  city                 String?
+  isStartup            Boolean            @default(false)
+  size                 EmployerSize?
+  website              String?
+  description          String?
   meetings             Meeting[]
   vacancies            Vacancy[]
   password             Password?
@@ -114,27 +119,29 @@ model PasswordResetReqeust {
 }
 
 model Vacancy {
-  id                   String                @id @default(uuid())
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  name                 String
-  teamRole             VacancyTeamRole
-  description          String
-  salary               Int
-  salaryCurrency       Currency
-  experience           VacancyExperience
-  employmentType       VacancyEmploymentType
-  price                Int?
-  city                 String
-  reportingForm        VacancyReportingForm
-  workingHours         VacancyWorkingHours
-  workplaceModel       VacancyWorkplaceModel
-  isConfirmedByManager Boolean               @default(false)
-  keySkills            String[]
-  candidates           Applicant[]           @relation("ApplicantToVacancy")
-  offers               Offer[]
-  employer             Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  employerId           String
+  id                       String                @id @default(uuid())
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  name                     String
+  teamRole                 VacancyTeamRole
+  description              String
+  shortDescription         String?
+  uniqueViewerApplicantIds String[]
+  salary                   Int
+  salaryCurrency           Currency
+  experience               VacancyExperience
+  employmentType           VacancyEmploymentType
+  price                    Int?
+  city                     String
+  reportingForm            VacancyReportingForm
+  workingHours             VacancyWorkingHours
+  workplaceModel           VacancyWorkplaceModel
+  isConfirmedByManager     Boolean               @default(false)
+  keySkills                String[]
+  candidates               Applicant[]           @relation("ApplicantToVacancy")
+  offers                   Offer[]
+  employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId               String
 }
 
 model Offer {
@@ -327,8 +334,10 @@ model SoftArchive {
 }
 
 model University {
-  id   Int    @id @default(autoincrement())
-  name String @unique
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  shortName String?
+  logoUrl   String?
 }
 
 enum ContactType {
@@ -378,8 +387,12 @@ enum EmployerLegalForm {
   NKO
 }
 
-enum ManagerAccessScopes {
-  NONE
+enum EmployerSize {
+  LESS_THAN_15
+  BETWEEN_15_AND_50
+  BETWEEN_50_AND_100
+  BETWEEN_100_AND_500
+  MORE_THAN_500
 }
 
 enum VacancyExperience {
@@ -456,4 +469,8 @@ enum MeetingStatus {
 enum Gender {
   MALE
   FEMALE
+}
+
+enum ManagerAccessScopes {
+  NONE
 }

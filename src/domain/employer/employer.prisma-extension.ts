@@ -1,19 +1,9 @@
 import { Prisma } from "@prisma/client";
-import { prisma } from "../../infrastructure/database/prismaClient";
-import { HttpError } from "../../infrastructure/error/httpError";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError } from "../../infrastructure/error/http.error";
 
 
 export const employerPrismaExtension = Prisma.defineExtension({
-  result: {
-    employer: {
-      passwordId: {
-        needs: {},
-        compute() {
-          return undefined;
-        },
-      },
-    },
-  },
   model: {
     employer: {
       async archive(id: string) {

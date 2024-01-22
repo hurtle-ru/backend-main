@@ -1,14 +1,12 @@
 import { Applicant } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
-import { boolean } from "yup";
 import { BasicResume } from "../resume/resume.dto";
 
 
 export type BasicApplicant = Omit<
   Applicant,
   | "password"
-  | "passwordId"
   | "resume"
   | "meetings"
   | "assignedVacancies"

@@ -14,8 +14,8 @@ import {
   Tags,
   UploadedFile,
 } from "tsoa";
-import { prisma } from "../../infrastructure/database/prismaClient";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/httpError";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import {
   BasicApplicant,
   GetApplicantResponse,
@@ -57,7 +57,6 @@ export class ApplicantController extends Controller {
         assignedVacancies: include?.includes("assignedVacancies"),
       },
     });
-
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
     return applicant;
@@ -136,13 +135,17 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}/status")
+  @Response<HttpErrorBody & {"error": "Applicant can only get his own status"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   public async getApplicantStatus(
     @Request() req: JwtModel,
+    @Path() id: string,
   ): Promise<GetApplicantStatusResponse> {
+    if(req.user.role === UserRole.APPLICANT && req.user.id !== id) throw new HttpError(403, "Applicant can only get his own status");
+
     const applicant = await prisma.applicant.findUnique({
-      where: { id: req.user.id },
+      where: { id },
       select: {
         isEmailConfirmed: true,
         resume: true,
@@ -168,24 +171,25 @@ export class ApplicantController extends Controller {
   ): Promise<Readable | any> {
     const applicant = await prisma.applicant.findUnique({
       where: {id},
-    })
-    if (!applicant) throw new HttpError(404, "Applicant not found")
+    });
 
-    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, "avatar")
-    const filePath = `applicant/${id}/${fileName}`
+    if (!applicant) throw new HttpError(404, "Applicant not found");
 
-    if(fileName == null) throw new HttpError(404, "File not found")
+    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, "avatar");
+    const filePath = `applicant/${id}/${fileName}`;
+
+    if(fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
-      console.log("File path: ", filePath)
+      console.log("File path: ", filePath);
       const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
 
-      stream.pipe(response)
-      return stream
+      stream.pipe(response);
+      return stream;
     }
   }
 
@@ -200,21 +204,18 @@ export class ApplicantController extends Controller {
       @UploadedFile() file: Express.Multer.File,
       @Path() id: string,
   ): Promise<void> {
-    const applicant = await prisma.applicant.findUnique({
-      where: {id},
-    })
-    if (!applicant) throw new HttpError(404, "Applicant not found")
+    const applicant = await prisma.applicant.findUnique({ where: { id } });
+    if (!applicant) throw new HttpError(404, "Applicant not found");
 
-    if (req.user.role !== UserRole.MANAGER && req.user.id !== id) {
-      throw new HttpError(403, "Not enough rights to edit another applicant")
-    }
+    if (req.user.role !== UserRole.MANAGER && req.user.id !== id)
+      throw new HttpError(403, "Not enough rights to edit another applicant");
 
-    const avatarExtension = path.extname(file.originalname)
-    const avatarDirectory = `applicant/${id}/`
-    const avatarPath = avatarDirectory + `avatar${avatarExtension}`
+    const avatarExtension = path.extname(file.originalname);
+    const avatarDirectory = `applicant/${id}/`;
+    const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar")
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
 
     if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
 
@@ -271,12 +272,13 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutByIdApplicantRequest>
   ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
-      where: { id },
+    const where = { id };
+    if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
+
+    return prisma.applicant.update({
+      where,
       data: body,
     });
-
-    return applicant;
   }
 
   @Put("{id}")
@@ -286,11 +288,12 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: PutByIdApplicantRequest
   ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
-      where: { id },
+    const where = { id };
+    if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
+
+    return prisma.applicant.update({
+      where,
       data: body,
     });
-
-    return applicant;
   }
 }
