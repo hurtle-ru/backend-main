@@ -243,7 +243,7 @@ model Meeting {
   status          MeetingStatus           @default(PLANNED)
   feedback        MeetingFeedback[]
   scriptProtocols MeetingScriptProtocol[]
-  slot            MeetingSlot             @relation(fields: [slotId], references: [id])
+  slot            MeetingSlot             @relation(fields: [slotId], references: [id], onDelete: Cascade)
   slotId          String                  @unique
   applicant       Applicant?              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applicantId     String?
@@ -258,7 +258,7 @@ model MeetingSlot {
   dateTime  DateTime
   types     MeetingType[]
   meeting   Meeting?
-  manager   Manager       @relation(fields: [managerId], references: [id])
+  manager   Manager       @relation(fields: [managerId], references: [id], onDelete: Cascade)
   managerId String
 }
 
