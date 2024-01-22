@@ -119,27 +119,29 @@ model PasswordResetReqeust {
 }
 
 model Vacancy {
-  id                   String                @id @default(uuid())
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  name                 String
-  teamRole             VacancyTeamRole
-  description          String
-  salary               Int
-  salaryCurrency       Currency
-  experience           VacancyExperience
-  employmentType       VacancyEmploymentType
-  price                Int?
-  city                 String
-  reportingForm        VacancyReportingForm
-  workingHours         VacancyWorkingHours
-  workplaceModel       VacancyWorkplaceModel
-  isConfirmedByManager Boolean               @default(false)
-  keySkills            String[]
-  candidates           Applicant[]           @relation("ApplicantToVacancy")
-  offers               Offer[]
-  employer             Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  employerId           String
+  id                       String                @id @default(uuid())
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  name                     String
+  teamRole                 VacancyTeamRole
+  description              String
+  shortDescription         String?
+  uniqueViewerApplicantIds String[]
+  salary                   Int
+  salaryCurrency           Currency
+  experience               VacancyExperience
+  employmentType           VacancyEmploymentType
+  price                    Int?
+  city                     String
+  reportingForm            VacancyReportingForm
+  workingHours             VacancyWorkingHours
+  workplaceModel           VacancyWorkplaceModel
+  isConfirmedByManager     Boolean               @default(false)
+  keySkills                String[]
+  candidates               Applicant[]           @relation("ApplicantToVacancy")
+  offers                   Offer[]
+  employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId               String
 }
 
 model Offer {

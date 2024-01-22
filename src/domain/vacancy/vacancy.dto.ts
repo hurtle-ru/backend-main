@@ -6,11 +6,13 @@ export type BasicVacancy = Omit<
   Vacancy,
   | "employer"
   | "candidates"
+  | "uniqueViewerApplicantIds"
 >;
 
 export type GetVacancyResponse = BasicVacancy & {
   employer?: BasicEmployer;
   candidates?: BasicApplicant[];
+  viewersCount: number;
 };
 
 export type CreateVacancyRequest = Pick<
@@ -18,6 +20,7 @@ export type CreateVacancyRequest = Pick<
   | "name"
   | "teamRole"
   | "description"
+  | "shortDescription"
   | "salary"
   | "salaryCurrency"
   | "experience"
