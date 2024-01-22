@@ -32,13 +32,10 @@ export namespace hh {
 
   export interface Salary {
     amount: number;
-    currency: Currency;
+    currency: Currency
   }
 
-  export interface Currency {
-    "code": typeof currencyCodes[number];
-  }
-
+  export type Currency = typeof currencyCodes[number];
   export const currencyCodes = ["AZN", "BYR", "EUR", "GEL", "KGS", "KZT", "RUR", "UAH", "USD", "UZS"] as const;
 
   export interface Contact {

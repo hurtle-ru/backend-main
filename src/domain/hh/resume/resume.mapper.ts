@@ -27,7 +27,6 @@ type MappedLanguage = Omit<ResumeLanguage, "resumeId" | "id">;
 type MappedExperience = Omit<ResumeExperience, "resumeId" | "id">
 type MappedEducation = Omit<ResumeEducation, "resumeId" | "id" | "startYear">
 type MappedCertificate = Omit<ResumeCertificate, "resumeId" | "id">
-type MappedCurrency = Currency;
 
 @injectable()
 @singleton()
@@ -36,14 +35,17 @@ export class HhResumeMapper {
   }
 
   mapResume(hhResume: hh.Resume): MappedResume {
+    const desiredSalaryCurrency = hhResume.salary?.currency ? this.mapCurrency(hhResume.salary.currency) : null;
+    const desiredSalary = hhResume.salary?.amount && desiredSalaryCurrency ? hhResume.salary.amount :  null;
+
     return {
       createdAt: momentTimezone(hhResume.createdAt, hh.DateTimeFormatWithTimeZone).toDate(),
       title: hhResume.title,
       city: hhResume.area?.name ?? null,
       skills: hhResume.skillSet,
       summary: hhResume.skills ?? null,
-      desiredSalary: hhResume.salary?.amount ?? null,
-      desiredSalaryCurrency: hhResume.salary?.currency ? this.mapCurrency(hhResume.salary.currency) : null,
+      desiredSalaryCurrency,
+      desiredSalary,
       contacts: hhResume.contact.map(this.mapContact),
       languages: hhResume.language.map(this.mapLanguage),
       experience: hhResume.experience.map(this.mapExperience),
@@ -58,11 +60,11 @@ export class HhResumeMapper {
     };
   }
 
-  mapCurrency(hhCurrency: hh.Currency): MappedCurrency | null {
-    if(hhCurrency.code === "RUR") return "RUB";
-    if (!Object.values(Currency).includes(hhCurrency.code as keyof typeof Currency)) return null;
+  mapCurrency(hhCurrency: hh.Currency): Currency | null {
+    if(hhCurrency === "RUR") return "RUB";
+    if (!Object.values(Currency).includes(hhCurrency as keyof typeof Currency)) return null;
 
-    return hhCurrency.code as Currency;
+    return hhCurrency as Currency;
   }
 
   mapContact(hhContact: hh.Contact): MappedContact {

@@ -1,0 +1,1110 @@
+<html>
+
+<head>
+    <style>
+
+        @import url(//fonts.googleapis.com/css?family=Nunito);
+
+        * {
+            font-family: 'Nunito','Helvetica Neue',Helvetica,Arial,sans-serif;
+        }
+        
+        .title {
+            margin: 1em 0 0.5em 0;
+            font-size: 36px;
+        }
+
+        .path {
+            color: #016BF8;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .endpoint {
+            color: #21313c;
+            line-height: 24px;
+            margin: 22px 0;
+        }        
+
+        .endpoint-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .change-type {
+            box-sizing: border-box;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 16px;
+            border-radius: 5px;
+            height: 18px;
+            padding-left: 6px;
+            padding-right: 6px;
+            text-transform: uppercase;
+            border: 1px solid;
+            letter-spacing: 1px;
+            background-color: #E3FCF7;
+            border-color: #C0FAE6;
+            color: #00684A;
+            margin-top: 2px;
+        }
+
+        .change {
+        }
+
+        .breaking {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 5px;
+        }
+
+        .breaking-icon {
+            color: #DB3030;
+        }
+
+        .endpoint-changes {
+        }
+
+        .tooltip {
+            position:relative;  
+        }
+
+        .tooltip:before {
+            content: attr(data-text);  
+            position:absolute;
+
+             
+            top:50%;
+            transform:translateY(-50%);
+
+             
+            left:100%;
+            margin-left:15px;  
+
+             
+            width:200px;
+            padding:10px;
+            border-radius:10px;
+            background:#000;
+            color: #fff;
+            text-align:center;
+
+            display:none;  
+        }        
+
+        .tooltip:hover:before {
+            display:block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">API Changelog 1.0.0 vs. 1.0.0 </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/assignedVacancies/items/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/assignedVacancies/items/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/assignedVacancies/items/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicEmployer]/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicEmployer]/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicEmployer]/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicEmployer]/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicEmployer]/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/vacancies/items/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/vacancies/items/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/employers/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;city&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;description&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;isStartup&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;size&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;website&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;city&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;description&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;isStartup&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;size&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;website&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/employers/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;city&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;description&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;isStartup&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;size&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;website&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;city&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;description&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;isStartup&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;size&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;website&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicEmployer]/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/vacancies/items/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/employers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;city&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;description&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;isStartup&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;size&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;website&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;city&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;description&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;isStartup&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;size&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;website&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/employers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;city&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;description&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;isStartup&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;size&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;website&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;city&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;description&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;isStartup&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;size&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;website&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/offers</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/vacancy/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/offers/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/vacancy/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/offers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/vacancy/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/universities</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/items/logoUrl&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/items/name&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/items/shortName&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicVacancy]/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/viewersCount&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/vacancies</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;shortDescription&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;shortDescription&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#/components/schemas/BasicVacancy]/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/employer/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;items/items/allOf[#2]/viewersCount&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#/components/schemas/BasicVacancy]/shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/city&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/description&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/isStartup&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/size&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/employer/website&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;/allOf[#2]/viewersCount&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/vacancies/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            добавлено новое необязательное поле запроса &#39;shortDescription&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;shortDescription&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/vacancies/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            добавлено новое обязательное поле запроса &#39;shortDescription&#39;
+            </li>
+            
+            <li class="change">
+            
+            свойство &#39;shortDescription&#39; перестало быть необязательным для ответа со статусом &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            добавил требуемое свойство &#39;shortDescription&#39; в ответ со статусом &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/vacancies/{id}/viewed</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            endpoint added
+            </li>
+            
+        </ul>
+    </div>
+    
+</body>
+
+</html>
+

@@ -87,11 +87,7 @@ export class HhResumeController extends Controller {
         importedFrom: "HH",
         importedId: id,
 
-        createdAt: mappedResume.createdAt,
-        title: mappedResume.title,
-        city: mappedResume.city,
-        skills: mappedResume.skills,
-
+        ...mappedResume,
         contacts: { create: mappedResume.contacts },
         languages: { create: mappedResume.languages },
         experience: { create: mappedResume.experience },
