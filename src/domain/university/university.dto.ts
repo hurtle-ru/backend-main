@@ -5,7 +5,6 @@ import yup from "../../infrastructure/validation/yup.provider";
 export type BasicUniversity = Omit<
   University,
   | "id"
-  | "name"
 >;
 
 export class GetAllUniversitiesRequest {

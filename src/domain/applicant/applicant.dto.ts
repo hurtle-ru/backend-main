@@ -7,7 +7,6 @@ import { BasicResume } from "../resume/resume.dto";
 export type BasicApplicant = Omit<
   Applicant,
   | "password"
-  | "passwordId"
   | "resume"
   | "meetings"
   | "assignedVacancies"

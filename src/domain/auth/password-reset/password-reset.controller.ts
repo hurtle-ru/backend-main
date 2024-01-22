@@ -22,7 +22,7 @@ export class PasswordResetController extends Controller {
     @Query() email: string,
     @Query() role: "APPLICANT" | "EMPLOYER",
   ): Promise<void> {
-    let user: Omit<Applicant | Employer, "passwordId"> | null = null;
+    let user: Applicant | Employer | null = null;
     if(role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { email } });
     if(role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { email } });
 

@@ -4,16 +4,6 @@ import { HttpError } from "../../infrastructure/error/http.error";
 
 
 export const managerPrismaExtension = Prisma.defineExtension({
-  result: {
-    manager: {
-      passwordId: {
-        needs: {},
-        compute() {
-          return undefined;
-        },
-      },
-    },
-  },
   model: {
     manager: {
 
