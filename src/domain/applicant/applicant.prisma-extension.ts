@@ -4,16 +4,6 @@ import { HttpError } from "../../infrastructure/error/http.error";
 
 
 export const applicantPrismaExtension = Prisma.defineExtension({
-  result: {
-    applicant: {
-      passwordId: {
-        needs: {},
-        compute() {
-          return undefined;
-        },
-      },
-    },
-  },
   model: {
     applicant: {
       async archive(id: string) {

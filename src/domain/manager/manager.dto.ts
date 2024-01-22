@@ -5,7 +5,6 @@ import { BasicMeetingSlot } from "../meeting/slot/slot.dto";
 export type BasicManager = Omit<
   Manager,
   | "password"
-  | "passwordId"
   | "slots"
 >;
 

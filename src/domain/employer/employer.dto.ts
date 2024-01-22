@@ -6,7 +6,6 @@ import { BasicVacancy } from "../vacancy/vacancy.dto";
 export type BasicEmployer = Omit<
   Employer,
   | "password"
-  | "passwordId"
   | "meetings"
   | "vacancies"
 >;
