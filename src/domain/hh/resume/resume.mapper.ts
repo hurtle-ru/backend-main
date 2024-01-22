@@ -58,11 +58,18 @@ export class HhResumeMapper {
     };
   }
 
-  mapCurrency(hhCurrency: hh.Currency): MappedCurrency | null {
-    if(hhCurrency.code === "RUR") return "RUB";
-    if (!Object.values(Currency).includes(hhCurrency.code as keyof typeof Currency)) return null;
+  mapDesiredSalary(hhSalary: hh.Salary): MappedDesiredSalary {
+    return {
+      desiredSalary: hhSalary.amount,
+      desiredSalaryCurrency: this.mapCurrency(hhSalary.currency),
+    }
+  }
 
-    return hhCurrency.code as Currency;
+  mapCurrency(hhCurrency: typeof hh.currencyCodes[number]): MappedCurrency | null {
+    if(hhCurrency === "RUR") return "RUB";
+    if (!Object.values(Currency).includes(hhCurrency)) return null;
+
+    return hhCurrency as Currency;
   }
 
   mapContact(hhContact: hh.Contact): MappedContact {

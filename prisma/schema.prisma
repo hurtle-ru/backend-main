@@ -376,6 +376,7 @@ enum Currency {
   KGS
   KZT
   UZS
+  UAH
 }
 
 enum EmployerLegalForm {
