@@ -1,5 +1,6 @@
 import { cleanEnv, host, num, port, str, url } from "envalid";
-import webAddress from "./validation/web-address.envalid";
+import { webAddress } from "./validation/web-address.envalid";
+
 
 export const appConfig = cleanEnv(process.env, {
   BACKEND_PORT: port(),
