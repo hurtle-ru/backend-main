@@ -5,14 +5,10 @@ import { BaseFileOptions } from "./artifact.dto"
 import { promisify } from "util";
 import { createReadStream, stat, unlinkSync} from "fs";
 import {
-  MAX_IMAGE_FILE_SIZE,
-  MAX_DOCUMENT_FILE_SIZE,
-  MAX_VIDEO_FILE_SIZE,
   AVAILABLE_IMAGE_FILE_MIME_TYPES,
   AVAILABLE_DOCUMENT_FILE_MIME_TYPES,
   AVAILABLE_VIDEO_FILE_MIME_TYPES,
-  READ_STREAM_HIGH_WATER_MARK,
-  FILE_EXTENSION_MIME_TYPES,
+  FILE_EXTENSION_MIME_TYPES, artifactConfig,
 } from "./artifact.config";
 import { singleton } from "tsyringe";
 import { Readable } from "stream";
@@ -50,13 +46,13 @@ export class ArtifactService {
     return saveMulterFile(file, filePath)
   }
   async saveImageFile(file: Express.Multer.File, filePath: string): Promise<string> {
-    return this.saveFile(file, filePath, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE)
+    return this.saveFile(file, filePath, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE)
   }
   async saveVideoFile(file: Express.Multer.File, filePath: string): Promise<string> {
-    return this.saveFile(file, filePath, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE)
+    return this.saveFile(file, filePath, AVAILABLE_VIDEO_FILE_MIME_TYPES, artifactConfig.MAX_VIDEO_FILE_SIZE)
   }
   async saveDocumentFile(file: Express.Multer.File, filePath: string): Promise<string> {
-    return this.saveFile(file, filePath, AVAILABLE_DOCUMENT_FILE_MIME_TYPES, MAX_DOCUMENT_FILE_SIZE)
+    return this.saveFile(file, filePath, AVAILABLE_DOCUMENT_FILE_MIME_TYPES, artifactConfig.MAX_DOCUMENT_FILE_SIZE)
   }
   async loadFile(originFilePath: string): Promise<[Readable, BaseFileOptions]> {
     const filePath = ARTIFACT_ROOT_DIR + originFilePath;
@@ -73,7 +69,7 @@ export class ArtifactService {
       }
       catch {}
 
-      const stream = createReadStream(path.join(process.cwd(), filePath), {highWaterMark: READ_STREAM_HIGH_WATER_MARK});
+      const stream = createReadStream(path.join(process.cwd(), filePath), {highWaterMark: artifactConfig.READ_STREAM_HIGH_WATER_MARK});
 
       return [
         stream,

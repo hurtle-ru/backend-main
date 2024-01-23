@@ -1,9 +1,15 @@
-const MB = 2**20
+import { cleanEnv, str } from "envalid";
+import { int } from "../../infrastructure/validation/int.envalid";
 
-export const MAX_IMAGE_FILE_SIZE = 5 * MB
-export const MAX_DOCUMENT_FILE_SIZE = 15 * MB
-export const MAX_VIDEO_FILE_SIZE = 800 * MB
-export const READ_STREAM_HIGH_WATER_MARK = 1000 * MB
+
+const MB = 2**20;
+
+export const artifactConfig = cleanEnv(process.env, {
+  MAX_IMAGE_FILE_SIZE: int({ default: 5 * MB }),
+  MAX_DOCUMENT_FILE_SIZE: int({ default: 15 * MB }),
+  MAX_VIDEO_FILE_SIZE: int({ default: 800 * MB }),
+  READ_STREAM_HIGH_WATER_MARK: int({ default: 1000 * MB }),
+});
 
 export const AVAILABLE_IMAGE_FILE_MIME_TYPES = [
   "image/png",

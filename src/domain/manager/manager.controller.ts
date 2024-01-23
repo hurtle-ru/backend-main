@@ -8,7 +8,7 @@ import { ArtifactService} from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import {Request as ExpressRequest} from "express";
 import path from "path";
-import { AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE } from "../../external/artifact/artifact.config";
+import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 
 
 @injectable()
@@ -138,7 +138,7 @@ export class ManagerController extends Controller {
     const avatarDirectory = `manager/${id}/`;
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
     const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
 
     if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
