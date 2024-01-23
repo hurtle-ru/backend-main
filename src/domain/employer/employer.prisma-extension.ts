@@ -32,7 +32,7 @@ export const employerPrismaExtension = Prisma.defineExtension({
 
         if (!employer) throw new HttpError(404, "Employer not found");
 
-        await prisma.employer.delete({ where: { id } } );
+        await prisma.employer.delete({ where: { id } });
         await prisma.softArchive.create({
           data: {
             modelName: context.name,

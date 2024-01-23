@@ -110,7 +110,7 @@ export class EmployerController extends Controller {
       @Path() id: string,
   ): Promise<Readable | any> {
     const employer = await prisma.employer.findUnique({
-      where: {id},
+      where: { id },
     });
 
     if (!employer) throw new HttpError(404, "Employer not found");
@@ -144,7 +144,7 @@ export class EmployerController extends Controller {
       @Path() id: string,
   ): Promise<void> {
     const employer = await prisma.employer.findUnique({
-      where: {id},
+      where: { id },
     });
 
     if (!employer) throw new HttpError(404, "Employer not found");

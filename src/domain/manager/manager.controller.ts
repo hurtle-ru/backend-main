@@ -93,7 +93,7 @@ export class ManagerController extends Controller {
       @Path() id: string,
   ): Promise<Readable | any> {
       const manager = await prisma.manager.findUnique({
-        where: {id},
+        where: { id },
       });
 
       if (!manager) throw new HttpError(404, "Manager not found");
@@ -127,7 +127,7 @@ export class ManagerController extends Controller {
       @Path() id: string,
   ): Promise<void> {
     const manager = await prisma.manager.findUnique({
-      where: {id},
+      where: { id },
     })
 
     if (!manager) throw new HttpError(404, "Manager not found");

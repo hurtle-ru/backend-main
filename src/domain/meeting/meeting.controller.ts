@@ -170,7 +170,7 @@ export class MeetingController extends Controller {
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport");
     const filePath = `meeting/${id}/${fileName}`;
     
-    const meeting = await prisma.meeting.findUnique({where: {id}});
+    const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
     if(fileName == null) throw new HttpError(404, "File not found");
@@ -203,7 +203,7 @@ export class MeetingController extends Controller {
     const passportPath = passportDirectory + `passport${passportExtension}`;
 
     const meeting = await prisma.meeting.findUnique({
-      where: {id},
+      where: { id },
       include: {slot: true},
     });
 
@@ -231,7 +231,7 @@ export class MeetingController extends Controller {
     const filePath = `meeting/${id}/${fileName}`;
 
     if(fileName == null) throw new HttpError(404, "File not found");
-    const meeting = await prisma.meeting.findUnique({where: {id}});
+    const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
 
@@ -267,7 +267,7 @@ export class MeetingController extends Controller {
     @Path() id: string,
   ): Promise<void> {
     const meeting = await prisma.meeting.findUnique({
-      where: {id},
+      where: { id },
       include: {slot: true},
     });
 

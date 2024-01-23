@@ -23,7 +23,7 @@ export const managerPrismaExtension = Prisma.defineExtension({
 
         if (!manager) throw new HttpError(404, "Manager not found");
 
-        await prisma.manager.delete({ where: {id} });
+        await prisma.manager.delete({ where: { id } });
         await prisma.softArchive.create({
           data: {
             modelName: context.name,

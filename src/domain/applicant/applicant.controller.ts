@@ -170,7 +170,7 @@ export class ApplicantController extends Controller {
       @Path() id: string,
   ): Promise<Readable | any> {
     const applicant = await prisma.applicant.findUnique({
-      where: {id},
+      where: { id },
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
