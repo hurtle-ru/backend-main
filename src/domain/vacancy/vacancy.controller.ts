@@ -204,49 +204,81 @@ export class VacancyController extends Controller {
   }
 
   @Put("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.EMPLOYER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
   public async putById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PutVacancyRequest,
   ): Promise<BasicVacancy> {
-    let where = null;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-
     const vacancy = await prisma.vacancy.findUnique({
-      where: where!,
+      where: { id, employerId: req.user.id },
     });
 
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
     return prisma.vacancy.update({
-      where: where!,
+      where: { id, employerId: req.user.id },
       data: body,
     });
   }
 
   @Patch("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.EMPLOYER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: Partial<PutVacancyRequest>,
   ): Promise<BasicVacancy> {
-    let where = null;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-
     const vacancy = await prisma.vacancy.findUnique({
-      where: where!,
+      where: { id, employerId: req.user.id },
     });
 
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
     return prisma.vacancy.update({
-      where: where!,
+      where: { id, employerId: req.user.id },
+      data: body,
+    });
+  }
+
+  @Put("{id}/managers")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  public async managersPutById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Body() body: BasicVacancy,
+  ): Promise<BasicVacancy> {
+    const vacancy = await prisma.vacancy.findUnique({
+      where: { id },
+    });
+
+    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+
+    return prisma.vacancy.update({
+      where: { id },
+      data: body,
+    });
+  }
+
+  @Patch("{id}/managers")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  public async managersPatchById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Body() body: Partial<BasicVacancy>,
+  ): Promise<BasicVacancy> {
+    const vacancy = await prisma.vacancy.findUnique({
+      where: { id },
+    });
+
+    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+
+    return prisma.vacancy.update({
+      where: { id },
       data: body,
     });
   }
