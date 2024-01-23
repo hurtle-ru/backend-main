@@ -25,7 +25,6 @@ export type CreateVacancyRequest = Pick<
   | "salaryCurrency"
   | "experience"
   | "employmentType"
-  | "price"
   | "city"
   | "reportingForm"
   | "workingHours"
@@ -34,3 +33,8 @@ export type CreateVacancyRequest = Pick<
 >
 
 export type PutVacancyRequest = CreateVacancyRequest;
+
+export type setPriceRequest = Pick<
+  Vacancy,
+  | "price"
+>
