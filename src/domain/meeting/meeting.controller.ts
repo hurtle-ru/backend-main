@@ -11,7 +11,7 @@ import {Request as ExpressRequest} from "express";
 import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
-import {AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE, MAX_VIDEO_FILE_SIZE } from "../../external/artifact/artifact.config";
+import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
 
 
@@ -170,7 +170,7 @@ export class MeetingController extends Controller {
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport");
     const filePath = `meeting/${id}/${fileName}`;
     
-    const meeting = await prisma.meeting.findUnique({where: {id}});
+    const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
     if(fileName == null) throw new HttpError(404, "File not found");
@@ -203,21 +203,21 @@ export class MeetingController extends Controller {
     const passportPath = passportDirectory + `passport${passportExtension}`;
 
     const meeting = await prisma.meeting.findUnique({
-      where: {id},
+      where: { id },
       include: {slot: true},
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
     if (req.user.id !== meeting?.slot.managerId) throw new HttpError(403, "Not enough rights to edit another applicant");
 
-    await this.artifactService.validateFileAttributes(file, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_PASSPORT_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
     const oldPassportFileName = await this.artifactService.getFullFileName(passportDirectory, "passport");
 
     if (oldPassportFileName !== null) {
       this.artifactService.deleteFile(passportDirectory + oldPassportFileName);
     }
     
-    await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, MAX_IMAGE_FILE_SIZE);
+    await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
   }
 
   @Get("{id}/video")
@@ -231,7 +231,7 @@ export class MeetingController extends Controller {
     const filePath = `meeting/${id}/${fileName}`;
 
     if(fileName == null) throw new HttpError(404, "File not found");
-    const meeting = await prisma.meeting.findUnique({where: {id}});
+    const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
 
@@ -267,7 +267,7 @@ export class MeetingController extends Controller {
     @Path() id: string,
   ): Promise<void> {
     const meeting = await prisma.meeting.findUnique({
-      where: {id},
+      where: { id },
       include: {slot: true},
     });
 
@@ -278,7 +278,7 @@ export class MeetingController extends Controller {
     const videoDirectory = `meeting/${id}/`;
     const videoPath = videoDirectory + `video${videoExtension}`;
 
-    await this.artifactService.validateFileAttributes(file, AVAILABLE_VIDEO_FILE_MIME_TYPES, MAX_VIDEO_FILE_SIZE);
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_VIDEO_FILE_MIME_TYPES, artifactConfig.MAX_VIDEO_FILE_SIZE);
     const oldVideoFileName = await this.artifactService.getFullFileName(videoDirectory, "video");
 
     if (oldVideoFileName !== null) this.artifactService.deleteFile(videoDirectory + oldVideoFileName);
