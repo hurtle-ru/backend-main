@@ -90,14 +90,15 @@ export class AuthController extends Controller {
 
   @Post("employer")
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
+  @Response<HttpErrorBody & {"error": "User with this inn already exists"}>(409)
   @Response<HttpErrorBody & {"error": "Company with this inn not found"}>(404)
   public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
     RegisterEmployerRequest.schema.validateSync(body);
 
-    let existingWithSameEmailEmployer = await prisma.employer.findUnique({ where: { email: body.email } });
+    const existingWithSameEmailEmployer = await prisma.employer.findUnique({ where: { email: body.email } });
     if(existingWithSameEmailEmployer) throw new HttpError(409, "User with this email already exists");
 
-    let existingWithSameInnEmployer = await prisma.employer.findUnique({ where: { inn: body.inn } });
+    const existingWithSameInnEmployer = await prisma.employer.findUnique({ where: { inn: body.inn } });
     if(existingWithSameInnEmployer) throw new HttpError(409, "User with this inn already exists");
 
     const dadataEmployer = await this.dadataService.getBasicCompanyInfoByInn(body.inn);
