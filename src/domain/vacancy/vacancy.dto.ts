@@ -33,8 +33,3 @@ export type CreateVacancyRequest = Pick<
 >
 
 export type PutVacancyRequest = CreateVacancyRequest;
-
-export type setPriceRequest = Pick<
-  Vacancy,
-  | "price"
->

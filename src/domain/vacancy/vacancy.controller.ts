@@ -15,7 +15,7 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { BasicVacancy, CreateVacancyRequest, GetVacancyResponse, PutVacancyRequest, setPriceRequest } from "./vacancy.dto";
+import { BasicVacancy, CreateVacancyRequest, GetVacancyResponse, PutVacancyRequest } from "./vacancy.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -223,26 +223,6 @@ export class VacancyController extends Controller {
 
     return prisma.vacancy.update({
       where: where!,
-      data: body,
-    });
-  }
-
-  @Put("{id}")
-  @Security("jwt", [UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  public async setPrice(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: setPriceRequest,
-  ): Promise<BasicVacancy> {
-    const vacancy = await prisma.vacancy.findUnique({
-      where: { id },
-    });
-
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-
-    return prisma.vacancy.update({
-      where: { id },
       data: body,
     });
   }
