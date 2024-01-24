@@ -32,13 +32,11 @@ export type CreateVacancyRequest = Pick<
   | "keySkills"
 >;
 
-export class PutVacancyRequestFromEmployer {
-  constructor(vacancyData: CreateVacancyRequest) { Object.assign(this, vacancyData); }
-}
+export type RequesterEmployer = { "_requester": "Employer" }
+export type RequesterManager = { "_requester": "Manager" }
 
-export class PutVacancyRequestFromManager {
-  constructor(vacancyData: PutVacancyRequestFromEmployer & Pick<
-    Vacancy,
-    "price"
-  >) { Object.assign(this, vacancyData); }
-}
+export type PutVacancyRequestFromEmployer = CreateVacancyRequest & RequesterEmployer
+export type PutVacancyRequestFromManager = CreateVacancyRequest & Pick<Vacancy, "price"> & RequesterManager
+
+export type PatchVacancyRequestFromEmployer = Partial<PutVacancyRequestFromEmployer> & RequesterEmployer
+export type PatchVacancyRequestFromManager = Partial<PutVacancyRequestFromManager> & RequesterManager
