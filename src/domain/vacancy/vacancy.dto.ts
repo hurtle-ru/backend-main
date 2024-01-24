@@ -30,6 +30,15 @@ export type CreateVacancyRequest = Pick<
   | "workingHours"
   | "workplaceModel"
   | "keySkills"
->
+>;
 
-export type PutVacancyRequest = CreateVacancyRequest;
+export class PutVacancyRequestFromEmployer {
+  constructor(vacancyData: CreateVacancyRequest) { Object.assign(this, vacancyData); }
+}
+
+export class PutVacancyRequestFromManager {
+  constructor(vacancyData: PutVacancyRequestFromEmployer & Pick<
+    Vacancy,
+    "price"
+  >) { Object.assign(this, vacancyData); }
+}
