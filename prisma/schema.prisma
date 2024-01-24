@@ -49,7 +49,7 @@ model Employer {
   lastName             String
   phone                String?            @unique
   name                 String?
-  inn                  String?
+  inn                  String
   ogrn                 String?
   legalForm            EmployerLegalForm?
   agreementNumber      String?
@@ -110,8 +110,9 @@ model EmailVerification {
   role      String
 }
 
-model PasswordResetReqeust {
-  code      String   @id @default(uuid())
+model passwordResetRequest {
+  id        String   @id @default(uuid())
+  code      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   email     String   @unique

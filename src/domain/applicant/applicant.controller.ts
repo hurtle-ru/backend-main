@@ -112,12 +112,10 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Body() body: PutMeApplicantRequest
   ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
+    return prisma.applicant.update({
       where: { id: req.user.id },
       data: body,
     });
-
-    return applicant;
   }
 
   @Patch("me")
@@ -126,12 +124,10 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Body() body: Partial<PutMeApplicantRequest>
   ): Promise<BasicApplicant> {
-    const applicant = await prisma.applicant.update({
+    return prisma.applicant.update({
       where: { id: req.user.id },
       data: body,
     });
-
-    return applicant;
   }
 
   @Get("{id}/status")

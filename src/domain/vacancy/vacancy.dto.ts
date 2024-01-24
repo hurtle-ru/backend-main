@@ -25,12 +25,18 @@ export type CreateVacancyRequest = Pick<
   | "salaryCurrency"
   | "experience"
   | "employmentType"
-  | "price"
   | "city"
   | "reportingForm"
   | "workingHours"
   | "workplaceModel"
   | "keySkills"
->
+>;
 
-export type PutVacancyRequest = CreateVacancyRequest;
+export type RequesterEmployer = { "_requester": "Employer" }
+export type RequesterManager = { "_requester": "Manager" }
+
+export type PutVacancyRequestFromEmployer = CreateVacancyRequest & RequesterEmployer
+export type PutVacancyRequestFromManager = CreateVacancyRequest & Pick<Vacancy, "price"> & RequesterManager
+
+export type PatchVacancyRequestFromEmployer = Partial<PutVacancyRequestFromEmployer> & RequesterEmployer
+export type PatchVacancyRequestFromManager = Partial<PutVacancyRequestFromManager> & RequesterManager

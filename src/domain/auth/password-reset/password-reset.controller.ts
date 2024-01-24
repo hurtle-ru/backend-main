@@ -28,25 +28,26 @@ export class PasswordResetController extends Controller {
 
     if(!user) throw new HttpError(404, "User not found");
 
+    const code = this.passwordResetService.generateCode();
     try {
-      await prisma.passwordResetReqeust.delete({ where: { email, role } });
+      await prisma.passwordResetRequest.delete({ where: { email, role } });
     } catch (e) {}
 
-    const passwordResetRequest = await prisma.passwordResetReqeust.create({
-      data: { email, role },
+    const passwordResetRequest = await prisma.passwordResetRequest.create({
+      data: { email, role, code },
     });
 
     await this.passwordResetService.sendEmail(email, passwordResetRequest.code);
   }
 
   @Post("{code}")
-  @Response<HttpErrorBody & {"error": "Invalid code"}>(404)
+  @Response<HttpErrorBody & {"error": "Invalid email or code"}>(404)
   public async verifyCode(
     @Path() code: string,
-    @Body() body: { password: string },
+    @Body() body: { email: string, password: string },
   ): Promise<void> {
     try {
-      const passwordResetRequest = await prisma.passwordResetReqeust.delete({ where: { code } });
+      const passwordResetRequest = await prisma.passwordResetRequest.delete({ where: { code, email: body.email} });
       const passwordHash = await this.authService.generatePasswordHash(body.password);
 
       const updateQuery = {
@@ -57,7 +58,7 @@ export class PasswordResetController extends Controller {
       if(passwordResetRequest.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
       if(passwordResetRequest.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
     } catch (e) {
-      throw new HttpError(404, "Invalid code");
+      throw new HttpError(404, "Invalid email or code");
     }
   }
 }

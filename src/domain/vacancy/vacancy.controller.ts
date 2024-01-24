@@ -15,7 +15,15 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { BasicVacancy, CreateVacancyRequest, GetVacancyResponse, PutVacancyRequest } from "./vacancy.dto";
+import {
+  BasicVacancy,
+  CreateVacancyRequest,
+  GetVacancyResponse,
+  PatchVacancyRequestFromEmployer,
+  PatchVacancyRequestFromManager,
+  PutVacancyRequestFromEmployer,
+  PutVacancyRequestFromManager,
+} from "./vacancy.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -206,48 +214,43 @@ export class VacancyController extends Controller {
   @Put("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Invalid body request for employer" | "Invalid body request for manager"}>(403)
   public async putById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: PutVacancyRequest,
-  ): Promise<BasicVacancy> {
-    let where;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-
-    const vacancy = await prisma.vacancy.findUnique({
-      where: where!,
-    });
-
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-
-    return prisma.vacancy.update({
-      where: where!,
-      data: body,
-    });
+    @Body() body: PutVacancyRequestFromEmployer | PutVacancyRequestFromManager,
+  ): Promise<void> {
+    await this.patchById(req, id, body);
   }
 
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Invalid body request for employer" | "Invalid body request for manager"}>(403)
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutVacancyRequest>,
-  ): Promise<BasicVacancy> {
-    let where;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
+    @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
+  ): Promise<void> {
+    const { _requester, ...dataBody } = body;
 
-    const vacancy = await prisma.vacancy.findUnique({
-      where: where!,
-    });
+    if(req.user.role === UserRole.EMPLOYER && body._requester !== "Employer")
+      throw new HttpError(403, "Invalid body request for employer")
+    
+    if(req.user.role === UserRole.MANAGER && body._requester !== "Manager")
+      throw new HttpError(403, "Invalid body request for manager")
 
+    const where = {
+      id,
+      ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
+    };
+
+    const vacancy = await prisma.vacancy.findUnique({ where });
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
-    return prisma.vacancy.update({
-      where: where!,
-      data: body,
+    await prisma.vacancy.update({
+      where,
+      data: dataBody,
     });
   }
 
@@ -259,7 +262,7 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Query() include?: ("employer" | "candidates")[]
   ): Promise<GetVacancyResponse> {
-    let where;
+    let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
     else if(req.user.role === UserRole.APPLICANT) where = { id, candidates: { some: { id: req.user.id } }};
