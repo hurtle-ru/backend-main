@@ -55,6 +55,7 @@ model Employer {
   agreementNumber      String?
   agreementDate        DateTime?
   isConfirmedByManager Boolean            @default(false)
+  isEmailConfirmed     Boolean            @default(false)
   city                 String?
   isStartup            Boolean            @default(false)
   size                 EmployerSize?
