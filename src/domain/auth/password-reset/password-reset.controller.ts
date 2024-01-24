@@ -20,7 +20,7 @@ export class PasswordResetController extends Controller {
   @Response<HttpErrorBody & {"error": "User not found"}>(404)
   public async initiateReset(
     @Query() email: string,
-    @Query() role: UserRole.APPLICANT | UserRole.EMPLOYER,
+    @Query() role: "APPLICANT" | "EMPLOYER",
   ): Promise<void> {
     let user: Applicant | Employer | null = null;
     if(role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { email } });
