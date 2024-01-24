@@ -49,22 +49,21 @@ export class EmailVerificationController extends Controller {
     @Request() req: JwtModel,
     @Path() code: string,
   ): Promise<void> {
-    try {
-      await prisma.emailVerification.delete({
-        where: {
-          userId: req.user.id,
-          role: req.user.role,
-          code: code,
-        },
-      });
+    const whereEmailVerification = {
+      userId: req.user.id,
+      role: req.user.role,
+      code: code,
+    };
 
-      await prisma.applicant.update({
-        where: { id: req.user.id },
-        data: { isEmailConfirmed: true },
-      });
-    } catch (e) {
-      console.log(`Error: ${e}`);
-      throw new HttpError(404, "Invalid code");
-    }
+    if(!await prisma.emailVerification.findUnique({ where: whereEmailVerification })) throw new HttpError(404, "Invalid code");
+    await prisma.emailVerification.delete({ where: whereEmailVerification });
+
+    const updateQuery = {
+      where: { id: req.user.id },
+      data: { isEmailConfirmed: true },
+    };
+
+    if(req.user.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
+    if(req.user.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
   }
 }
