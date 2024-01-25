@@ -1,6 +1,7 @@
 import { Offer } from "@prisma/client";
 import { BasicVacancy } from "../vacancy.dto";
-import { BasicApplicant } from "../../applicant/applicant.dto";
+import { BasicCandidate } from "../candidate/candidate.dto"
+
 
 export type BasicOffer = Omit<
   Offer,
@@ -10,7 +11,7 @@ export type BasicOffer = Omit<
 
 export type GetOfferResponse = BasicOffer & {
   vacancy?: BasicVacancy;
-  candidate?: BasicApplicant;
+  candidate?: BasicCandidate;
 }
 
 export type CreateOfferRequest = Pick<

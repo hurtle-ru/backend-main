@@ -147,37 +147,6 @@ export class VacancyController extends Controller {
     });
   }
 
-  @Post("{id}/candidates/{applicantId}")
-  @Security("jwt", [UserRole.EMPLOYER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found" | "Applicant not found"}>(404)
-  public async addCandidate(
-    @Path() id: string,
-    @Path() applicantId: string,
-  ): Promise<void> {
-    const vacancy = await prisma.vacancy.findUnique({
-      where: { id },
-    });
-
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-
-    const applicant = await prisma.applicant.findUnique({
-      where: { id: applicantId },
-    });
-
-    if(!applicant) throw new HttpError(404, "Applicant not found");
-
-    await prisma.vacancy.update({
-      where: { id },
-      data: {
-        candidates: {
-          connect: {
-            id: applicantId,
-          },
-        },
-      },
-    });
-  }
-
   /**
    * Метод должен вызываться каждый раз, когда соискатель впервые заходит на страницу вакансии
    * Фронтенд должен локально хранить вакансии (их ID), которые уже были просмотрены соискателем, чтобы не вызывать этот метод повторно
