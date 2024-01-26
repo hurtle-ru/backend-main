@@ -30,7 +30,7 @@ export class OfferController extends Controller {
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
     const candidate = await prisma.applicant.findUnique({
-      where: { id: body.candidateId, assignedVacancies: { some: { id: body.vacancyId } } },
+      where: { id: body.candidateId, candidates: { some: { id: body.vacancyId } } },
     });
 
     if(!candidate) throw new HttpError(404, "Candidate not found");
@@ -111,7 +111,7 @@ export class OfferController extends Controller {
     @Path() id: string,
     @Body() body: PutOfferRequest,
   ): Promise<BasicOffer> {
-    let where;
+    let where = null;
     if (req.user.role === UserRole.MANAGER) where = { id };
     else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
 
@@ -155,7 +155,7 @@ export class OfferController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutOfferRequest>,
   ): Promise<BasicOffer> {
-    let where;
+    let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
 
@@ -179,7 +179,7 @@ export class OfferController extends Controller {
     @Path() id: string,
     @Query() include?: ("vacancy" | "candidate")[],
   ): Promise<GetOfferResponse> {
-    let where;
+    let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
     else if(req.user.role === UserRole.APPLICANT) where = { id, candidateId: req.user.id };
