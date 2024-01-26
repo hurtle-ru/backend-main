@@ -1,29 +1,29 @@
-import { Candidate } from "@prisma/client";
+import { VacancyResponse } from "@prisma/client";
 import { BasicApplicant } from "../../applicant/applicant.dto";
 import { BasicVacancy } from "../vacancy.dto";
 import { BasicManager } from "../../manager/manager.dto";
 
 
-export type BasicCandidate = Omit<
-  Candidate,
+export type BasicVacancyResponse = Omit<
+  VacancyResponse,
   | "applicant"
   | "vacancy"
   | "suggestedBy"
 >;
 
-export type CreateCandidateByManagerRequest = Pick<
-  Candidate,
+export type CreateVacancyResponseByManagerRequest = Pick<
+  VacancyResponse,
   | "status"
   | "applicantId"
 >;
 
-export type GetCandidateResponse = BasicCandidate & {
+export type GetVacancyResponseResponse = BasicVacancyResponse & {
   applicant: BasicApplicant,
   vacancy: BasicVacancy,
   suggestedBy?: BasicManager | null,
 };
 
-export type PatchCandidateRequest = Partial<Pick<
-  BasicCandidate,
+export type PatchVacancyResponseRequest = Partial<Pick<
+  BasicVacancyResponse,
   | "status"
 >>

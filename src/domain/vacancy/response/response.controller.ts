@@ -15,11 +15,11 @@ import {
   Tags,
 } from "tsoa";
 import {
-  BasicCandidate,
-  PatchCandidateRequest,
-  GetCandidateResponse,
-  CreateCandidateByManagerRequest
-} from "./candidate.dto";
+  BasicVacancyResponse,
+  CreateVacancyResponseByManagerRequest,
+  GetVacancyResponseResponse,
+  PatchVacancyResponseRequest,
+} from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -27,9 +27,9 @@ import { PageResponse } from "../../../infrastructure/controller/pagination/page
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 
 @injectable()
-@Route("api/v1/vacancies/candidates")
-@Tags("Candidate")
-export class CandidateController extends Controller {
+@Route("api/v1/vacancyResponses")
+@Tags("Vacancy Response")
+export class VacancyResponseController extends Controller {
   constructor() {
     super();
   }
@@ -41,15 +41,15 @@ export class CandidateController extends Controller {
     @Query() include?: ("applicant" | "vacancy" | "suggestedManager")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-  ): Promise<PageResponse<GetCandidateResponse>> {
+  ): Promise<PageResponse<GetVacancyResponseResponse>> {
     let where = {}
 
     if (req.user.role === UserRole.APPLICANT)     where = { applicantId: req.user.id }
     else if (req.user.role === UserRole.EMPLOYER) where = { vacancy: { employerId: req.user.id } }
     else if (req.user.role === UserRole.MANAGER)  where = { suggestedByManagerId: req.user.id }
 
-    const [candidates, candidatesCount] = await Promise.all([
-      prisma.candidate.findMany({
+    const [vacancyResponses, vacancyResponsesCount] = await Promise.all([
+      prisma.vacancyResponse.findMany({
         skip: (page - 1) * size,
         take: size,
         where,
@@ -59,29 +59,29 @@ export class CandidateController extends Controller {
           suggestedBy: include?.includes("suggestedManager"),
         },
       }),
-      prisma.candidate.count({ where }),
+      prisma.vacancyResponse.count({ where }),
     ]);
-    console.log("Candidates", candidates)
+    console.log("VacancyResponses", vacancyResponses)
 
-    return new PageResponse(candidates, page, size, candidatesCount);
+    return new PageResponse(vacancyResponses, page, size, vacancyResponsesCount);
   }
 
 
   @Get("{id}")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
-  @Response<HttpErrorBody & {"error": "Candidate not found"}>(404)
+  @Response<HttpErrorBody & {"error": "VacancyResponse not found"}>(404)
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("applicant" | "vacancy" | "suggestedManager")[]
-  ): Promise<GetCandidateResponse> {
+  ): Promise<GetVacancyResponseResponse> {
     let where = null;
 
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: {employerId: req.user.id } };
     else if(req.user.role === UserRole.APPLICANT) where = { id, applicantId: req.user.id };
 
-    const candidate = await prisma.candidate.findUnique({
+    const vacancyResponse = await prisma.vacancyResponse.findUnique({
       where: where!,
       include: {
         vacancy: include?.includes("vacancy"),
@@ -90,23 +90,23 @@ export class CandidateController extends Controller {
       },
     });
 
-    if(!candidate) throw new HttpError(404, "Candidate not found");
+    if(!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
 
-    return candidate
+    return vacancyResponse
   }
 
   @Post("{id}")
   @Security("jwt", [UserRole.APPLICANT])
-  @Response<HttpErrorBody & {"error": "You are already candidate on this vacancy"}>(409)
+  @Response<HttpErrorBody & {"error": "You are already response on this vacancy"}>(409)
   public async suggestByApplicant(
     @Path() id: string,
     @Request() req: JwtModel,
-  ): Promise<BasicCandidate> {
-    if (await prisma.candidate.findFirst({where: {applicantId: req.user.id, vacancyId: id}})) {
-      throw new HttpError(409, "You are already candidate on this vacancy")
+  ): Promise<BasicVacancyResponse> {
+    if (await prisma.vacancyResponse.findFirst({where: {applicantId: req.user.id, vacancyId: id}})) {
+      throw new HttpError(409, "You are already response on this vacancy")
     }
 
-    return prisma.candidate.create({
+    return prisma.vacancyResponse.create({
       data: {
         applicantId: req.user.id,
         vacancyId: id,
@@ -116,17 +116,17 @@ export class CandidateController extends Controller {
 
   @Post("{id}/byManager")
   @Security("jwt", [UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "You are already candidate on this vacancy"}>(409)
+  @Response<HttpErrorBody & {"error": "You are already response on this vacancy"}>(409)
   public async suggestByManager(
     @Path() id: string,
     @Request() req: JwtModel,
-    @Body() body: CreateCandidateByManagerRequest,
-  ): Promise<BasicCandidate> {
-    if (await prisma.candidate.findFirst({where: {applicantId: body.applicantId, vacancyId: id}})) {
-      throw new HttpError(409, "You are already candidate on this vacancy")
+    @Body() body: CreateVacancyResponseByManagerRequest,
+  ): Promise<BasicVacancyResponse> {
+    if (await prisma.vacancyResponse.findFirst({where: {applicantId: body.applicantId, vacancyId: id}})) {
+      throw new HttpError(409, "You are already response on this vacancy")
     }
 
-    return prisma.candidate.create({
+    return prisma.vacancyResponse.create({
       data: {
         ...body,
         vacancyId: id,
@@ -136,22 +136,22 @@ export class CandidateController extends Controller {
 
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another candidate"}>(403)
-  @Response<HttpErrorBody & {"error": "Candidate not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another response"}>(403)
+  @Response<HttpErrorBody & {"error": "VacancyResponse not found"}>(404)
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PatchCandidateRequest>,
-  ): Promise<BasicCandidate> {
+    @Body() body: Partial<PatchVacancyResponseRequest>,
+  ): Promise<BasicVacancyResponse> {
 
-    const candidate = await prisma.candidate.findUnique( {where: { id }, include: { vacancy: true } } );
-    if(!candidate) throw new HttpError(404, "Candidate not found");
+    const vacancyResponse = await prisma.vacancyResponse.findUnique( {where: { id }, include: { vacancy: true } } );
+    if(!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
 
-    if (req.user.role === UserRole.EMPLOYER && candidate.vacancy.employerId !== req.user.id) {
-      throw new HttpError(403, "Not enough rights to edit another candidate");
+    if (req.user.role === UserRole.EMPLOYER && vacancyResponse.vacancy.employerId !== req.user.id) {
+      throw new HttpError(403, "Not enough rights to edit another response");
     }
 
-    return prisma.candidate.update({
+    return prisma.vacancyResponse.update({
       where: { id },
       data: body,
     });
@@ -159,23 +159,23 @@ export class CandidateController extends Controller {
 
 
   @Delete("{id}")
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another candidate"}>(403)
-  @Response<HttpErrorBody & {"error": "Candidate not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Not enough rights to edit another response"}>(403)
+  @Response<HttpErrorBody & {"error": "VacancyResponse not found"}>(404)
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   public async deleteById(
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const candidate = await prisma.candidate.findUnique( { where: { id }, include: { vacancy: true } } );
-    if(!candidate) throw new HttpError(404, "Candidate not found");
+    const vacancyResponse = await prisma.vacancyResponse.findUnique( { where: { id }, include: { vacancy: true } } );
+    if(!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
 
     if (
-      req.user.role === UserRole.APPLICANT && candidate.applicantId !== req.user.id
-      || req.user.role === UserRole.EMPLOYER && candidate.vacancy.employerId !== req.user.id
+      req.user.role === UserRole.APPLICANT && vacancyResponse.applicantId !== req.user.id
+      || req.user.role === UserRole.EMPLOYER && vacancyResponse.vacancy.employerId !== req.user.id
       ) {
-      throw new HttpError(403, "Not enough rights to edit another candidate");
+      throw new HttpError(403, "Not enough rights to edit another response");
     }
 
-    await prisma.candidate.delete({where: { id }});
+    await prisma.vacancyResponse.delete({where: { id }});
   }
 }

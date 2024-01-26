@@ -59,15 +59,15 @@ export class VacancyController extends Controller {
   @Get("")
   @Security("jwt", [UserRole.MANAGER])
   public async getAll(
-    @Query() include?: ("employer" | "candidates")[],
+    @Query() include?: ("employer" | "vacancyResponses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() employerId?: string,
-    @Query() candidateId?: string,
+    @Query() vacancyResponseId?: string,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const where = {
       employerId: employerId ?? undefined,
-      candidates: candidateId ? { some: { id: candidateId } } : undefined,
+      vacancyResponses: vacancyResponseId ? { some: { id: vacancyResponseId } } : undefined,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -77,7 +77,7 @@ export class VacancyController extends Controller {
         where,
         include: {
           employer: include?.includes("employer"),
-          candidates: include?.includes("candidates"),
+          vacancyResponses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.vacancy.count({ where }),
@@ -99,7 +99,7 @@ export class VacancyController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("employer" | "candidates")[],
+    @Query() include?: ("employer" | "vacancyResponses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponse>> {
@@ -114,7 +114,7 @@ export class VacancyController extends Controller {
         where,
         include: {
           employer: include?.includes("employer"),
-          candidates: include?.includes("candidates"),
+          vacancyResponses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.vacancy.count({ where }),
@@ -229,18 +229,18 @@ export class VacancyController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("employer" | "candidates")[]
+    @Query() include?: ("employer" | "vacancyResponses")[]
   ): Promise<GetVacancyResponse> {
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, candidates: { some: { id: req.user.id } }};
+    else if(req.user.role === UserRole.APPLICANT) where = { id, vacancyResponses: { some: { id: req.user.id } }};
 
     const vacancy = await prisma.vacancy.findUnique({
       where: where!,
       include: {
         employer: include?.includes("employer"),
-        candidates: include?.includes("candidates"),
+        vacancyResponses: include?.includes("vacancyResponses"),
       },
     });
 

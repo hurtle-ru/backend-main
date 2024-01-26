@@ -1,18 +1,18 @@
 import { Vacancy } from "@prisma/client";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicApplicant } from "../applicant/applicant.dto";
-import { BasicCandidate } from "./candidate/candidate.dto"
+import { BasicVacancyResponse } from "./response/response.dto"
 
 export type BasicVacancy = Omit<
   Vacancy,
   | "employer"
-  | "candidates"
+  | "vacancyResponses"
   | "uniqueViewerApplicantIds"
 >;
 
 export type GetVacancyResponse = BasicVacancy & {
   employer?: BasicEmployer;
-  candidates?: BasicCandidate[];
+  vacancyResponses?: BasicVacancyResponse[];
   viewersCount: number;
 };
 

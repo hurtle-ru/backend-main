@@ -47,14 +47,14 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async getMe(
     @Request() req: JwtModel,
-    @Query() include?: ("resume" | "meetings" | "candidates")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<GetApplicantResponse> {
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
       include: {
         resume: include?.includes("resume"),
         meetings: include?.includes("meetings"),
-        candidates: include?.includes("candidates"),
+        vacancyResponses: include?.includes("vacancyResponses"),
       },
     });
 
@@ -69,7 +69,7 @@ export class ApplicantController extends Controller {
     @Query() nickname?: string,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("resume" | "meetings" | "candidates")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
     const where = {
       nickname,
@@ -89,7 +89,7 @@ export class ApplicantController extends Controller {
         include: {
           resume: includeResume,
           meetings: include?.includes("meetings"),
-          candidates: include?.includes("candidates"),
+          vacancyResponses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.applicant.count({ where }),
@@ -240,7 +240,7 @@ export class ApplicantController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("resume" | "meetings" | "candidates")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<GetApplicantResponse> {
     let includeResume: any = false;
     if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
@@ -253,7 +253,7 @@ export class ApplicantController extends Controller {
       include: {
         resume: includeResume,
         meetings: include?.includes("meetings"),
-        candidates: include?.includes("candidates"),
+        vacancyResponses: include?.includes("vacancyResponses"),
       },
     });
 

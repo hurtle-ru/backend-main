@@ -8,30 +8,30 @@ datasource db {
 }
 
 model Applicant {
-  id                   String    @id @default(uuid())
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  email                String    @unique
-  login                String    @unique
+  id                   String            @id @default(uuid())
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  email                String            @unique
+  login                String            @unique
   contact              String
   firstName            String
   middleName           String?
   lastName             String
-  phone                String?   @unique
+  phone                String?           @unique
   birthDate            DateTime?
   gender               Gender?
   city                 String?
   country              String?
   aboutMe              String?
   specialty            String?
-  nickname             String?   @unique
+  nickname             String?           @unique
   isReadyToRelocate    Boolean?
-  isVisibleToEmployers Boolean   @default(true)
-  isConfirmedByManager Boolean   @default(false)
-  isEmailConfirmed     Boolean   @default(false)
+  isVisibleToEmployers Boolean           @default(true)
+  isConfirmedByManager Boolean           @default(false)
+  isEmailConfirmed     Boolean           @default(false)
   resume               Resume?
   meetings             Meeting[]
-  candidates           Candidate[]
+  vacancyRespones      VacancyResponse[]
   hhToken              HhToken?
   password             Password?
 }
@@ -66,15 +66,15 @@ model Employer {
 }
 
 model Manager {
-  id                  String                @id @default(uuid())
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  login               String                @unique
-  name                String
-  accessScopes        ManagerAccessScopes[]
-  slots               MeetingSlot[]
-  password            Password?
-  suggestedCandidates Candidate[]
+  id              String                @id @default(uuid())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  login           String                @unique
+  name            String
+  accessScopes    ManagerAccessScopes[]
+  slots           MeetingSlot[]
+  password        Password?
+  recommendations VacancyResponse[]
 }
 
 model Password {
@@ -140,7 +140,7 @@ model Vacancy {
   workplaceModel           VacancyWorkplaceModel
   isConfirmedByManager     Boolean               @default(false)
   keySkills                String[]
-  candidates               Candidate[]
+  responses                VacancyResponse[]
   offers                   Offer[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
   employerId               String
@@ -155,11 +155,11 @@ model Offer {
   salaryCurrency Currency
   status         OfferStatus @default(PENDING)
 
-  vacancyId      String
-  vacancy        Vacancy     @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  vacancyId String
+  vacancy   Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
 
-  candidateId    String      @unique
-  candidate      Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyResponseId String          @unique
+  vacancyResponse   VacancyResponse @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)
 }
 
 model Resume {
@@ -342,21 +342,20 @@ model University {
   logoUrl   String?
 }
 
-model Candidate {
-  id                      String             @id @default(uuid())
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
-  status                  CandidateStatus    @default(NEW_APPLICATION)
-  applicant               Applicant          @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  vacancy                 Vacancy            @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
-  suggestedBy             Manager?           @relation(fields: [suggestedByManagerId], references: [id], onDelete: Cascade)
-  offer                   Offer?
+model VacancyResponse {
+  id                              String                @id @default(uuid())
+  createdAt                       DateTime              @default(now())
+  updatedAt                       DateTime              @updatedAt
+  status                          VacancyResponseStatus @default(NEW_APPLICATION)
+  offer                           Offer?
+  candidate                       Applicant             @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId                     String
+  vacancy                         Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  vacancyId                       String
+  candidateRecommendedBy          Manager?              @relation(fields: [candidateRecommendedByManagerId], references: [id])
+  candidateRecommendedByManagerId String?
 
-  applicantId             String
-  vacancyId               String
-  suggestedByManagerId    String?
-
-  @@unique([applicantId, vacancyId])
+  @@unique([candidateId, vacancyId])
 }
 
 enum ContactType {
@@ -461,6 +460,14 @@ enum VacancyStatus {
   ARCHIVED
 }
 
+enum VacancyResponseStatus {
+  NEW_APPLICATION
+  SCREENING
+  INTERVIEWING
+  OFFER_MADE
+  HIRED
+}
+
 enum OfferStatus {
   PENDING
   ACCEPTED
@@ -491,12 +498,4 @@ enum Gender {
 
 enum ManagerAccessScopes {
   NONE
-}
-
-enum CandidateStatus {
-  NEW_APPLICATION
-  SCREENING
-  INTERVIEWING
-  OFFER_MADE
-  HIRED
 }
