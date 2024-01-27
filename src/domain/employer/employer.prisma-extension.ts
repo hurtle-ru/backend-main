@@ -24,7 +24,7 @@ export const employerPrismaExtension = Prisma.defineExtension({
             },
             vacancies: {
               include: {
-                offers: true,
+                responses: true,
               },
             },
           },

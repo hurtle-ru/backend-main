@@ -31,7 +31,7 @@ model Applicant {
   isEmailConfirmed     Boolean           @default(false)
   resume               Resume?
   meetings             Meeting[]
-  vacancyRespones      VacancyResponse[]
+  vacancyResponses     VacancyResponse[]
   hhToken              HhToken?
   password             Password?
 }
@@ -141,7 +141,6 @@ model Vacancy {
   isConfirmedByManager     Boolean               @default(false)
   keySkills                String[]
   responses                VacancyResponse[]
-  offers                   Offer[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
   employerId               String
 }
@@ -154,9 +153,6 @@ model Offer {
   salary         Int
   salaryCurrency Currency
   status         OfferStatus @default(PENDING)
-
-  vacancyId String
-  vacancy   Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
 
   vacancyResponseId String          @unique
   vacancyResponse   VacancyResponse @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)

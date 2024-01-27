@@ -18,19 +18,14 @@ export class OfferController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.EMPLOYER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found" | "VacancyResponse not found"}>(404)
+  @Response<HttpErrorBody & {"error": "VacancyResponse not found"}>(404)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateOfferRequest,
   ): Promise<BasicOffer> {
-    const vacancy = await prisma.vacancy.findUnique({
-      where: { id: body.vacancyId, employerId: req.user.id },
-    });
 
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-
-    const vacancyResponse = await prisma.applicant.findUnique({
-      where: { id: body.vacancyResponseId, vacancyResponses: { some: { id: body.vacancyId } } },
+    const vacancyResponse = await prisma.vacancyResponse.findUnique({
+      where: { id: body.vacancyResponseId, vacancy: { employerId: req.user.id} },
     });
 
     if(!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
@@ -47,13 +42,13 @@ export class OfferController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("vacancy" | "vacancyResponse")[],
+    @Query() include?: ("vacancyResponse.vacancy" | "vacancyResponse")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetOfferResponse>> {
     let where;
     if(req.user.role === UserRole.APPLICANT) where = { vacancyResponseId: req.user.id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { vacancy: { employerId: req.user.id } };
+    else if(req.user.role === UserRole.EMPLOYER) where = { vacancyResponse: {vacancy: {employerId: req.user.id} } };
 
     const [offers, offersCount] = await Promise.all([
       prisma.offer.findMany({
@@ -61,8 +56,9 @@ export class OfferController extends Controller {
         take: size,
         where,
         include: {
-          vacancy: include?.includes("vacancy"),
-          vacancyResponse: include?.includes("vacancyResponse"),
+          vacancyResponse: include?.includes("vacancyResponse.vacancy")
+          ? { include: { vacancy: true }}
+          : include?.includes("vacancyResponse"),
         },
       }),
       prisma.offer.count({ where }),
@@ -74,7 +70,7 @@ export class OfferController extends Controller {
   @Get("")
   @Security("jwt", [UserRole.MANAGER])
   public async getAll(
-    @Query() include?: ("vacancy" | "vacancyResponse")[],
+    @Query() include?: ("vacancyResponse.vacancy" | "vacancyResponse")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() vacancyId?: string,
@@ -93,8 +89,9 @@ export class OfferController extends Controller {
         take: size,
         where,
         include: {
-          vacancy: include?.includes("vacancy"),
-          vacancyResponse: include?.includes("vacancyResponse"),
+          vacancyResponse: include?.includes("vacancyResponse.vacancy")
+          ? { include: { vacancy: true }}
+          : include?.includes("vacancyResponse"),
         },
       }),
       prisma.offer.count({ where }),
@@ -113,7 +110,7 @@ export class OfferController extends Controller {
   ): Promise<BasicOffer> {
     let where = null;
     if (req.user.role === UserRole.MANAGER) where = { id };
-    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
+    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: {vacancy: {employerId: req.user.id} } };
 
     const offer = await prisma.offer.findUnique({
       where: where!,
@@ -157,7 +154,7 @@ export class OfferController extends Controller {
   ): Promise<BasicOffer> {
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
+    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: {vacancy: {employerId: req.user.id} } };
 
     const offer = await prisma.offer.findUnique({
       where: where!,
@@ -177,18 +174,19 @@ export class OfferController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("vacancy" | "vacancyResponse")[],
+    @Query() include?: ("vacancyResponse" | "vacancyResponse.vacancy")[],
   ): Promise<GetOfferResponse> {
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
+    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: {vacancy: {employerId: req.user.id} } };
     else if(req.user.role === UserRole.APPLICANT) where = { id, vacancyResponseId: req.user.id };
 
     const offer = await prisma.offer.findUnique({
       where: where!,
       include: {
-        vacancy: include?.includes("vacancy"),
-        vacancyResponse: include?.includes("vacancyResponse"),
+        vacancyResponse: include?.includes("vacancyResponse.vacancy")
+        ? { include: { vacancy: true }}
+        : include?.includes("vacancyResponse"),
       },
     });
 

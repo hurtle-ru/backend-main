@@ -14,13 +14,13 @@ export type BasicVacancyResponse = Omit<
 export type CreateVacancyResponseByManagerRequest = Pick<
   VacancyResponse,
   | "status"
-  | "applicantId"
+  | "candidateId"
 >;
 
 export type GetVacancyResponseResponse = BasicVacancyResponse & {
-  applicant: BasicApplicant,
+  candidate: BasicApplicant,
   vacancy: BasicVacancy,
-  suggestedBy?: BasicManager | null,
+  candidateRecommendedBy?: BasicManager | null,
 };
 
 export type PatchVacancyResponseRequest = Partial<Pick<
