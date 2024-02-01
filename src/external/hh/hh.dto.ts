@@ -12,6 +12,11 @@ export namespace hh {
     middleName?: string;
   }
 
+  export interface Gender {
+    id: string;
+    name: string;
+  }
+
   export interface Resume extends ResumePreview {
     createdAt: string; // @see DateTimeFormat
     area?: Area | null;
@@ -23,11 +28,8 @@ export namespace hh {
     totalExperience: { months: number };
     education: Education;
     experience: Experience[];
-  }
-
-  export interface Gender {
-    id: string;
-    name: string;
+    birthDate: string;
+    gender: Gender | null;
   }
 
   export interface Salary {

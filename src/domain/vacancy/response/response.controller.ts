@@ -38,7 +38,7 @@ export class VacancyResponseController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("applicant" | "vacancy" | "suggestedManager")[],
+    @Query() include?: ("candidate" | "vacancy" | "candidateRecommendedBy")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponseResponse>> {
@@ -54,9 +54,9 @@ export class VacancyResponseController extends Controller {
         take: size,
         where,
         include: {
-          applicant: include?.includes("applicant"),
+          candidate: include?.includes("candidate"),
           vacancy: include?.includes("vacancy"),
-          suggestedBy: include?.includes("suggestedManager"),
+          candidateRecommendedBy: include?.includes("candidateRecommendedBy"),
         },
       }),
       prisma.vacancyResponse.count({ where }),
@@ -73,20 +73,20 @@ export class VacancyResponseController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("applicant" | "vacancy" | "suggestedManager")[]
+    @Query() include?: ("candidate" | "vacancy" | "candidateRecommendedBy")[]
   ): Promise<GetVacancyResponseResponse> {
     let where = null;
 
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: {employerId: req.user.id } };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, applicantId: req.user.id };
+    else if(req.user.role === UserRole.APPLICANT) where = { id, candidateId: req.user.id };
 
     const vacancyResponse = await prisma.vacancyResponse.findUnique({
       where: where!,
       include: {
         vacancy: include?.includes("vacancy"),
-        applicant: include?.includes("applicant"),
-        suggestedBy: include?.includes("suggestedManager"),
+        candidate: include?.includes("candidate"),
+        candidateRecommendedBy: include?.includes("candidateRecommendedBy"),
       },
     });
 
@@ -102,13 +102,13 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<BasicVacancyResponse> {
-    if (await prisma.vacancyResponse.findFirst({where: {applicantId: req.user.id, vacancyId: id}})) {
+    if (await prisma.vacancyResponse.findFirst({where: {candidateId: req.user.id, vacancyId: id}})) {
       throw new HttpError(409, "You are already response on this vacancy")
     }
 
     return prisma.vacancyResponse.create({
       data: {
-        applicantId: req.user.id,
+        candidateId: req.user.id,
         vacancyId: id,
       },
     })
@@ -122,7 +122,7 @@ export class VacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyResponseByManagerRequest,
   ): Promise<BasicVacancyResponse> {
-    if (await prisma.vacancyResponse.findFirst({where: {applicantId: body.applicantId, vacancyId: id}})) {
+    if (await prisma.vacancyResponse.findFirst({where: {candidateId: body.candidateId, vacancyId: id}})) {
       throw new HttpError(409, "You are already response on this vacancy")
     }
 
@@ -170,7 +170,7 @@ export class VacancyResponseController extends Controller {
     if(!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
 
     if (
-      req.user.role === UserRole.APPLICANT && vacancyResponse.applicantId !== req.user.id
+      req.user.role === UserRole.APPLICANT && vacancyResponse.candidateId !== req.user.id
       || req.user.role === UserRole.EMPLOYER && vacancyResponse.vacancy.employerId !== req.user.id
       ) {
       throw new HttpError(403, "Not enough rights to edit another response");

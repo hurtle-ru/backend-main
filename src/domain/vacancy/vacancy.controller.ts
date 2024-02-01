@@ -77,7 +77,7 @@ export class VacancyController extends Controller {
         where,
         include: {
           employer: include?.includes("employer"),
-          vacancyResponses: include?.includes("vacancyResponses"),
+          responses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.vacancy.count({ where }),
@@ -114,7 +114,7 @@ export class VacancyController extends Controller {
         where,
         include: {
           employer: include?.includes("employer"),
-          vacancyResponses: include?.includes("vacancyResponses"),
+          responses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.vacancy.count({ where }),
@@ -205,7 +205,7 @@ export class VacancyController extends Controller {
 
     if(req.user.role === UserRole.EMPLOYER && body._requester !== "Employer")
       throw new HttpError(403, "Invalid body request for employer")
-    
+
     if(req.user.role === UserRole.MANAGER && body._requester !== "Manager")
       throw new HttpError(403, "Invalid body request for manager")
 
@@ -234,13 +234,13 @@ export class VacancyController extends Controller {
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, vacancyResponses: { some: { id: req.user.id } }};
+    else if(req.user.role === UserRole.APPLICANT) where = { id, responses: { some: { id: req.user.id } }};
 
     const vacancy = await prisma.vacancy.findUnique({
       where: where!,
       include: {
         employer: include?.includes("employer"),
-        vacancyResponses: include?.includes("vacancyResponses"),
+        responses: include?.includes("vacancyResponses"),
       },
     });
 
