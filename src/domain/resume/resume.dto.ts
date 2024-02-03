@@ -29,6 +29,8 @@ export type PutResumeRequest = Pick<
   | "city"
   | "skills"
   | "isVisibleToEmployers"
+  | "desiredSalary"
+  | "desiredSalaryCurrency"
 >;
 
 export type GetResumeResponse = BasicResume & {
