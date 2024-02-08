@@ -18,19 +18,24 @@ export class EmailVerificationController extends Controller {
   @Post()
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   public async createEmailVerification(@Request() req: JwtModel) {
-    try {
-      await prisma.emailVerification.delete({ where: { userId: req.user.id, role: req.user.role } });
-    } catch (e) {}
-
     let code = this.emailVerificationService.generateCode();
     while (await prisma.emailVerification.findUnique({ where: { code } })) {
       code = this.emailVerificationService.generateCode();
     }
 
-    await prisma.emailVerification.create({
-      data: {
+    await prisma.emailVerification.upsert({
+      where: {
+        userId_role: {
+          userId: req.user.id,
+          role: req.user.role,
+        }
+      },
+      create: {
         userId: req.user.id,
         role: req.user.role,
+        code: code,
+      },
+      update: {
         code: code,
       },
     });
