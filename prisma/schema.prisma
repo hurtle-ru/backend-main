@@ -257,6 +257,7 @@ model MeetingSlot {
   updatedAt DateTime      @updatedAt
   dateTime  DateTime
   types     MeetingType[]
+  payment   MeetingPayment?
   meeting   Meeting?
   manager   Manager       @relation(fields: [managerId], references: [id], onDelete: Cascade)
   managerId String
@@ -354,6 +355,14 @@ model VacancyResponse {
   candidateRecommendedByManagerId String?
 
   @@unique([candidateId, vacancyId])
+}
+
+model MeetingPayment {
+  id               String         @id @default(uuid())
+  applicantId      String
+  createdAt        DateTime       @default(now())
+  slot             MeetingSlot    @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  slotId           String         @unique
 }
 
 enum ContactType {
