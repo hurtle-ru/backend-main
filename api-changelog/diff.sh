@@ -14,7 +14,7 @@ FILE2=$2
 CURRENT_DATE=$(date +%d.%m.%Y)
 
 # Run oasdiff with the provided files and output to a dated HTML file
-oasdiff changelog "$FILE1" "$FILE2" --include-path-params --lang ru -f html > "${CURRENT_DATE}.html"
+oasdiff changelog "$FILE1" "$FILE2" --include-path-params --lang en -f html > "${CURRENT_DATE}.html"
 
 # Output confirmation message
 echo "Created file: ${CURRENT_DATE}.html"
