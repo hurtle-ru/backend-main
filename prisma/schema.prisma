@@ -59,7 +59,7 @@ model Employer {
   isStartup            Boolean            @default(false)
   size                 EmployerSize?
   website              String?            @db.VarChar(100)
-  description          String?            @db.VarChar(1000)
+  description          String?            @db.VarChar(3000)
   meetings             Meeting[]
   vacancies            Vacancy[]
   password             Password?
