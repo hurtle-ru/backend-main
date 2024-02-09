@@ -35,10 +35,16 @@ export class ResumeController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT])
+  @Response<HttpErrorBody & { "error": "Resume already exists" }>(409)
   public async createEmpty(
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
+    const resume = await prisma.resume.findUnique({
+      where: { applicantId: req.user.id },
+    })
+    if (resume) throw new HttpError(409, "Resume already exists.");
+
     return prisma.resume.create({
       data: {
         ...body,

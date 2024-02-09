@@ -1,6 +1,7 @@
 import { Applicant } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
+import { BasicVacancyResponse } from "../vacancy/response/response.dto";
 import { BasicResume } from "../resume/resume.dto";
 
 
@@ -9,13 +10,13 @@ export type BasicApplicant = Omit<
   | "password"
   | "resume"
   | "meetings"
-  | "assignedVacancies"
+  | "vacancyResponses"
 >;
 
 export type GetApplicantResponse = BasicApplicant & {
   resume?: BasicResume | null,
   meetings?: BasicMeeting[],
-  assignedVacancies?: BasicVacancy[]
+  vacancyResponses?: BasicVacancyResponse[]
 };
 
 export type PutMeApplicantRequest = Pick<

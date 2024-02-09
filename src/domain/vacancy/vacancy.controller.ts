@@ -59,15 +59,15 @@ export class VacancyController extends Controller {
   @Get("")
   @Security("jwt", [UserRole.MANAGER])
   public async getAll(
-    @Query() include?: ("employer" | "candidates")[],
+    @Query() include?: ("employer" | "vacancyResponses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() employerId?: string,
-    @Query() candidateId?: string,
+    @Query() vacancyResponseId?: string,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const where = {
       employerId: employerId ?? undefined,
-      candidates: candidateId ? { some: { id: candidateId } } : undefined,
+      vacancyResponses: vacancyResponseId ? { some: { id: vacancyResponseId } } : undefined,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -77,7 +77,7 @@ export class VacancyController extends Controller {
         where,
         include: {
           employer: include?.includes("employer"),
-          candidates: include?.includes("candidates"),
+          responses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.vacancy.count({ where }),
@@ -99,7 +99,7 @@ export class VacancyController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("employer" | "candidates")[],
+    @Query() include?: ("employer" | "vacancyResponses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponse>> {
@@ -114,7 +114,7 @@ export class VacancyController extends Controller {
         where,
         include: {
           employer: include?.includes("employer"),
-          candidates: include?.includes("candidates"),
+          responses: include?.includes("vacancyResponses"),
         },
       }),
       prisma.vacancy.count({ where }),
@@ -148,37 +148,6 @@ export class VacancyController extends Controller {
     await prisma.vacancy.update({
       where: { id },
       data: { isConfirmedByManager },
-    });
-  }
-
-  @Post("{id}/candidates/{applicantId}")
-  @Security("jwt", [UserRole.EMPLOYER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found" | "Applicant not found"}>(404)
-  public async addCandidate(
-    @Path() id: string,
-    @Path() applicantId: string,
-  ): Promise<void> {
-    const vacancy = await prisma.vacancy.findUnique({
-      where: { id },
-    });
-
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-
-    const applicant = await prisma.applicant.findUnique({
-      where: { id: applicantId },
-    });
-
-    if(!applicant) throw new HttpError(404, "Applicant not found");
-
-    await prisma.vacancy.update({
-      where: { id },
-      data: {
-        candidates: {
-          connect: {
-            id: applicantId,
-          },
-        },
-      },
     });
   }
 
@@ -232,13 +201,9 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
-    const { _requester, ...dataBody } = body;
-
-    if(req.user.role === UserRole.EMPLOYER && body._requester !== "Employer")
-      throw new HttpError(403, "Invalid body request for employer")
-    
-    if(req.user.role === UserRole.MANAGER && body._requester !== "Manager")
-      throw new HttpError(403, "Invalid body request for manager")
+    const { _requester, ...bodyData } = body;
+    if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
 
     const where = {
       id,
@@ -250,7 +215,7 @@ export class VacancyController extends Controller {
 
     await prisma.vacancy.update({
       where,
-      data: dataBody,
+      data: bodyData,
     });
   }
 
@@ -260,18 +225,18 @@ export class VacancyController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("employer" | "candidates")[]
+    @Query() include?: ("employer" | "vacancyResponses")[]
   ): Promise<GetVacancyResponse> {
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, candidates: { some: { id: req.user.id } }};
+    else if(req.user.role === UserRole.APPLICANT) where = { id, responses: { some: { id: req.user.id } }};
 
     const vacancy = await prisma.vacancy.findUnique({
       where: where!,
       include: {
         employer: include?.includes("employer"),
-        candidates: include?.includes("candidates"),
+        responses: include?.includes("vacancyResponses"),
       },
     });
 

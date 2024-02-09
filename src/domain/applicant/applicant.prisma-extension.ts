@@ -32,8 +32,11 @@ export const applicantPrismaExtension = Prisma.defineExtension({
                 },
               },
             },
-            offers: true,
-            assignedVacancies: true,
+            vacancyResponses: {
+              include: {
+                offer: true,
+              },
+            },
           },
         });
 

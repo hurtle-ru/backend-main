@@ -51,9 +51,18 @@ export class HhAuthController extends Controller {
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
 
-    await prisma.hhToken.create({
-      data: {
+    await prisma.hhToken.upsert({
+      where: {
         applicantId: req.user.id,
+      },
+      create: {
+        applicantId: req.user.id,
+        hhApplicantId: hhApplicant.id,
+        accessToken: hhToken.accessToken,
+        refreshToken: hhToken.refreshToken,
+        expiresIn: hhToken.expiresIn,
+      },
+      update: {
         hhApplicantId: hhApplicant.id,
         accessToken: hhToken.accessToken,
         refreshToken: hhToken.refreshToken,
