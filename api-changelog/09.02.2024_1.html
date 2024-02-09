@@ -1,0 +1,1364 @@
+<html>
+
+<head>
+    <style>
+
+        @import url(//fonts.googleapis.com/css?family=Nunito);
+
+        * {
+            font-family: 'Nunito','Helvetica Neue',Helvetica,Arial,sans-serif;
+        }
+        
+        .title {
+            margin: 1em 0 0.5em 0;
+            font-size: 36px;
+        }
+
+        .path {
+            color: #016BF8;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .endpoint {
+            color: #21313c;
+            line-height: 24px;
+            margin: 22px 0;
+        }        
+
+        .endpoint-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .change-type {
+            box-sizing: border-box;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 16px;
+            border-radius: 5px;
+            height: 18px;
+            padding-left: 6px;
+            padding-right: 6px;
+            text-transform: uppercase;
+            border: 1px solid;
+            letter-spacing: 1px;
+            background-color: #E3FCF7;
+            border-color: #C0FAE6;
+            color: #00684A;
+            margin-top: 2px;
+        }
+
+        .change {
+        }
+
+        .breaking {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 5px;
+        }
+
+        .breaking-icon {
+            color: #DB3030;
+        }
+
+        .endpoint-changes {
+        }
+
+        .tooltip {
+            position:relative;  
+        }
+
+        .tooltip:before {
+            content: attr(data-text);  
+            position:absolute;
+
+             
+            top:50%;
+            transform:translateY(-50%);
+
+             
+            left:100%;
+            margin-left:15px;  
+
+             
+            width:200px;
+            padding:10px;
+            border-radius:10px;
+            background:#000;
+            color: #fff;
+            text-align:center;
+
+            display:none;  
+        }        
+
+        .tooltip:hover:before {
+            display:block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">API Changelog 1.0.0 vs. 1.0.0 </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;items/items/allOf[#2]/assignedVacancies&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;items/items/allOf[#2]/vacancyResponses&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;/allOf[#2]/assignedVacancies&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;/allOf[#2]/vacancyResponses&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;/allOf[#2]/assignedVacancies&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;/allOf[#2]/vacancyResponses&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#/components/schemas/BasicEmployer]/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;/allOf[#/components/schemas/BasicEmployer]/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/employers/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;isEmailConfirmed&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/employers/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;isEmailConfirmed&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;/allOf[#/components/schemas/BasicEmployer]/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/employers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the &#39;agreementNumber&#39; request property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;isEmailConfirmed&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/employers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the &#39;agreementNumber&#39; request property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;isEmailConfirmed&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;/allOf[#2]/employer/allOf[#/components/schemas/BasicEmployer]/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/offers</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#/components/schemas/BasicOffer]/candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#/components/schemas/BasicOffer]/vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            deleted the &#39;query&#39; request parameter &#39;candidateId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;items/items/allOf[#2]/candidate&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the new optional &#39;query&#39; request parameter &#39;vacancyResponseId&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;items/items/allOf[#2]/vacancyResponse&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#/components/schemas/BasicOffer]/vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/offers</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            added the new required request property &#39;vacancyResponseId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;candidateId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;vacancyId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            added the new &#39;VacancyResponse not found&#39; enum value to the &#39;/allOf[#2]/error&#39; response property for the response status &#39;404&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the non-success response with the status &#39;409&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;vacancyResponseId&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            removed the &#39;Candidate not found&#39; enum value from the &#39;/allOf[#2]/error&#39; response property for the response status &#39;404&#39;
+            </li>
+            
+            <li class="change">
+            
+            removed the &#39;Vacancy not found&#39; enum value from the &#39;/allOf[#2]/error&#39; response property for the response status &#39;404&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/offers/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#/components/schemas/BasicOffer]/candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#/components/schemas/BasicOffer]/vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;items/items/allOf[#2]/candidate&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;items/items/allOf[#2]/vacancyResponse&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#/components/schemas/BasicOffer]/vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/offers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#/components/schemas/BasicOffer]/candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#/components/schemas/BasicOffer]/vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;/allOf[#2]/candidate&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;/allOf[#2]/vacancyResponse&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;/allOf[#/components/schemas/BasicOffer]/vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/offers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;candidateId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;vacancyId&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new optional request property &#39;vacancyResponseId&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;vacancyResponseId&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/offers/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            added the new required request property &#39;vacancyResponseId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;candidateId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;vacancyId&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;vacancyResponseId&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/offers/{id}/status</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;candidateId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;vacancyId&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;vacancyResponseId&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;vacancyResponseId&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/resumes</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            added the non-success response with the status &#39;409&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/resumes/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            added the new optional request property &#39;desiredSalary&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new optional request property &#39;desiredSalaryCurrency&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;desiredSalary&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;desiredSalaryCurrency&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;desiredSalary&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;desiredSalaryCurrency&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/resumes/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            added the new required request property &#39;desiredSalary&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            added the new required request property &#39;desiredSalaryCurrency&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;desiredSalary&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            the response property &#39;desiredSalaryCurrency&#39; became required for the status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;desiredSalary&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;desiredSalaryCurrency&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            deleted the &#39;query&#39; request parameter &#39;candidateId&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;items/items/allOf[#2]/candidates&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the new optional &#39;query&#39; request parameter &#39;vacancyResponseId&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;items/items/allOf[#2]/vacancyResponses&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#2]/employer/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;items/items/allOf[#2]/candidates&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;items/items/allOf[#2]/vacancyResponses&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;items/items/allOf[#2]/employer/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            the response&#39;s property type/format changed from &#39;string&#39;/&#39;&#39; to &#39;number&#39;/&#39;double&#39; for status &#39;200&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the optional property &#39;/allOf[#2]/candidates&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the optional property &#39;/allOf[#2]/vacancyResponses&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            added the required property &#39;/allOf[#2]/employer/isEmailConfirmed&#39; to the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/vacancies/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;Employer&#39; of the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromEmployer]/allOf[#/components/schemas/Partial_PutVacancyRequestFromEmployer_]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;Employer&#39; of the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromEmployer]/allOf[#/components/schemas/RequesterEmployer]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;Manager&#39; of the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromManager]/allOf[#/components/schemas/Partial_PutVacancyRequestFromManager_]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;Manager&#39; of the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromManager]/allOf[#/components/schemas/RequesterManager]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new &#39;EMPLOYER&#39; enum value to the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromEmployer]/allOf[#/components/schemas/Partial_PutVacancyRequestFromEmployer_]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new &#39;EMPLOYER&#39; enum value to the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromEmployer]/allOf[#/components/schemas/RequesterEmployer]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new &#39;MANAGER&#39; enum value to the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromManager]/allOf[#/components/schemas/Partial_PutVacancyRequestFromManager_]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new &#39;MANAGER&#39; enum value to the request property &#39;/anyOf[#/components/schemas/PatchVacancyRequestFromManager]/allOf[#/components/schemas/RequesterManager]/_requester&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/vacancies/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;Employer&#39; of the request property &#39;/anyOf[#/components/schemas/PutVacancyRequestFromEmployer]/allOf[#/components/schemas/RequesterEmployer]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;Manager&#39; of the request property &#39;/anyOf[#/components/schemas/PutVacancyRequestFromManager]/allOf[#/components/schemas/RequesterManager]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new &#39;EMPLOYER&#39; enum value to the request property &#39;/anyOf[#/components/schemas/PutVacancyRequestFromEmployer]/allOf[#/components/schemas/RequesterEmployer]/_requester&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new &#39;MANAGER&#39; enum value to the request property &#39;/anyOf[#/components/schemas/PutVacancyRequestFromManager]/allOf[#/components/schemas/RequesterManager]/_requester&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/vacancies/{id}/candidates/{applicantId}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            api path removed without deprecation
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/vacancyResponses</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            endpoint added
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancyResponses/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            endpoint added
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">DELETE /api/v1/vacancyResponses/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            endpoint added
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancyResponses/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            endpoint added
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/vacancyResponses/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            endpoint added
+            </li>
+            
+        </ul>
+    </div>
+    
+</body>
+
+</html>
+
