@@ -10,7 +10,7 @@ export class EmailVerificationService {
   constructor(private readonly mailService: MailService) {}
 
   generateCode(): string {
-    return otpGenerator.generate(6, {lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+    return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
   }
   async sendEmail(email: string, code: string) {
     const link = appConfig.DOMAIN + "/auth/verify-email/" + code;

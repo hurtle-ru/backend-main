@@ -63,10 +63,11 @@ export class HhAuthController extends Controller {
         expiresIn: hhToken.expiresIn,
       },
       update: {
+        hhApplicantId: hhApplicant.id,
         accessToken: hhToken.accessToken,
         refreshToken: hhToken.refreshToken,
         expiresIn: hhToken.expiresIn,
-      }
+      },
     });
   }
 }

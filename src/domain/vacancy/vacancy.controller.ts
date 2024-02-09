@@ -201,13 +201,9 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
-    const { _requester, ...dataBody } = body;
-
-    if(req.user.role === UserRole.EMPLOYER && body._requester !== "Employer")
-      throw new HttpError(403, "Invalid body request for employer")
-
-    if(req.user.role === UserRole.MANAGER && body._requester !== "Manager")
-      throw new HttpError(403, "Invalid body request for manager")
+    const { _requester, ...bodyData } = body;
+    if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
 
     const where = {
       id,
@@ -219,7 +215,7 @@ export class VacancyController extends Controller {
 
     await prisma.vacancy.update({
       where,
-      data: dataBody,
+      data: bodyData,
     });
   }
 

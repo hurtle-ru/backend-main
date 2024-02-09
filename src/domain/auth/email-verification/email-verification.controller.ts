@@ -28,7 +28,7 @@ export class EmailVerificationController extends Controller {
         userId_role: {
           userId: req.user.id,
           role: req.user.role,
-        }
+        },
       },
       create: {
         userId: req.user.id,

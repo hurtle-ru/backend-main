@@ -11,20 +11,20 @@ model Applicant {
   id                   String            @id @default(uuid())
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
-  email                String            @unique              @db.VarChar(100)
-  login                String            @unique              @db.VarChar(50)
-  contact              String                                 @db.VarChar(36)
-  firstName            String                                 @db.VarChar(15)
-  middleName           String?                                @db.VarChar(15)
-  lastName             String                                 @db.VarChar(15)
-  phone                String?           @unique              @db.VarChar(15)
+  email                String            @unique @db.VarChar(255)
+  login                String            @unique @db.VarChar(255)
+  contact              String            @db.VarChar(36)
+  firstName            String            @db.VarChar(50)
+  middleName           String?           @db.VarChar(50)
+  lastName             String            @db.VarChar(50)
+  phone                String?           @unique @db.VarChar(15)
   birthDate            DateTime?
   gender               Gender?
-  city                 String?                                @db.VarChar(50)
-  country              String?                                @db.VarChar(20)
-  aboutMe              String?                                @db.VarChar(3000)
-  specialty            String?                                @db.VarChar(100)
-  nickname             String?           @unique              @db.VarChar(50)
+  city                 String?           @db.VarChar(255)
+  country              String?           @db.VarChar(62)
+  aboutMe              String?           @db.VarChar(3000)
+  specialty            String?           @db.VarChar(100)
+  nickname             String?           @unique @db.VarChar(50)
   isReadyToRelocate    Boolean?
   isVisibleToEmployers Boolean           @default(true)
   isConfirmedByManager Boolean           @default(false)
@@ -40,26 +40,26 @@ model Employer {
   id                   String             @id @default(uuid())
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
-  email                String             @unique              @db.VarChar(100)
-  login                String             @unique              @db.VarChar(50)
-  contact              String                                  @db.VarChar(50)
-  firstName            String                                  @db.VarChar(15)
-  middleName           String?                                 @db.VarChar(15)
-  lastName             String                                  @db.VarChar(15)
-  phone                String?            @unique              @db.VarChar(15)
-  name                 String?                                 @db.VarChar(100)
-  inn                  String                                  @db.VarChar(12)
-  ogrn                 String?                                 @db.VarChar(15)
+  email                String             @unique @db.VarChar(255)
+  login                String             @unique @db.VarChar(255)
+  contact              String             @db.VarChar(50)
+  firstName            String             @db.VarChar(50)
+  middleName           String?            @db.VarChar(50)
+  lastName             String             @db.VarChar(50)
+  phone                String?            @unique @db.VarChar(15)
+  name                 String?            @db.VarChar(256)
+  inn                  String             @db.VarChar(12)
+  ogrn                 String?            @db.VarChar(15)
   legalForm            EmployerLegalForm?
-  agreementNumber      String?                                 @db.VarChar(15)
+  agreementNumber      Int?               @default(autoincrement())
   agreementDate        DateTime?
   isConfirmedByManager Boolean            @default(false)
   isEmailConfirmed     Boolean            @default(false)
-  city                 String?                                 @db.VarChar(50)
+  city                 String?            @db.VarChar(255)
   isStartup            Boolean            @default(false)
   size                 EmployerSize?
-  website              String?                                 @db.VarChar(50)
-  description          String?                                 @db.VarChar(1000)
+  website              String?            @db.VarChar(100)
+  description          String?            @db.VarChar(1000)
   meetings             Meeting[]
   vacancies            Vacancy[]
   password             Password?
@@ -69,8 +69,8 @@ model Manager {
   id              String                @id @default(uuid())
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
-  login           String                @unique              @db.VarChar(50)
-  name            String                                     @db.VarChar(50)
+  login           String                @unique @db.VarChar(255)
+  name            String                @db.VarChar(50)
   accessScopes    ManagerAccessScopes[]
   slots           MeetingSlot[]
   password        Password?
@@ -78,47 +78,48 @@ model Manager {
 }
 
 model Password {
-  id          String     @id @default(uuid())
-  hash        String     @db.VarChar(60)
+  id   String @id @default(uuid())
+  hash String @db.VarChar(255)
 
   applicant   Applicant? @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applicantId String?    @unique
 
-  employer    Employer?  @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  employerId  String?    @unique
+  employer   Employer? @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId String?   @unique
 
-  manager     Manager?   @relation(fields: [managerId], references: [id], onDelete: Cascade)
-  managerId   String?    @unique
+  manager   Manager? @relation(fields: [managerId], references: [id], onDelete: Cascade)
+  managerId String?  @unique
 }
 
 model HhToken {
-  createdAt     DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  applicant     Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  applicantId   String    @unique
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String    @unique
 
   hhApplicantId String
-  accessToken   String    @db.VarChar(64)
-  refreshToken  String    @db.VarChar(64)
+  accessToken   String @db.VarChar(255)
+  refreshToken  String @db.VarChar(255)
   expiresIn     Int
 }
 
 model EmailVerification {
-  code      String   @id             @db.VarChar(6)
+  code      String   @id @db.VarChar(6)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String                   @db.VarChar(36)
-  role      String                   @db.VarChar(15)
+  userId    String
+  role      String   @db.VarChar(30)
+
   @@unique([userId, role])
 }
 
-model passwordResetRequest {
+model PasswordResetRequest {
   id        String   @id @default(uuid())
-  code      String                        @db.VarChar(6)
+  code      String   @db.VarChar(6)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  email     String   @unique              @db.VarChar(100)
-  role      String                        @db.VarChar(15)
+  email     String   @unique @db.VarChar(100)
+  role      String   @db.VarChar(30)
 }
 
 model Vacancy {
@@ -128,32 +129,32 @@ model Vacancy {
   name                     String                @db.VarChar(50)
   teamRole                 VacancyTeamRole
   description              String                @db.VarChar(3000)
-  shortDescription         String?               @db.VarChar(100)
+  shortDescription         String?               @db.VarChar(255)
   uniqueViewerApplicantIds String[]
   salary                   Int
   salaryCurrency           Currency
   experience               VacancyExperience
   employmentType           VacancyEmploymentType
   price                    Int?
-  city                     String                @db.VarChar(50)
+  city                     String                @db.VarChar(255)
   reportingForm            VacancyReportingForm
   workingHours             VacancyWorkingHours
   workplaceModel           VacancyWorkplaceModel
   isConfirmedByManager     Boolean               @default(false)
-  keySkills                String[]
+  keySkills                String[]              @db.VarChar(50)
   responses                VacancyResponse[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
   employerId               String
 }
 
 model Offer {
-  id                String          @id @default(uuid())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  message           String          @db.VarChar(500)
-  salary            Int
-  salaryCurrency    Currency
-  status            OfferStatus     @default(PENDING)
+  id             String      @id @default(uuid())
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  message        String      @db.VarChar(500)
+  salary         Int
+  salaryCurrency Currency
+  status         OfferStatus @default(PENDING)
 
   vacancyResponseId String          @unique
   vacancyResponse   VacancyResponse @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)
@@ -163,11 +164,11 @@ model Resume {
   id                    String                       @id @default(uuid())
   createdAt             DateTime                     @default(now())
   importedFrom          ResumeImportExternalService?
-  importedId            String?                      @db.VarChar(38)
+  importedId            String?                      @db.VarChar(255)
   title                 String                       @db.VarChar(50)
   summary               String?                      @db.VarChar(3000)
-  city                  String?                      @db.VarChar(50)
-  skills                String[]
+  city                  String?                      @db.VarChar(255)
+  skills                String[]                     @db.VarChar(50)
   isVisibleToEmployers  Boolean                      @default(true)
   desiredSalary         Int?
   desiredSalaryCurrency Currency?
@@ -182,8 +183,8 @@ model Resume {
 
 model ResumeCertificate {
   id          String  @id @default(uuid())
-  name        String  @db.VarChar(50)
-  description String?
+  name        String  @db.VarChar(100)
+  description String? @db.VarChar(255)
   year        Int?
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
@@ -193,7 +194,7 @@ model ResumeContact {
   id        String      @id @default(uuid())
   name      String?     @db.VarChar(50)
   type      ContactType
-  value     String      @db.VarChar(100)
+  value     String      @db.VarChar(255)
   preferred Boolean     @default(false)
   resume    Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId  String
@@ -202,8 +203,8 @@ model ResumeContact {
 model ResumeEducation {
   id          String  @id @default(uuid())
   name        String  @db.VarChar(50)
-  description String? @db.VarChar(250)
-  degree      String? @db.VarChar(70)
+  description String? @db.VarChar(255)
+  degree      String? @db.VarChar(50)
   startYear   Int?
   endYear     Int
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
@@ -212,7 +213,7 @@ model ResumeEducation {
 
 model ResumeExperience {
   id          String  @id @default(uuid())
-  company     String? @db.VarChar(100)
+  company     String? @db.VarChar(256)
   position    String  @db.VarChar(100)
   startMonth  Int
   startYear   Int
@@ -235,9 +236,9 @@ model Meeting {
   id              String                  @id @default(uuid())
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
-  name            String                  @db.VarChar(50)
+  name            String                  @db.VarChar(100)
   description     String                  @db.VarChar(1000)
-  roomUrl         String                  @db.VarChar(100)
+  roomUrl         String                  @db.VarChar(255)
   type            MeetingType
   status          MeetingStatus           @default(PLANNED)
   feedback        MeetingFeedback[]
@@ -276,7 +277,7 @@ model MeetingScriptTemplate {
   id          String                  @id @default(uuid())
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
-  title       String                  @db.VarChar(50)
+  title       String                  @db.VarChar(100)
   description String?                 @db.VarChar(300)
   protocols   MeetingScriptProtocol[]
   questions   MeetingScriptQuestion[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
@@ -287,7 +288,7 @@ model MeetingScriptQuestion {
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
   text          String                  @db.VarChar(300)
-  answerOptions String[]
+  answerOptions String[]                @db.VarChar(300)
   answers       MeetingScriptAnswer[]
   templates     MeetingScriptTemplate[] @relation("MeetingScriptQuestionToMeetingScriptTemplate")
 }
@@ -296,7 +297,7 @@ model MeetingScriptAnswer {
   id         String                @id @default(uuid())
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
-  text       String                @db.VarChar(300)
+  text       String                @db.VarChar(1000)
   protocol   MeetingScriptProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
   protocolId String
   question   MeetingScriptQuestion @relation(fields: [questionId], references: [id])
@@ -308,7 +309,7 @@ model MeetingFeedback {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String   @db.VarChar(100)
-  text      String   @db.VarChar(300)
+  text      String   @db.VarChar(1000)
   meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId String
 }
@@ -317,10 +318,10 @@ model PartnershipInquiry {
   id                 String                   @id @default(uuid())
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
-  representativeName String                   @db.VarChar(50)
-  companyName        String                   @db.VarChar(100)
-  contact            String                   @db.VarChar(50)
-  email              String                   @db.VarChar(100)
+  representativeName String                   @db.VarChar(255)
+  companyName        String                   @db.VarChar(256)
+  contact            String                   @db.VarChar(255)
+  email              String                   @db.VarChar(255)
   status             PartnershipInquiryStatus @default(PENDING)
 }
 
@@ -328,7 +329,7 @@ model SoftArchive {
   id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
   originalId String
-  modelName  String   @db.VarChar(30)
+  modelName  String   @db.VarChar(127)
   payload    Json
 }
 
@@ -336,7 +337,7 @@ model University {
   id        Int     @id @default(autoincrement())
   name      String  @unique @db.VarChar(300)
   shortName String? @db.VarChar(100)
-  logoUrl   String?
+  logoUrl   String? @db.VarChar(255)
 }
 
 model VacancyResponse {
