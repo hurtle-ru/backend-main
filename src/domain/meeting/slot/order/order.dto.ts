@@ -1,4 +1,4 @@
-import { Order, OrderStatus } from "@prisma/client";
+import { Order } from "@prisma/client";
 import { BasicMeetingSlot } from "../slot.dto"
 
 export type BasicOrder = Omit<

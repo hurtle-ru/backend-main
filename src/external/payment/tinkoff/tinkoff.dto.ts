@@ -1,5 +1,4 @@
 import { tinkoffConfig } from "./tinkoff.config";
-import { OrderStatus } from "@prisma/client";
 
 
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -40,7 +39,6 @@ export namespace tinkoff {
 
   export interface GetPaymentStatusResponse {
     Success: boolean,
-    Status: OrderStatus,
     ErrorCode: string,
     Message: string,
     Details: string,
