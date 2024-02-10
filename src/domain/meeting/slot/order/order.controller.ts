@@ -80,6 +80,7 @@ export class MeetingSlotController extends Controller {
 
     return this.paymentService.getPaymentStatus(order.id, order.token);
   }
+
   @Get("{id}")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
   @Response<HttpErrorBody & {"error": "Order not found"}>(404)

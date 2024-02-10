@@ -362,7 +362,7 @@ model Order {
   id               String         @id @default(uuid())
   createdAt        DateTime       @default(now())
   token            String         @db.VarChar(64)
-  status           OrderStatus    @default(NEW)
+  success          Boolean        @default(false)
   slot             MeetingSlot    @relation(fields: [slotId], references: [id], onDelete: Cascade)
   slotId           String         @unique
 }
@@ -507,11 +507,4 @@ enum Gender {
 
 enum ManagerAccessScopes {
   NONE
-}
-
-enum OrderStatus {
-  NEW
-  CANCELED
-  PREAUTHORIZING
-  FORMSHOWED
 }
