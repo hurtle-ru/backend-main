@@ -44,9 +44,11 @@ export class MeetingSlotController extends Controller {
       data: {...body, token: ""},
     });
 
-    const token = this.paymentService.initPayment(req.user.id, newOrder.id)
-    const updatedOrder = await prisma.order.create({
-        data: body,
+    const initData = await this.paymentService.initPayment(req.user.id, newOrder.id)
+    const token = initData.token
+    const updatedOrder = await prisma.order.update({
+        where: { id:newOrder.id },
+        data: { token },
     });
 
     return updatedOrder
