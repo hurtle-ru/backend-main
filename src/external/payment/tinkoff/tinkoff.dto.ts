@@ -1,4 +1,5 @@
 import { tinkoffConfig } from "./tinkoff.config";
+import { OrderStatus } from "@prisma/client";
 
 
 /* eslint-disable @typescript-eslint/no-namespace */
@@ -6,6 +7,21 @@ export namespace tinkoff {
 
   // One or two steps
   export type PayType = "O" | "T";
+
+  export interface BaseInitTinkoffPaymentResponse {
+    Success: boolean;
+    ErrorCode: string;
+    TerminalKey: string;
+    Status: string;
+    PaymentId: string;
+    OrderId: string;
+    Amount: number;
+    PaymentURL: string;
+  }
+
+  export type InitTinkoffPaymentResponse = BaseInitTinkoffPaymentResponse & {
+    token: string;
+  }
 
   export interface InitTinkoffPaymentRequestDATA {
     OperationInitiatorType: number,
@@ -19,7 +35,15 @@ export namespace tinkoff {
     Description: string;
     CustomerKey: string;
     PayType: PayType;
-    DATA: InitTinkoffPaymentRequestDATA
+    DATA?: InitTinkoffPaymentRequestDATA;
+  }
+
+  export interface GetPaymentStatusResponse {
+    Success: boolean,
+    Status: OrderStatus,
+    ErrorCode: string,
+    Message: string,
+    Details: string,
   }
 
   export interface CardData {
@@ -27,27 +51,5 @@ export namespace tinkoff {
     expiredDate: string,
     cardHolder?: string,
     cvv?: string,
-  }
-
-  export interface Check3DSVersionResponse {
-    Version: string,
-    TdsServerTransID: string,
-    ThreeDSMethodURL: string,
-    PaymentSystem: string,
-    Success: boolean,
-    ErrorCode: string,
-    Message: string,
-    Details: string,
-  }
-
-  export interface FinishAuthorizeResponse {
-    Version: string,
-    TdsServerTransID: string,
-    ThreeDSMethodURL: string,
-    PaymentSystem: string,
-    Success: boolean,
-    ErrorCode: string,
-    Message: string,
-    Details: string,
   }
 }
