@@ -27,14 +27,16 @@ export class TinkoffPaymentService {
       FailURL: failUrl,
     };
 
+    const token = this.makeToken(requestBody)
+
     const response = await axios.post<tinkoff.BaseInitTinkoffPaymentResponse>(
       "https://securepay.tinkoff.ru/v2/Init",
       {
-        data: { ...requestBody, Token: this.makeToken(requestBody) },
+        data: { ...requestBody, Token: token },
       }
     );
 
-    return response.data;
+    return { ...response.data, token };
   }
 
   async getPaymentStatus(paymentId: string): Promise<tinkoff.GetPaymentStatusResponse> {

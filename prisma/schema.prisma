@@ -266,6 +266,7 @@ model MeetingSlot {
 
 model MeetingPayment {
   id         String               @id @default(uuid())
+  token      String               @db.VarChar(64)
   createdAt  DateTime             @default(now())
   status     MeetingPaymentStatus @default(PENDING)
   guestEmail String               @db.VarChar(255)

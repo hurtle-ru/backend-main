@@ -17,6 +17,7 @@ export type CreateMeetingPaymentRequest = Pick<
 export type CreateMeetingPaymentResponse = Pick<
   MeetingPayment,
   | "id"
+  | "token"
 > & {
   "url": string,
 }

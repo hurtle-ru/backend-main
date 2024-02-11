@@ -28,6 +28,7 @@ export class MeetingPaymentService {
     return {
       id: response.PaymentId,
       url: response.PaymentURL,
+      token: response.token
     }
   }
 

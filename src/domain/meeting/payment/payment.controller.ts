@@ -64,13 +64,16 @@ export class MeetingPaymentController extends Controller {
     if(!this.meetingService.doesUserHaveAccessToMeetingSlot("GUEST", slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
-    const paymentData = this.paymentService.initPaymentForMeeting(body.type as keyof typeof meetingPriceByType)
+    const paymentData = await this.paymentService.initPaymentForMeeting(body.type as keyof typeof meetingPriceByType)
 
     await prisma.meetingPayment.create({
       data: {
         ...body,
-        url: paymentData
+        url: paymentData.url,
+        token: paymentData.token
       }
     })
+
+    return paymentData
   }
 }
