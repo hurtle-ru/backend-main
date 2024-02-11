@@ -1,6 +1,5 @@
 import { injectable, singleton } from "tsyringe";
 import intersect from "fast_array_intersect";
-import { MeetingTypeByRole } from "./meeting.dto";
 import { MeetingType } from "@prisma/client";
 import { UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
@@ -8,6 +7,7 @@ import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { MailService } from "../../external/mail/mail.service";
+import { meetingNameByType, MeetingTypeByRole } from "./meeting.config";
 
 
 @injectable()
@@ -19,23 +19,12 @@ export class MeetingService {
     private readonly mailService: MailService,
   ) {}
 
-  doesUserHaveAccessToMeetingSlot(userRole: UserRole, slotTypes: MeetingType[]): boolean {
+  doesUserHaveAccessToMeetingSlot(userRole: UserRole | "GUEST", slotTypes: MeetingType[]): boolean {
     return intersect([MeetingTypeByRole[userRole], slotTypes]).length > 0;
   }
 
   async createRoom(meetingType: MeetingType, user: { firstName: string, lastName: string }): Promise<string> {
-    let meetingName = "";
-    switch(meetingType) {
-      case MeetingType.CONSULTATION_B2B:
-        meetingName = "Консультация B2B";
-        break;
-      case MeetingType.CONSULTATION_B2C:
-        meetingName = "Консультация B2C";
-        break;
-      case MeetingType.INTERVIEW:
-        meetingName = "Интервью";
-        break;
-    }
+    const meetingName = meetingNameByType[meetingType];
 
     const roomName = `${user.lastName} ${user.firstName[0]}. | Хартл ${meetingName}`;
     return await this.jazzService.createRoom(roomName);

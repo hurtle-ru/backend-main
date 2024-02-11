@@ -19,12 +19,12 @@ import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
 @Route("api/v1/meetings")
 @Tags("Meeting")
 export class MeetingController extends Controller {
-  constructor(
-    private readonly meetingService: MeetingService,
-    private readonly artifactService: ArtifactService,
-  ) {
-    super();
-  }
+    constructor(
+      private readonly meetingService: MeetingService,
+      private readonly artifactService: ArtifactService,
+    ) {
+      super();
+    }
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
@@ -38,6 +38,7 @@ export class MeetingController extends Controller {
     const slot = await prisma.meetingSlot.findUnique({
       where: {
         id: body.slotId,
+        dateTime: { gte: new Date() },
       },
       select: {
         meeting: true,

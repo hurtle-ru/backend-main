@@ -1,67 +1,71 @@
 import axios from "axios";
 import { singleton } from "tsyringe";
-import crypto from "crypto"
 import { tinkoffConfig } from "./tinkoff.config";
-import { tinkoff } from "./tinkoff.dto"
-
-
-function sha256(input: string): string {
-  return crypto.createHash('sha256').update(input).digest("hex");
-}
+import { tinkoff } from "./tinkoff.dto";
+import crypto from "crypto";
 
 
 @singleton()
 export class TinkoffPaymentService {
-  constructor() {
-  }
+  constructor() {}
 
-  makeToken(amount: string, orderId: string, description: string, terminalPassword: string, terminalKey: string): string {
-    return sha256(`${amount}${description}${orderId}${terminalPassword}${terminalKey}`)
-  }
+  /**
+   * Инициирует платежную сессию
+   * @param {string} orderId Уникальный идентификатор заказа, для которого проводится платёж
+   * @param {number} amount Целое число, выражающее сумму в **копейках**. Например, сумма 3руб. 12коп. - это число 312
+   * @param {string} description Описание заказа
+   * @param {string} successUrl URL, куда будет переведен клиент в случае успешной оплаты
+   * @param {string} failUrl URL, куда будет переведен клиент в случае неуспешной оплаты
+   */
+  async initPayment(orderId: string, amount: number, description: string, successUrl?: string, failUrl?: string): Promise<tinkoff.InitTinkoffPaymentResponse> {
+    const requestBody = {
+      TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
+      Amount: amount,
+      OrderId: orderId,
+      Description: description,
+      SuccessURL: successUrl,
+      FailURL: failUrl,
+    };
 
-  async initPayment(customerId: string, orderId: string): Promise<tinkoff.InitTinkoffPaymentResponse> {
-    const amount = tinkoffConfig.SLOT_PAYMENT_AMOUNT
-    const description = tinkoffConfig.SLOT_PAYMENT_DESCRIPTION
-
-    const token = this.makeToken(
-      amount.toString(),
-      orderId,
-      description,
-      tinkoffConfig.TERMINAL_PASSWORD,
-      tinkoffConfig.TERMINAL_ID
-    )
-
-    const { data, status } = await axios.post<tinkoff.BaseInitTinkoffPaymentResponse>(
-      'https://securepay.tinkoff.ru/v2/Init',
+    const response = await axios.post<tinkoff.BaseInitTinkoffPaymentResponse>(
+      "https://securepay.tinkoff.ru/v2/Init",
       {
-        data: {
-          Amount: amount,
-          TerminalKey: tinkoffConfig.TERMINAL_ID,
-          OrderId: orderId,
-          Token: token,
-          PayType: "O",
-          Description: description,
-          CustomerKey: customerId,
-        }
+        data: { ...requestBody, Token: this.makeToken(requestBody) },
       }
     );
 
-    return {
-      ...data,
-      token,
-    }
+    return response.data;
   }
-  async getPaymentStatus(paymentId: string, token: string): Promise<tinkoff.GetPaymentStatusResponse> {
-    const { data, status } = await axios.get<tinkoff.GetPaymentStatusResponse>(
-      'https://securepay.tinkoff.ru/v2/GetState',
+
+  async getPaymentStatus(paymentId: string): Promise<tinkoff.GetPaymentStatusResponse> {
+    const requestBody = {
+      TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
+      PaymentId: paymentId,
+    };
+
+    const response = await axios.post<tinkoff.GetPaymentStatusResponse>(
+      "https://securepay.tinkoff.ru/v2/GetState",
       {
-        data: {
-          TerminalKey: tinkoffConfig.TERMINAL_ID,
-          PaymentId: paymentId,
-          Token: token,
-        }
+        data: { ...requestBody, Token: this.makeToken(requestBody) },
       }
     );
-    return data
+
+    return response.data
+  }
+
+  makeToken(requestData: Record<string, string | number | undefined>): string {
+    const dataWithCredentials: Record<string, string | number> = {
+      ...Object.fromEntries(Object.entries(requestData).filter(([_, value]) => value !== undefined)),
+      Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
+    };
+
+    const sortedKeys = Object.keys(dataWithCredentials).sort();
+    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join('');
+
+    return this.sha256(concatenatedValues).toString();
+  }
+
+  sha256(input: string): string {
+    return crypto.createHash("sha256").update(input).digest("hex");
   }
 }

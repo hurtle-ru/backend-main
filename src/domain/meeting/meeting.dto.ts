@@ -44,9 +44,3 @@ export type PutMeetingRequestByManager = Pick<
   Meeting,
   | "status"
 >;
-
-export const MeetingTypeByRole = {
-  [UserRole.MANAGER]: [],
-  [UserRole.EMPLOYER]: [MeetingType.CONSULTATION_B2B],
-  [UserRole.APPLICANT]: [MeetingType.CONSULTATION_B2C, MeetingType.INTERVIEW],
-}
