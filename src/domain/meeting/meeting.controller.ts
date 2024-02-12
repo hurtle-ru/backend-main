@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile, Middlewares } from "tsoa";
 import { MeetingService } from "./meeting.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
@@ -13,6 +13,7 @@ import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
+import rateLimit from "../../infrastructure/request-limit/request-limit.middleware"
 
 
 @injectable()
@@ -28,9 +29,11 @@ export class MeetingController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
+  @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "MeetingSlot already booked" }>(409)
-  @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
+  @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
+  @Middlewares(rateLimit({limit: 1, interval: 10_000}))
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingRequest,
