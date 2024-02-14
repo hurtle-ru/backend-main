@@ -33,7 +33,7 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "MeetingSlot already booked" }>(409)
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
-  @Middlewares(rateLimit({limit: 1, interval: 10_000}))
+  @Middlewares(rateLimit({limit: 1, interval: 10}))
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingRequest,
