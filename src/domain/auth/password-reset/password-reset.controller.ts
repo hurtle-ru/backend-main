@@ -46,19 +46,22 @@ export class PasswordResetController extends Controller {
     @Path() code: string,
     @Body() body: { email: string, password: string },
   ): Promise<void> {
-    try {
-      const passwordResetRequest = await prisma.passwordResetRequest.delete({ where: { code, email: body.email} });
-      const passwordHash = await this.authService.generatePasswordHash(body.password);
+    const where = {
+      code,
+      email: body.email,
+    };
 
-      const updateQuery = {
-        where: { email: passwordResetRequest.email },
-        data: { password: { update: { hash: passwordHash } } },
-      };
+    if(!await prisma.passwordResetRequest.exists(where)) throw new HttpError(404, "Invalid email or code");
 
-      if(passwordResetRequest.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
-      if(passwordResetRequest.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
-    } catch (e) {
-      throw new HttpError(404, "Invalid email or code");
-    }
+    const passwordResetRequest = await prisma.passwordResetRequest.delete({ where });
+    const passwordHash = await this.authService.generatePasswordHash(body.password);
+
+    const updateQuery = {
+      where: { email: passwordResetRequest.email },
+      data: { password: { update: { hash: passwordHash } } },
+    };
+
+    if(passwordResetRequest.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
+    if(passwordResetRequest.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
   }
 }
