@@ -2,7 +2,6 @@ import { appConfig } from "../../../infrastructure/app.config";
 import { injectable, singleton } from "tsyringe";
 import { MailService } from "../../../external/mail/mail.service";
 import otpGenerator from "otp-generator";
-import path from "path";
 
 
 @injectable()
