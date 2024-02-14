@@ -265,14 +265,18 @@ model MeetingSlot {
 }
 
 model MeetingPayment {
-  id         String               @id @default(uuid())
-  token      String               @db.VarChar(64)
-  createdAt  DateTime             @default(now())
-  status     MeetingPaymentStatus @default(PENDING)
-  guestEmail String               @db.VarChar(255)
-  url        String?              @db.VarChar(255)
-  slot       MeetingSlot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  slotId     String
+  id             String               @id @default(uuid())
+  createdAt      DateTime             @default(now())
+  status         MeetingPaymentStatus @default(PENDING)
+  guestEmail     String               @db.VarChar(255)
+  url            String?              @db.VarChar(255)
+  kassaPaymentId String?              @db.VarChar(255)
+  successCode    String               @db.VarChar(127)
+  failCode       String               @db.VarChar(127)
+  amount         Int?
+  dueDate        DateTime
+  slot           MeetingSlot          @relation(fields: [slotId], references: [id])
+  slotId         String
 }
 
 model MeetingScriptProtocol {

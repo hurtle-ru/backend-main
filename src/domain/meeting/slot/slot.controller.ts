@@ -166,7 +166,7 @@ export class MeetingSlotController extends Controller {
     @Path() id: string,
     @Query() include?: ("meeting" | "manager")[]
   ): Promise<GetMeetingSlotResponse> {
-    const where = this.slotService.buildAccessWhereQuery(req.user.role, req.user.id, id);
+    const where = this.slotService.buildAccessWhereQuery(req.user.role as UserRole, req.user.id, id);
 
     const meetingSlot = await prisma.meetingSlot.findUnique({
       where,

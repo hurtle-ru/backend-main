@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { MeetingService } from "./meeting.service";
-import { JwtModel, UserRole } from "../auth/auth.dto";
+import { GuestRole, JwtModel, UserRole } from "../auth/auth.dto";
 import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -19,15 +19,15 @@ import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
 @Route("api/v1/meetings")
 @Tags("Meeting")
 export class MeetingController extends Controller {
-    constructor(
-      private readonly meetingService: MeetingService,
-      private readonly artifactService: ArtifactService,
-    ) {
-      super();
-    }
+  constructor(
+    private readonly meetingService: MeetingService,
+    private readonly artifactService: ArtifactService,
+  ) {
+    super();
+  }
 
   @Post("")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
+  @Security("jwt", [GuestRole, UserRole.APPLICANT, UserRole.EMPLOYER])
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "MeetingSlot already booked" }>(409)
   @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)

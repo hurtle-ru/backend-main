@@ -6,6 +6,7 @@ export const paymentConfig = {
   ...cleanEnv(
     process.env,
     {
+      MEETING_PAYMENT_EXPIRATION_MINUTES: int(),
       MEETING_PAYMENT_SUCCESS_URL_BASE: str(),
       MEETING_PAYMENT_FAIL_URL_BASE: str(),
       MEETING_PAYMENT_CONSULTATION_B2C_EXPERT_PRICE_IN_KOPECKS: int(),

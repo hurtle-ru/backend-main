@@ -16,8 +16,16 @@ export class TinkoffPaymentService {
    * @param {string} description Описание заказа
    * @param {string} successUrl URL, куда будет переведен клиент в случае успешной оплаты
    * @param {string} failUrl URL, куда будет переведен клиент в случае неуспешной оплаты
+   * @param {string} notificationUrl URL (вебхук), куда Тинькофф Касса отправит запрос по завершении оплаты
    */
-  async initPayment(orderId: string, amount: number, description: string, successUrl?: string, failUrl?: string): Promise<tinkoff.InitTinkoffPaymentResponse> {
+  async initPayment(
+    orderId: string,
+    amount: number,
+    description: string,
+    successUrl: string,
+    failUrl: string,
+    notificationUrl: string
+  ): Promise<tinkoff.InitTinkoffPaymentResponse> {
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
       Amount: amount,
@@ -27,32 +35,26 @@ export class TinkoffPaymentService {
       FailURL: failUrl,
     };
 
-    const token = this.makeToken(requestBody)
-
-    const response = await axios.post<tinkoff.BaseInitTinkoffPaymentResponse>(
+    const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(
       "https://securepay.tinkoff.ru/v2/Init",
-      {
-        data: { ...requestBody, Token: token },
-      }
+      { ...requestBody, Token: this.makeToken(requestBody) }
     );
 
-    return { ...response.data, token };
+    return response.data;
   }
 
-  async getPaymentStatus(paymentId: string): Promise<tinkoff.GetPaymentStatusResponse> {
+  async getPaymentState(paymentId: string): Promise<tinkoff.GetStandardPaymentStateResponse> {
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
       PaymentId: paymentId,
     };
 
-    const response = await axios.post<tinkoff.GetPaymentStatusResponse>(
+    const response = await axios.post<tinkoff.GetStandardPaymentStateResponse>(
       "https://securepay.tinkoff.ru/v2/GetState",
-      {
-        data: { ...requestBody, Token: this.makeToken(requestBody) },
-      }
+      { ...requestBody, Token: this.makeToken(requestBody) }
     );
 
-    return response.data
+    return response.data;
   }
 
   makeToken(requestData: Record<string, string | number | undefined>): string {

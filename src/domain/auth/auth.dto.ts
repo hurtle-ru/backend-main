@@ -5,7 +5,7 @@ import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 export interface JwtModel {
   user: {
     id: string;
-    role: UserRole;
+    role: UserRole | typeof GuestRole;
     iat: number;
   };
 }
@@ -16,9 +16,21 @@ export enum UserRole {
   "MANAGER" = "MANAGER",
 }
 
+export const GuestRole = "GUEST";
+
 export interface CreateAccessTokenRequest {
   login: string;
   password: string;
+}
+
+export class CreateGuestAccessTokenRequest {
+  static schema = yup.object({
+    email: yup.string().email().min(3),
+  });
+
+  constructor(
+    public email: string,
+  ) {}
 }
 
 export interface CreateAccessTokenResponse {

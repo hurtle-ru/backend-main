@@ -1,7 +1,7 @@
 import { injectable, singleton } from "tsyringe";
 import intersect from "fast_array_intersect";
 import { MeetingType } from "@prisma/client";
-import { UserRole } from "../auth/auth.dto";
+import { GuestRole, UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
@@ -19,7 +19,7 @@ export class MeetingService {
     private readonly mailService: MailService,
   ) {}
 
-  doesUserHaveAccessToMeetingSlot(userRole: UserRole | "GUEST", slotTypes: MeetingType[]): boolean {
+  doesUserHaveAccessToMeetingSlot(userRole: UserRole | typeof GuestRole, slotTypes: MeetingType[]): boolean {
     return intersect([MeetingTypeByRole[userRole], slotTypes]).length > 0;
   }
 
@@ -38,7 +38,6 @@ export class MeetingService {
     const dateString = moment(meeting.dateTime)
       .tz(appConfig.TZ)
       .format(`HH:mm | DD.MM.YYYY | [GMT]Z`);
-
 
     const text =
       `Забронирована новая встреча!` +
