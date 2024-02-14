@@ -1,8 +1,8 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import { Body, Controller, Get, Path, Post, Put, Patch, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { MeetingService } from "./meeting.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
-import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
+import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse, ReschedulingRequest } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -13,6 +13,7 @@ import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
+import { Http } from "@sentry/node/types/integrations";
 
 
 @injectable()
@@ -52,19 +53,9 @@ export class MeetingController extends Controller {
       },
     });
 
-    if (!slot) throw new HttpError(404, "MeetingSlot not found");
-    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-    if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
-      throw new HttpError(403, "User does not have access to this MeetingSlot type");
+    this.meetingService.doesUserCanBookSlot(slot, req);
 
-    let user: { firstName: string, lastName: string, email: string } | null = null;
-    const findArgs = {
-      where: { id: req.user.id },
-      select: { firstName: true, lastName: true, email: true },
-    };
-
-    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs);
-    else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs);
+    const user = await this.meetingService.getBasicRequestUser(req)
 
     const roomUrl = await this.meetingService.createRoom(body.type, user!);
     const meeting = await prisma.meeting.create({
@@ -77,13 +68,13 @@ export class MeetingController extends Controller {
     });
 
     await this.meetingService.sendMeetingCreatedToAdminGroup(
-      { name: body.name, id: meeting.id, dateTime: slot.dateTime },
-      { name: slot.manager.name, id: slot.manager.id },
+      { name: body.name, id: meeting.id, dateTime: slot!.dateTime },
+      { name: slot!.manager.name, id: slot!.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
     );
     await this.meetingService.sendMeetingCreatedToEmail(
       user!.email,
-      { name: body.name, link: roomUrl, dateTime: slot.dateTime },
+      { name: body.name, link: roomUrl, dateTime: slot!.dateTime },
     );
 
     return meeting;
@@ -169,7 +160,7 @@ export class MeetingController extends Controller {
   ): Promise<Readable | any> {
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport");
     const filePath = `meeting/${id}/${fileName}`;
-    
+
     const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
@@ -185,6 +176,66 @@ export class MeetingController extends Controller {
       stream.pipe(response);
       return stream;
     }
+  }
+
+  @Patch("{id}/rescheduling")
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
+  @Response<HttpErrorBody & { "error": "Meeting not found" }>(404)
+  @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
+  @Response<HttpErrorBody & { "error": "MeetingSlot already booked" }>(409)
+  @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" | "Not enough rights to edit another meeting" }>(403)
+  public async chooseAlternativeSlot(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Body() body: ReschedulingRequest,
+  ): Promise<BasicMeeting> {
+    const slot = await prisma.meetingSlot.findUnique({
+      where: {
+        id: body.slotId,
+      },
+      select: {
+        meeting: true,
+        types: true,
+        dateTime: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    this.meetingService.doesUserCanBookSlot(slot, req);
+
+    let meeting = await prisma.meeting.findUnique({where: { id }})
+    if (!meeting) throw new HttpError(404, "Meeting not found")
+
+    if (
+      (req.user.role === UserRole.APPLICANT && meeting.applicantId !== req.user.id)
+      || (req.user.role === UserRole.EMPLOYER && meeting.employerId !== req.user.id)
+      ) {
+      throw new HttpError(403, "Not enough rights to edit another meeting")
+    }
+
+    meeting = await prisma.meeting.update({
+      where: { id },
+      data: body,
+    });
+
+    const user = await this.meetingService.getBasicRequestUser(req)
+
+    await this.meetingService.sendMeetingCreatedToAdminGroup(
+      { name: meeting.name, id: meeting.id, dateTime: slot!.dateTime },
+      { name: slot!.manager.name, id: slot!.manager.id },
+      { ...user!, id: req.user.id, role: req.user.role }
+    );
+    await this.meetingService.sendMeetingCreatedToEmail(
+      user!.email,
+      { name: meeting.name, link: meeting.roomUrl, dateTime: slot!.dateTime },
+    );
+
+    return meeting
   }
 
   @Put("{id}/passport")
@@ -216,7 +267,7 @@ export class MeetingController extends Controller {
     if (oldPassportFileName !== null) {
       this.artifactService.deleteFile(passportDirectory + oldPassportFileName);
     }
-    
+
     await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
   }
 

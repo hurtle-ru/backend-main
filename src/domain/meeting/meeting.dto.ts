@@ -7,6 +7,12 @@ import { BasicMeetingFeedback } from "./feedback/feedback.dto";
 import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
 
 
+export type BasicRequestUser = {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 export type BasicMeeting = Omit<
   Meeting,
   | "type"
@@ -43,6 +49,11 @@ export type PutMeetingRequestByApplicantOrEmployer = Pick<
 export type PutMeetingRequestByManager = Pick<
   Meeting,
   | "status"
+>;
+
+export type ReschedulingRequest = Pick<
+  Meeting,
+  | "slotId"
 >;
 
 export const MeetingTypeByRole = {

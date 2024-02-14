@@ -1,13 +1,15 @@
+import moment from "moment-timezone";
 import { injectable, singleton } from "tsyringe";
 import intersect from "fast_array_intersect";
-import { MeetingTypeByRole } from "./meeting.dto";
-import { MeetingType } from "@prisma/client";
-import { UserRole } from "../auth/auth.dto";
+import { BasicRequestUser, MeetingTypeByRole } from "./meeting.dto";
+import { Meeting, MeetingType, MeetingSlot } from "@prisma/client";
+import { JwtModel, UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
-import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { MailService } from "../../external/mail/mail.service";
+import { HttpError } from "../../infrastructure/error/http.error";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 
 
 @injectable()
@@ -21,6 +23,28 @@ export class MeetingService {
 
   doesUserHaveAccessToMeetingSlot(userRole: UserRole, slotTypes: MeetingType[]): boolean {
     return intersect([MeetingTypeByRole[userRole], slotTypes]).length > 0;
+  }
+
+  doesUserCanBookSlot(slot: any, req: JwtModel): void {
+    if (!slot) throw new HttpError(404, "MeetingSlot not found");
+    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+    if (!this.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types)) {
+      console.log(req.user.role, slot.types, intersect([MeetingTypeByRole[req .user.role], slot.types]).length)
+      throw new HttpError(403, "User does not have access to this MeetingSlot type");
+    }
+  }
+
+  async getBasicRequestUser(req: JwtModel): Promise<BasicRequestUser> {
+    let user: BasicRequestUser | null = null;
+      const findArgs = {
+        where: { id: req.user.id },
+        select: { firstName: true, lastName: true, email: true },
+      };
+
+      if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs);
+      else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs);
+
+    return user!
   }
 
   async createRoom(meetingType: MeetingType, user: { firstName: string, lastName: string }): Promise<string> {
@@ -46,10 +70,6 @@ export class MeetingService {
     manager: { name: string, id: string },
     user: { firstName: string, lastName: string, id: string, role: string },
   )  {
-    const dateString = moment(meeting.dateTime)
-      .tz(appConfig.TZ)
-      .format(`HH:mm | DD.MM.YYYY | [GMT]Z`);
-
 
     const text =
       `Забронирована новая встреча!` +
