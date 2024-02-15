@@ -74,7 +74,7 @@ export class ApplicantController extends Controller {
   ): Promise<PageResponse<GetApplicantResponse>> {
     const where = {
       nickname,
-      ...(has?.includes("resume") && { resume: { isNot: null } } ),
+      ...(has?.includes("resume") && { NOT: { resume: null } } ),
       ...(has?.includes("meetings") && { meetings: { some: {} } } ),
       ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } } ),
     };
