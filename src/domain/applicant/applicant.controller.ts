@@ -69,10 +69,14 @@ export class ApplicantController extends Controller {
     @Query() nickname?: string,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
+    @Query() has?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
     const where = {
       nickname,
+      ...(has?.includes("resume") && { resume: { isNot: null } } ),
+      ...(has?.includes("meetings") && { meetings: { some: {} } } ),
+      ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } } ),
     };
 
     let includeResume: any = false;
