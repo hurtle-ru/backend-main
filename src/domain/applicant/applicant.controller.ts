@@ -74,7 +74,8 @@ export class ApplicantController extends Controller {
   ): Promise<PageResponse<GetApplicantResponse>> {
     const where = {
       nickname,
-      ...(has?.includes("resume") && { NOT: { resume: null } } ),
+      ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } } ),
+      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } } ),
       ...(has?.includes("meetings") && { meetings: { some: {} } } ),
       ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } } ),
     };
