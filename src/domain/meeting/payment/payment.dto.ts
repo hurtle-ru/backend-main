@@ -29,6 +29,12 @@ export type GetMeetingPaymentResponse = BasicMeetingPayment & {
   slot?: BasicMeetingSlot | null;
 };
 
+export type PatchMeetingPaymentRequest = Pick<MeetingPayment,
+  | "status"
+> & {
+  code: "string"
+};
+
 export type MeetingPaymentTinkoffNotificationRequest = {
   TerminalKey: string;
   OrderId: string;

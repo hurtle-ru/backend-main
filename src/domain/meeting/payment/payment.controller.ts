@@ -17,7 +17,7 @@ import {
 import {
   BasicMeetingPayment,
   CreateMeetingPaymentRequest, GetMeetingPaymentResponse,
-  MeetingPaymentTinkoffNotificationRequest,
+  MeetingPaymentTinkoffNotificationRequest, PatchMeetingPaymentRequest,
   PutMeetingPaymentStatusRequest, TinkoffPaymentStatusToMeetingPaymentStatus,
 } from "./payment.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -149,6 +149,31 @@ export class MeetingPaymentController extends Controller {
     });
 
     return "OK";
+  }
+
+  @Patch("{id}")
+  @Security("jwt", [GuestRole])
+  @Response<HttpErrorBody & { "error": "Payment not found" }>(404)
+  @Response<HttpErrorBody & { "error": "Invalid code" }>(401)
+  @Response<HttpErrorBody & { "error": "Payment expired" }>(409)
+  public async patchById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Body() body: PatchMeetingPaymentRequest
+  ) {
+    const where = { id, guestEmail: req.user.id };
+    const payment = await prisma.meetingPayment.findUnique({ where });
+
+    if(!payment) throw new HttpError(404, "Payment not found");
+    if(payment.dueDate < new Date()) throw new HttpError(409, "Payment expired");
+    if((body.status === "SUCCESS" && payment.successCode === body.code)
+      || (body.status === "FAIL" && payment.failCode === body.code)) {
+
+      await prisma.meetingPayment.update({
+        where,
+        data: { status: body.status },
+      })
+    } else throw new HttpError(401, "Invalid code");
   }
 
   @Get("{id}")
