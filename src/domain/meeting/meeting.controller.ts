@@ -132,8 +132,11 @@ export class MeetingController extends Controller {
     const roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
     const meeting = await prisma.meeting.create({
       data: {
-        ...bodyData,
         roomUrl,
+        name: bodyData.name,
+        description: bodyData.description,
+        slotId: bodyData.slotId,
+        type: bodyData.type,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
         employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
         guestEmail: req.user.role === GuestRole ? req.user.id : undefined,

@@ -51,7 +51,7 @@ export class MeetingPaymentController extends Controller {
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
   @Response<HttpErrorBody & { "error":
-    | "MeetingSlot already booked"
+    | "MeetingSlot already booked or paid"
     | "Payment is not required to book meeting of this type"
     | "Pending payment already exists on this slot"
   }>(409)
@@ -72,13 +72,15 @@ export class MeetingPaymentController extends Controller {
           select: {
             status: true,
             dueDate: true,
+            guestEmail: true,
           },
         },
       },
     });
 
     if(!slot) throw new HttpError(404, "MeetingSlot not found");
-    if(slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+    if(slot.meeting || prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id))
+      throw new HttpError(409, "MeetingSlot already booked or paid");
 
     if(prisma.meetingPayment.hasUnexpired(slot.payments))
       throw new HttpError(409, "Pending payment already exists on this slot");
