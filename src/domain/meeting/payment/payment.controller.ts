@@ -153,9 +153,11 @@ export class MeetingPaymentController extends Controller {
   @Get("{id}")
   @Security("jwt", [GuestRole])
   @Response<HttpErrorBody & { "error": "Payment not found" }>(404)
+  @Response<HttpErrorBody & { "error": "Code is invalid" }>(403)
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
+    @Query() successOrFailCode: string,
     @Query() include?: ("slot")[]
   ): Promise<GetMeetingPaymentResponse> {
     const payment = await prisma.meetingPayment.findUnique({
@@ -166,6 +168,8 @@ export class MeetingPaymentController extends Controller {
     });
 
     if(!payment) throw new HttpError(404, "Payment not found")
+    if(payment.successCode !== successOrFailCode && payment.failCode !== successOrFailCode)
+      throw new HttpError(403, "Code is invalid")
 
     return payment;
   }
