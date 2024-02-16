@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
-  CreateAccessTokenResponse,
+  CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GuestRole,
   RegisterApplicantRequest,
   RegisterEmployerRequest,
   UserRole,
@@ -56,6 +56,21 @@ export class AuthController extends Controller {
     const token = this.authService.createToken({
       id: user!.id,
       role: role,
+      iat: Date.now(),
+    });
+
+    return { token };
+  }
+
+  @Post("guest/accessToken")
+  public async createGuestAccessToken(
+    @Body() body: CreateGuestAccessTokenRequest,
+  ): Promise<CreateAccessTokenResponse> {
+    CreateGuestAccessTokenRequest.schema.validateSync(body);
+
+    const token = this.authService.createToken({
+      id: body.email,
+      role: GuestRole,
       iat: Date.now(),
     });
 
