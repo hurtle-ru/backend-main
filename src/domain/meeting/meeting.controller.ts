@@ -75,7 +75,7 @@ export class MeetingController extends Controller {
 
     const slot = await prisma.meetingSlot.findUnique({
       where: {
-        id: body.slotId,
+        id: bodyData.slotId,
         dateTime: { gte: new Date() },
       },
       select: {
@@ -106,13 +106,13 @@ export class MeetingController extends Controller {
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
     // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
-    if(this.paymentService.doesMeetingTypeRequiresPayment(body.type)) {
+    if(this.paymentService.doesMeetingTypeRequiresPayment(bodyData.type)) {
       const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id);
 
       if(!slotPaymentPaidByGuest)
         throw new HttpError(409, "Meeting requires MeetingPayment with SUCCESS status");
 
-      if(slotPaymentPaidByGuest.successCode !== (body as CreateMeetingGuestRequest).successCode)
+      if(slotPaymentPaidByGuest.successCode !== (bodyData as CreateMeetingGuestRequest).successCode)
         throw new HttpError(409, "Invalid MeetingPayment success code");
     }
 
@@ -129,10 +129,10 @@ export class MeetingController extends Controller {
     if(req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
     else if(req.user.role === GuestRole) user = { _type: "guest", email: req.user.id }
 
-    const roomUrl = await this.meetingService.createRoom(body.type, user!);
+    const roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
     const meeting = await prisma.meeting.create({
       data: {
-        ...body,
+        ...bodyData,
         roomUrl,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
         employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
@@ -141,13 +141,13 @@ export class MeetingController extends Controller {
     });
 
     await this.meetingService.sendMeetingCreatedToAdminGroup(
-      { name: body.name, id: meeting.id, dateTime: slot.dateTime },
+      { name: bodyData.name, id: meeting.id, dateTime: slot.dateTime },
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
     );
     await this.meetingService.sendMeetingCreatedToEmail(
       user!.email,
-      { name: body.name, link: roomUrl, dateTime: slot.dateTime },
+      { name: bodyData.name, link: roomUrl, dateTime: slot.dateTime },
     );
 
     return meeting;

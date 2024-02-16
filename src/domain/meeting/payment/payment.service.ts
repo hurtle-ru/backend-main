@@ -12,11 +12,16 @@ import otpGenerator from "otp-generator";
 export class MeetingPaymentService {
   constructor(readonly tinkoffPaymentService: TinkoffPaymentService) {}
 
-  async initPaymentSession(type: keyof typeof meetingPriceByType, meetingPaymentId: string, successCode: string, failCode: string) {
+  async initPaymentSession(
+    type: keyof typeof meetingPriceByType,
+    meetingPaymentId: string,
+    successCode: string,
+    failCode: string,
+  ) {
     const description = `Хартл. ${meetingNameByType[type]}`;
 
     const successUrl = new URL(paymentConfig.MEETING_PAYMENT_SUCCESS_URL_BASE);
-    successUrl.searchParams.append("orderId", meetingPaymentId);
+    successUrl.searchParams.append("meetingPaymentId", meetingPaymentId);
     successUrl.searchParams.append("code", successCode);
 
     const failUrl = new URL(paymentConfig.MEETING_PAYMENT_FAIL_URL_BASE);

@@ -13,8 +13,8 @@ export type BasicMeetingPayment = Omit<
   MeetingPayment,
   | "slot"
   | "kassaPaymentId"
-  | "successPaymentCode"
-  | "failPaymentCode"
+  | "successCode"
+  | "failCode"
 >;
 
 export type CreateMeetingPaymentRequest = Pick<

@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Hidden,
   Patch,
   Path,
   Post, Put,
@@ -16,7 +16,7 @@ import {
 } from "tsoa";
 import {
   BasicMeetingPayment,
-  CreateMeetingPaymentRequest,
+  CreateMeetingPaymentRequest, GetMeetingPaymentResponse,
   MeetingPaymentTinkoffNotificationRequest,
   PutMeetingPaymentStatusRequest, TinkoffPaymentStatusToMeetingPaymentStatus,
 } from "./payment.dto";
@@ -79,7 +79,7 @@ export class MeetingPaymentController extends Controller {
 
     if(!slot) throw new HttpError(404, "MeetingSlot not found");
     if(slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-    
+
     if(prisma.meetingPayment.hasUnexpired(slot.payments))
       throw new HttpError(409, "Pending payment already exists on this slot");
     if(!this.paymentService.doesMeetingTypeRequiresPayment(body.type))
@@ -108,7 +108,7 @@ export class MeetingPaymentController extends Controller {
       body.type as keyof typeof meetingPriceByType,
       meetingPayment.id,
       successCode,
-      failCode,
+      failCode
     );
 
     const updatedPayment = await prisma.meetingPayment.update({
@@ -120,13 +120,19 @@ export class MeetingPaymentController extends Controller {
       },
     });
 
-    return {
-      ...updatedPayment,
+
+    {
+      const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;
+      return paymentResponse;
     }
   }
 
+  /**
+   * Данный метод вызывается только внешним сервисом, Тинькофф Кассой
+   */
   @Post("tinkoffNotification")
   @Response<HttpErrorBody & { "error": "Invalid token" }>(401)
+  @Hidden()
   public async processTinkoffNotification(
     @Body() body: MeetingPaymentTinkoffNotificationRequest
   ): Promise<"OK"> {
@@ -139,5 +145,25 @@ export class MeetingPaymentController extends Controller {
     });
 
     return "OK";
+  }
+
+  @Get("{id}")
+  @Security("jwt", [GuestRole])
+  @Response<HttpErrorBody & { "error": "Payment not found" }>(404)
+  public async getById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Query() include?: ("slot")[]
+  ): Promise<GetMeetingPaymentResponse> {
+    const payment = await prisma.meetingPayment.findUnique({
+      where: { id, guestEmail: req.user.id },
+      include: {
+        slot: include?.includes("slot"),
+      },
+    });
+
+    if(!payment) throw new HttpError(404, "Payment not found")
+
+    return payment;
   }
 }
