@@ -17,6 +17,7 @@ export class MeetingPaymentService {
     meetingPaymentId: string,
     successCode: string,
     failCode: string,
+    dueDate: string,
   ) {
     const description = `Хартл. ${meetingNameByType[type]}`;
 
@@ -34,7 +35,8 @@ export class MeetingPaymentService {
       description,
       successUrl.toString(),
       failUrl.toString(),
-      paymentConfig.MEETING_PAYMENT_NOTIFICATION_URL
+      paymentConfig.MEETING_PAYMENT_NOTIFICATION_URL,
+      dueDate
     );
 
     return {

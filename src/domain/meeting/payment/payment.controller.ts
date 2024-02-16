@@ -112,7 +112,8 @@ export class MeetingPaymentController extends Controller {
       body.type as keyof typeof meetingPriceByType,
       meetingPayment.id,
       successCode,
-      failCode
+      failCode,
+      dueDate,
     );
 
     const updatedPayment = await prisma.meetingPayment.update({

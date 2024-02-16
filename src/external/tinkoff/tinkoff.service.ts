@@ -17,6 +17,7 @@ export class TinkoffPaymentService {
    * @param {string} successUrl URL, куда будет переведен клиент в случае успешной оплаты
    * @param {string} failUrl URL, куда будет переведен клиент в случае неуспешной оплаты
    * @param {string} notificationUrl URL (вебхук), куда Тинькофф Касса отправит запрос по завершении оплаты
+   * @param {string} dueDate Срок жизни платежа, после которого оплата будет невозможна
    */
   async initPayment(
     orderId: string,
@@ -24,7 +25,8 @@ export class TinkoffPaymentService {
     description: string,
     successUrl: string,
     failUrl: string,
-    notificationUrl: string
+    notificationUrl: string,
+    dueDate: string,
   ): Promise<tinkoff.InitTinkoffPaymentResponse> {
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
@@ -34,6 +36,7 @@ export class TinkoffPaymentService {
       SuccessURL: successUrl,
       FailURL: failUrl,
       NotificationUrl: notificationUrl,
+      RedirectDueDate: dueDate,
     };
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(

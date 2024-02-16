@@ -19,9 +19,10 @@ import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, Put
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
-import { MeetingType } from "@prisma/client";
+import { MeetingPaymentStatus, MeetingType } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
+import { MeetingPaymentController } from "../payment/payment.controller";
 
 
 @injectable()
@@ -61,14 +62,21 @@ export class MeetingSlotController extends Controller {
     if(req.user.role !== UserRole.MANAGER && !available)
       throw new HttpError(403, "Only available slots are accessible to employers, applicants and guests");
 
+    const currentDate = new Date();
     const where = {
       meeting: available ? null : undefined,
       types: types ? { hasSome: types } : undefined,
       dateTime: {
         ...(afterDateTime && { gte: afterDateTime }),
         ...(beforeDateTime && { lte: beforeDateTime }),
-        ...(available && (!afterDateTime || afterDateTime < new Date()) && { gte: new Date() }),
+        ...(available && (!afterDateTime || afterDateTime < currentDate) && { gte: currentDate }),
       },
+      ...(available && {
+        OR: [
+          { payments: { none: {} } }, // No payments at all
+          { payments: { every: { status: MeetingPaymentStatus.PENDING, dueDate: { lte: currentDate } } } }, // All payments are expired
+        ],
+      }),
     }
 
     const [meetingSlots, meetingSlotsCount] = await Promise.all([
