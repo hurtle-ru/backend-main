@@ -29,7 +29,15 @@ import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { Prisma } from "@prisma/client";
+import {
+  Currency,
+  Prisma, Vacancy,
+  VacancyEmploymentType, VacancyExperience,
+  VacancyReportingForm, VacancyTeamRole,
+  VacancyWorkingHours,
+  VacancyWorkplaceModel,
+} from "@prisma/client";
+import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/controller/filter/number-filter.dto";
 
 
 @injectable()
@@ -66,14 +74,42 @@ export class VacancyController extends Controller {
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() employerId?: string,
+    @Query() teamRole?: VacancyTeamRole,
+    @Query() experience?: VacancyExperience,
+    @Query() employmentType?: VacancyEmploymentType,
+    @Query("salary") salaryFilter?: IntFilterString,
+    @Query() salaryCurrency?: Currency,
+    @Query() city?: string,
+    @Query() reportingForm?: VacancyReportingForm,
+    @Query() workingHours?: VacancyWorkingHours,
+    @Query() workplaceModel?: VacancyWorkplaceModel,
+    @Query() employer_isStartup?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
-    const where: Prisma.VacancyWhereInput = { employerId: employerId ?? undefined };
+    const salary = parseIntFilterQueryParam(salaryFilter);
+
+    let where: Prisma.VacancyWhereInput = { employerId: employerId ?? undefined };
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
 
     if(req.user.role === UserRole.APPLICANT && includeResponses) {
       includeResponses = {
         where: { candidateId: req.user.id },
       };
+    }
+
+    where = {
+      ...where,
+      teamRole: teamRole ?? undefined,
+      experience: experience ?? undefined,
+      employmentType: employmentType ?? undefined,
+      salary: salary ?? undefined,
+      salaryCurrency: salaryCurrency ?? undefined,
+      city: city ?? undefined,
+      reportingForm: reportingForm ?? undefined,
+      workingHours: workingHours ?? undefined,
+      workplaceModel: workplaceModel ?? undefined,
+      employer: employer_isStartup !== undefined
+        ? { isStartup: employer_isStartup }
+        : undefined,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
