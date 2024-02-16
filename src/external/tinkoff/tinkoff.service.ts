@@ -33,6 +33,7 @@ export class TinkoffPaymentService {
       Description: description,
       SuccessURL: successUrl,
       FailURL: failUrl,
+      NotificationUrl: notificationUrl,
     };
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(
@@ -57,8 +58,8 @@ export class TinkoffPaymentService {
     return response.data;
   }
 
-  makeToken(requestData: Record<string, string | number | undefined>): string {
-    const dataWithCredentials: Record<string, string | number> = {
+  makeToken(requestData: Record<string, any | number | undefined>): string {
+    const dataWithCredentials: Record<string, any | number> = {
       ...Object.fromEntries(Object.entries(requestData).filter(([_, value]) => value !== undefined)),
       Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
     };

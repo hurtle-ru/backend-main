@@ -14,7 +14,7 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { JwtModel, UserRole } from "../../auth/auth.dto";
+import { GuestRole, JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -47,8 +47,8 @@ export class MeetingSlotController extends Controller {
   }
 
   @Get("")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
-  @Response<HttpErrorBody & {"error": "Only available slots are accessible to employers and applicants"}>(403)
+  @Security("jwt", [GuestRole, UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Response<HttpErrorBody & {"error": "Only available slots are accessible to employers, applicants and guests"}>(403)
   public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
@@ -59,7 +59,7 @@ export class MeetingSlotController extends Controller {
     @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
     if(req.user.role !== UserRole.MANAGER && !available)
-      throw new HttpError(403, "Only available slots are accessible to employers and applicants");
+      throw new HttpError(403, "Only available slots are accessible to employers, applicants and guests");
 
     const where = {
       meeting: available ? null : undefined,

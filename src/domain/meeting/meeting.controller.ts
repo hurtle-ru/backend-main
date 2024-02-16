@@ -1,18 +1,40 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Path, Post, Put, Delete, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Path,
+  Post,
+  Put,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  Tags,
+  UploadedFile,
+} from "tsoa";
 import { MeetingService } from "./meeting.service";
 import { GuestRole, JwtModel, UserRole } from "../auth/auth.dto";
-import { BasicMeeting, CreateMeetingRequest, GetMeetingResponse } from "./meeting.dto";
+import {
+  BasicMeeting,
+  CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
+  CreateMeetingRequest,
+  GetMeetingResponse,
+} from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import {Request as ExpressRequest} from "express";
+import { Request as ExpressRequest } from "express";
 import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
+import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
+import { MeetingPaymentService } from "./payment/payment.service";
+import { MeetingPaymentStatus } from "@prisma/client";
 
 
 @injectable()
@@ -20,6 +42,7 @@ import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config"
 @Tags("Meeting")
 export class MeetingController extends Controller {
   constructor(
+    private readonly paymentService: MeetingPaymentService,
     private readonly meetingService: MeetingService,
     private readonly artifactService: ArtifactService,
   ) {
@@ -29,12 +52,27 @@ export class MeetingController extends Controller {
   @Post("")
   @Security("jwt", [GuestRole, UserRole.APPLICANT, UserRole.EMPLOYER])
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
-  @Response<HttpErrorBody & { "error": "MeetingSlot already booked" }>(409)
-  @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
+  @Response<HttpErrorBody & { "error":
+      | "MeetingSlot already booked"
+      | "Meeting requires MeetingPayment with SUCCESS status"
+      | "Invalid MeetingPayment success code"
+  }>(409)
+  @Response<HttpErrorBody & { "error":
+      | "Invalid body request for applicant"
+      | "Invalid body request for employer"
+      | "Invalid body request for guest"
+      | "User does not have access to this MeetingSlot type"
+  }>(403)
   public async create(
     @Request() req: JwtModel,
-    @Body() body: CreateMeetingRequest,
+    @Body() body: CreateMeetingGuestRequest | CreateMeetingApplicantOrEmployerRequest,
   ): Promise<BasicMeeting> {
+    const { _requester, ...bodyData } = body;
+
+    if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
+    if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if(req.user.role === GuestRole && _requester !== GuestRole) throw new HttpError(403, "Invalid body request for guest");
+
     const slot = await prisma.meetingSlot.findUnique({
       where: {
         id: body.slotId,
@@ -50,22 +88,46 @@ export class MeetingController extends Controller {
             name: true,
           },
         },
+        payments: {
+          select: {
+            id: true,
+            dueDate: true,
+            status: true,
+            guestEmail: true,
+            successCode: true,
+          },
+        },
       },
     });
 
-    if (!slot) throw new HttpError(404, "MeetingSlot not found");
-    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-    if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
+    if(!slot) throw new HttpError(404, "MeetingSlot not found");
+    if(slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+    if(!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
-    let user: { firstName: string, lastName: string, email: string } | null = null;
+    // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
+    if(this.paymentService.doesMeetingTypeRequiresPayment(body.type)) {
+      const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id);
+
+      if(!slotPaymentPaidByGuest)
+        throw new HttpError(409, "Meeting requires MeetingPayment with SUCCESS status");
+
+      if(slotPaymentPaidByGuest.successCode !== (body as CreateMeetingGuestRequest).successCode)
+        throw new HttpError(409, "Invalid MeetingPayment success code");
+    }
+
+    let user: { _type: "user", firstName: string, lastName: string, email: string }
+      | { _type: "guest"; email: string }
+      | null = null;
+
     const findArgs = {
       where: { id: req.user.id },
       select: { firstName: true, lastName: true, email: true },
     };
 
-    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findArgs);
-    else if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findArgs);
+    if(req.user.role === UserRole.APPLICANT) user = { _type: "user", ...await prisma.applicant.findUnique(findArgs) as any };
+    if(req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
+    else if(req.user.role === GuestRole) user = { _type: "guest", email: req.user.id }
 
     const roomUrl = await this.meetingService.createRoom(body.type, user!);
     const meeting = await prisma.meeting.create({
@@ -74,6 +136,7 @@ export class MeetingController extends Controller {
         roomUrl,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
         employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
+        guestEmail: req.user.role === GuestRole ? req.user.id : undefined,
       },
     });
 

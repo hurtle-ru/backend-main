@@ -18,21 +18,6 @@ export namespace tinkoff {
     PaymentURL: string;
   }
 
-  export interface InitTinkoffPaymentRequestBody {
-    TerminalKey: string;
-    Amount: number;
-    OrderId: string;
-    Token: string;
-    Description: string;
-    CustomerKey: string;
-    PayType: PayType;
-    DATA?: InitTinkoffPaymentRequestDATA;
-  }
-
-  export interface InitTinkoffPaymentRequestDATA {
-    OperationInitiatorType: number,
-  }
-
   // Standard Payment - стандартный одностадийный платеж без PCI DSS
   export interface GetStandardPaymentStateResponse {
     TerminalKey: string;
@@ -78,5 +63,16 @@ export namespace tinkoff {
     "3DS_CHECKED" = "3DS_CHECKED",
     PREAUTHORIZING = "PREAUTHORIZING",
     UNKNOWN = "UNKNOWN",
+  }
+
+  export enum NotificationPaymentStatus {
+    AUTHORIZED = "AUTHORIZED",
+    CONFIRMED = "CONFIRMED",
+    PARTIAL_REVERSED = "PARTIAL_REVERSED",
+    REVERSED = "REVERSED",
+    PARTIAL_REFUNDED = "PARTIAL_REFUNDED",
+    REFUNDED = "REFUNDED",
+    REJECTED = "REJECTED",
+    "3DS_CHECKING" = "3DS_CHECKING"
   }
 }

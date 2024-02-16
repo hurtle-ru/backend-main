@@ -1,13 +1,10 @@
 import { injectable, singleton } from "tsyringe";
 import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service";
-import { v4 as uuidv4 } from "uuid";
-import { MeetingPayment, MeetingPaymentStatus, MeetingType } from "@prisma/client";
+import { MeetingType } from "@prisma/client";
 import { meetingPriceByType, paymentConfig } from "./payment.config";
 import { meetingNameByType } from "../meeting.config";
-import { TinkoffPaymentStatusToMeetingPaymentStatus } from "./payment.dto";
-import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
 import otpGenerator from "otp-generator";
-import { success } from "concurrently/dist/src/defaults";
 
 
 @injectable()
@@ -24,7 +21,7 @@ export class MeetingPaymentService {
 
     const failUrl = new URL(paymentConfig.MEETING_PAYMENT_FAIL_URL_BASE);
     failUrl.searchParams.append("meetingPaymentId", meetingPaymentId);
-    failUrl.searchParams.append("code", successCode);
+    failUrl.searchParams.append("code", failCode);
 
     const response = await this.tinkoffPaymentService.initPayment(
       meetingPaymentId,
@@ -32,6 +29,7 @@ export class MeetingPaymentService {
       description,
       successUrl.toString(),
       failUrl.toString(),
+      paymentConfig.MEETING_PAYMENT_NOTIFICATION_URL
     );
 
     return {
@@ -41,31 +39,17 @@ export class MeetingPaymentService {
     };
   }
 
-  async updatePaymentStatusIfNeed(payment: MeetingPayment): Promise<MeetingPaymentStatus> {
-    if (["SUCCESS", "FAIL"].includes(payment.status)) return payment.status;
-
-    const currentTimeBeforeRequest = new Date();
-
-    const tinkoffPaymentState = await this.tinkoffPaymentService.getPaymentState(payment.kassaPaymentId);
-    let mappedStatus = TinkoffPaymentStatusToMeetingPaymentStatus[tinkoffPaymentState.Status];
-
-    if(mappedStatus === "PENDING" && currentTimeBeforeRequest > payment.dueDate) mappedStatus = "DEADLINE_EXPIRED"
-
-    if(payment.status !== mappedStatus) {
-      await prisma.meetingPayment.update({
-        where: { id: payment.id },
-        data: { status: mappedStatus },
-      });
-    }
-
-    return mappedStatus;
-  }
-
   doesMeetingTypeRequiresPayment(type: MeetingType): boolean {
     return meetingPriceByType.hasOwnProperty(type);
   }
 
   generateCode() {
     return otpGenerator.generate(16, { specialChars: false });
+  }
+
+  async verifyToken(body: MeetingPaymentTinkoffNotificationRequest) {
+    const { Token, ...bodyWithoutToken } = body;
+
+    return Token != null && body.Token === this.tinkoffPaymentService.makeToken(bodyWithoutToken);
   }
 }

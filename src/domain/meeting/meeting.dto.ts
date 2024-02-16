@@ -5,6 +5,12 @@ import { BasicEmployer } from "../employer/employer.dto";
 import { BasicMeetingSlot } from "./slot/slot.dto";
 import { BasicMeetingFeedback } from "./feedback/feedback.dto";
 import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
+import {
+  RequesterApplicant,
+  RequesterEmployer,
+  RequesterGuest,
+} from "../../infrastructure/controller/requester/requester.dto";
+import { CreateMeetingPaymentRequest } from "./payment/payment.dto";
 
 
 export type BasicMeeting = Omit<
@@ -32,6 +38,13 @@ export type CreateMeetingRequest = Pick<
   | "slotId"
   | "type"
 >;
+
+export type CreateMeetingGuestRequest = CreateMeetingRequest & RequesterGuest & {
+  "successCode": string
+}
+
+export type CreateMeetingApplicantOrEmployerRequest = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
+
 
 export type PutMeetingRequestByApplicantOrEmployer = Pick<
   Meeting,

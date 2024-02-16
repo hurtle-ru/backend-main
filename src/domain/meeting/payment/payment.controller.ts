@@ -14,7 +14,12 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { BasicMeetingPayment, CreateMeetingPaymentRequest, PutMeetingPaymentStatusRequest } from "./payment.dto";
+import {
+  BasicMeetingPayment,
+  CreateMeetingPaymentRequest,
+  MeetingPaymentTinkoffNotificationRequest,
+  PutMeetingPaymentStatusRequest, TinkoffPaymentStatusToMeetingPaymentStatus,
+} from "./payment.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { MeetingService } from "../meeting.service";
@@ -24,6 +29,7 @@ import moment from "moment";
 import { tinkoffConfig } from "../../../external/tinkoff/tinkoff.config";
 import { MeetingPayment } from "@prisma/client";
 import { BasicMeetingSlot } from "../slot/slot.dto";
+import { GuestRole, JwtModel } from "../../auth/auth.dto";
 
 
 @injectable()
@@ -41,6 +47,7 @@ export class MeetingPaymentController extends Controller {
    * Инициирует платежную сессию для оплаты встречи по слоту.
    */
   @Post("")
+  @Security("jwt", [GuestRole])
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
   @Response<HttpErrorBody & { "error":
@@ -49,6 +56,7 @@ export class MeetingPaymentController extends Controller {
     | "Pending payment already exists on this slot"
   }>(409)
   public async create(
+    @Request() req: JwtModel,
     @Body() body: CreateMeetingPaymentRequest,
   ): Promise<BasicMeetingPayment> {
     const slot = await prisma.meetingSlot.findUnique({
@@ -71,7 +79,7 @@ export class MeetingPaymentController extends Controller {
 
     if(!slot) throw new HttpError(404, "MeetingSlot not found");
     if(slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-
+    
     if(prisma.meetingPayment.hasUnexpired(slot.payments))
       throw new HttpError(409, "Pending payment already exists on this slot");
     if(!this.paymentService.doesMeetingTypeRequiresPayment(body.type))
@@ -88,7 +96,8 @@ export class MeetingPaymentController extends Controller {
 
     const meetingPayment = await prisma.meetingPayment.create({
       data: {
-        ...body,
+        slotId: body.slotId,
+        guestEmail: req.user.id,
         dueDate,
         successCode,
         failCode,
@@ -102,7 +111,7 @@ export class MeetingPaymentController extends Controller {
       failCode,
     );
 
-    await prisma.meetingPayment.update({
+    const updatedPayment = await prisma.meetingPayment.update({
       where: { id: meetingPayment.id },
       data: {
         amount: paymentSession.amount,
@@ -111,51 +120,24 @@ export class MeetingPaymentController extends Controller {
       },
     });
 
-    return paymentWithoutHiddenData;
+    return {
+      ...updatedPayment,
+    }
   }
 
-  @Put("{id}")
-  @Response<HttpErrorBody & { "error": "MeetingPayment not found" }>(404)
-  @Response<HttpErrorBody & { "error":
-    | "MeetingPayment already finished"
-    | "Invalid code"
-  }>(409)
-  public async putStatus(
-    @Path() id: string,
-    @Body() body: PutMeetingPaymentStatusRequest
-  ) {
-    const payment = await prisma.meetingPayment.findUnique({
-      where: { id },
+  @Post("tinkoffNotification")
+  @Response<HttpErrorBody & { "error": "Invalid token" }>(401)
+  public async processTinkoffNotification(
+    @Body() body: MeetingPaymentTinkoffNotificationRequest
+  ): Promise<"OK"> {
+    if(!await this.paymentService.verifyToken(body)) throw new HttpError(401, "Invalid token");
+
+    const mappedStatus = TinkoffPaymentStatusToMeetingPaymentStatus[body.Status];
+    await prisma.meetingPayment.update({
+      where: { id: body.OrderId },
+      data: { status: mappedStatus },
     });
 
-    if(!payment) throw new HttpError(404, "MeetingPayment not found");
-    if(payment.status !== "PENDING")  throw new HttpError(409, "MeetingPayment already finished");
-
-    if(body.status === "SUCCESS" && body.code === payment.successCode) throw new HttpError(409, "Invalid code");
-    if(body.status === "FAIL" && body.code === payment.failCode) throw new HttpError(409, "Invalid code");
-  }
-
-  @Get("{id}")
-  @Response<HttpErrorBody & { "error": "MeetingPayment not found" }>(404)
-  public async getById(
-    @Path() id: string,
-    @Query() include?: ("slot")[],
-  ): Promise<BasicMeetingPayment & { slot?: BasicMeetingSlot }> {
-    const payment = await prisma.meetingPayment.findUnique({
-      where: { id },
-      include: {
-        slot: include?.includes("slot"),
-      },
-    });
-
-    if (!payment) throw new HttpError(404, "MeetingPayment not found");
-
-    const newStatus = await this.paymentService.updatePaymentStatusIfNeed(payment);
-
-    // const { kassaPaymentId, ...paymentWithoutHiddenData } = payment;
-    // return {
-    //   ...paymentWithoutHiddenData,
-    //   status: newStatus,
-    // };
+    return "OK";
   }
 }

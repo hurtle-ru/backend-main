@@ -4,7 +4,7 @@ import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 
 export interface JwtModel {
   user: {
-    id: string;
+    id: string; // Contains model id or email if the user is Guest
     role: UserRole | typeof GuestRole;
     iat: number;
   };
