@@ -30,6 +30,7 @@ import { tinkoffConfig } from "../../../external/tinkoff/tinkoff.config";
 import { MeetingPayment } from "@prisma/client";
 import { BasicMeetingSlot } from "../slot/slot.dto";
 import { GuestRole, JwtModel } from "../../auth/auth.dto";
+import { type } from "node:os";
 
 
 @injectable()
@@ -103,6 +104,7 @@ export class MeetingPaymentController extends Controller {
         dueDate,
         successCode,
         failCode,
+        type: body.type,
       },
     });
 
@@ -121,7 +123,6 @@ export class MeetingPaymentController extends Controller {
         kassaPaymentId: paymentSession.id,
       },
     });
-
 
     {
       const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;

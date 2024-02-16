@@ -56,6 +56,7 @@ export class MeetingController extends Controller {
       | "MeetingSlot already booked"
       | "Meeting requires MeetingPayment with SUCCESS status"
       | "Invalid MeetingPayment success code"
+      | "Paid meeting type and passed type from request body dont match"
   }>(409)
   @Response<HttpErrorBody & { "error":
       | "Invalid body request for applicant"
@@ -95,6 +96,7 @@ export class MeetingController extends Controller {
             status: true,
             guestEmail: true,
             successCode: true,
+            type: true,
           },
         },
       },
@@ -114,6 +116,9 @@ export class MeetingController extends Controller {
 
       if(slotPaymentPaidByGuest.successCode !== (bodyData as CreateMeetingGuestRequest).successCode)
         throw new HttpError(409, "Invalid MeetingPayment success code");
+
+      if(slotPaymentPaidByGuest.type !== bodyData.type)
+        throw new HttpError(409, "Paid meeting type and passed type from request body dont match");
     }
 
     let user: { _type: "user", firstName: string, lastName: string, email: string }
@@ -144,7 +149,7 @@ export class MeetingController extends Controller {
     });
 
     await this.meetingService.sendMeetingCreatedToAdminGroup(
-      { name: bodyData.name, id: meeting.id, dateTime: slot.dateTime },
+      { name: bodyData.name, id: meeting.id, dateTime: slot.dateTime, type: bodyData.type },
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
     );

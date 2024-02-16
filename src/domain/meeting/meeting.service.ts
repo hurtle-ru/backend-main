@@ -38,7 +38,7 @@ export class MeetingService {
   }
 
   async sendMeetingCreatedToAdminGroup(
-    meeting: { name: string, id: string, dateTime: Date },
+    meeting: { name: string, id: string, dateTime: Date, type: MeetingType },
     manager: { name: string, id: string },
     user: { _type: "user", firstName: string, lastName: string, id: string, role: string }
         | { _type: "guest", email: string, id: string, role: string},
@@ -51,6 +51,7 @@ export class MeetingService {
       `Забронирована новая встреча!` +
       `\n` +
       `\nНазвание: <b>${meeting.name} (ID: ${meeting.id})</b>` +
+      `\nТип: <b>${meeting.type}</b>` +
       `\nДата: <b>${meeting.dateTime}</b>` +
       `\nМенеджер: <b>${manager.name} (ID: ${manager.id}</b>` +
       `\n`;

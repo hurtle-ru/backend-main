@@ -277,6 +277,7 @@ model MeetingPayment {
   dueDate        DateTime
   slot           MeetingSlot          @relation(fields: [slotId], references: [id])
   slotId         String
+  type           MeetingType          @default(CONSULTATION_B2C_EXPERT)
 }
 
 model MeetingScriptProtocol {

@@ -20,9 +20,8 @@ export type BasicMeetingPayment = Omit<
 export type CreateMeetingPaymentRequest = Pick<
   MeetingPayment,
   | "slotId"
-> & {
-  type: MeetingType,
-};
+  | "type"
+>;
 
 export type PutMeetingPaymentStatusRequest = { "status": "SUCCESS" | "FAIL", code: string };
 
