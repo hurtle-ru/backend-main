@@ -38,7 +38,10 @@ export class VacancyResponseController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Invalid body request for applicant" | "Invalid body request for manager"}>(403)
+  @Response<HttpErrorBody & {"error":
+      | "Invalid body request for applicant"
+      | "Invalid body request for manager"
+  }>(403)
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
   @Response<HttpErrorBody & {"error": "This applicant already has response on this vacancy"}>(409)
   public async create(
@@ -53,7 +56,7 @@ export class VacancyResponseController extends Controller {
       ? req.user.id
       : (bodyData as CreateVacancyResponseRequestFromManager).candidateId;
 
-    if(await prisma.vacancy.exists({ id: bodyData.vacancyId }))
+    if(!await prisma.vacancy.exists({ id: bodyData.vacancyId }))
       throw new HttpError(404, "Vacancy does not exist");
 
     if(await prisma.vacancyResponse.exists({ candidateId, vacancyId: bodyData.vacancyId }))

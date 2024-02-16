@@ -14,14 +14,15 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { JwtModel, UserRole } from "../../auth/auth.dto";
+import { GuestRole, JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
-import { MeetingType } from "@prisma/client";
+import { MeetingPaymentStatus, MeetingType } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
+import { MeetingPaymentController } from "../payment/payment.controller";
 
 
 @injectable()
@@ -47,8 +48,8 @@ export class MeetingSlotController extends Controller {
   }
 
   @Get("")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
-  @Response<HttpErrorBody & {"error": "Only available slots are accessible to employers and applicants"}>(403)
+  @Security("jwt", [GuestRole, UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Response<HttpErrorBody & {"error": "Only available slots are accessible to employers, applicants and guests"}>(403)
   public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
@@ -59,16 +60,23 @@ export class MeetingSlotController extends Controller {
     @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
     if(req.user.role !== UserRole.MANAGER && !available)
-      throw new HttpError(403, "Only available slots are accessible to employers and applicants");
+      throw new HttpError(403, "Only available slots are accessible to employers, applicants and guests");
 
+    const currentDate = new Date();
     const where = {
       meeting: available ? null : undefined,
       types: types ? { hasSome: types } : undefined,
       dateTime: {
         ...(afterDateTime && { gte: afterDateTime }),
         ...(beforeDateTime && { lte: beforeDateTime }),
-        ...(available && (!afterDateTime || afterDateTime < new Date()) && { gte: new Date() }),
+        ...(available && (!afterDateTime || afterDateTime < currentDate) && { gte: currentDate }),
       },
+      ...(available && {
+        OR: [
+          { payments: { none: {} } }, // No payments at all
+          { payments: { every: { status: MeetingPaymentStatus.PENDING, dueDate: { lte: currentDate } } } }, // All payments are expired
+        ],
+      }),
     }
 
     const [meetingSlots, meetingSlotsCount] = await Promise.all([
@@ -166,7 +174,7 @@ export class MeetingSlotController extends Controller {
     @Path() id: string,
     @Query() include?: ("meeting" | "manager")[]
   ): Promise<GetMeetingSlotResponse> {
-    const where = this.slotService.buildAccessWhereQuery(req.user.role, req.user.id, id);
+    const where = this.slotService.buildAccessWhereQuery(req.user.role as UserRole, req.user.id, id);
 
     const meetingSlot = await prisma.meetingSlot.findUnique({
       where,

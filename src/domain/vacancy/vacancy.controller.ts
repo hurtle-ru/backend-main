@@ -29,6 +29,16 @@ import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
+import {
+  Currency,
+  Prisma, Vacancy,
+  VacancyEmploymentType, VacancyExperience,
+  VacancyReportingForm, VacancyTeamRole,
+  VacancyWorkingHours,
+  VacancyWorkplaceModel,
+} from "@prisma/client";
+import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/controller/filter/number-filter.dto";
+
 
 @injectable()
 @Route("api/v1/vacancies")
@@ -57,30 +67,62 @@ export class VacancyController extends Controller {
   }
 
   @Get("")
-  @Security("jwt", [UserRole.MANAGER])
+  @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT])
   public async getAll(
-    @Query() include?: ("employer" | "vacancyResponses")[],
+    @Request() req: JwtModel,
+    @Query() include?: ("employer" | "responses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() employerId?: string,
-    @Query() vacancyResponseId?: string,
+    @Query() teamRole?: VacancyTeamRole,
+    @Query() experience?: VacancyExperience,
+    @Query() employmentType?: VacancyEmploymentType,
+    @Query("salary") salaryFilter?: IntFilterString,
+    @Query() salaryCurrency?: Currency,
+    @Query() city?: string,
+    @Query() reportingForm?: VacancyReportingForm,
+    @Query() workingHours?: VacancyWorkingHours,
+    @Query() workplaceModel?: VacancyWorkplaceModel,
+    @Query() employer_isStartup?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
-    const where = {
-      employerId: employerId ?? undefined,
-      vacancyResponses: vacancyResponseId ? { some: { id: vacancyResponseId } } : undefined,
+    const salary = parseIntFilterQueryParam(salaryFilter);
+
+    let where: Prisma.VacancyWhereInput = { employerId: employerId ?? undefined };
+    let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+
+    if(req.user.role === UserRole.APPLICANT && includeResponses) {
+      includeResponses = {
+        where: { candidateId: req.user.id },
+      };
+    }
+
+    where = {
+      ...where,
+      teamRole: teamRole ?? undefined,
+      experience: experience ?? undefined,
+      employmentType: employmentType ?? undefined,
+      salary: salary ?? undefined,
+      salaryCurrency: salaryCurrency ?? undefined,
+      city: city ?? undefined,
+      reportingForm: reportingForm ?? undefined,
+      workingHours: workingHours ?? undefined,
+      workplaceModel: workplaceModel ?? undefined,
+      employer: employer_isStartup !== undefined
+        ? { isStartup: employer_isStartup }
+        : undefined,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
       prisma.vacancy.findMany({
         skip: (page - 1) * size,
         take: size,
-        where,
+        where: where!,
         include: {
           employer: include?.includes("employer"),
-          responses: include?.includes("vacancyResponses"),
+          responses: includeResponses,
         },
       }),
-      prisma.vacancy.count({ where }),
+      prisma.vacancy.count({ where: where! }),
     ]);
 
     return new PageResponse(
@@ -96,28 +138,45 @@ export class VacancyController extends Controller {
   }
 
   @Get("my")
-  @Security("jwt", [UserRole.EMPLOYER])
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("employer" | "vacancyResponses")[],
+    @Query() include?: ("employer" | "responses" | "responses.candidate")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponse>> {
-    const where = {
-        employerId: req.user.id,
-    };
+    let where = null;
+    let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+
+    if(req.user.role === UserRole.EMPLOYER) {
+      where = { employerId: req.user.id };
+
+      if(include?.includes("responses.candidate")) {
+        includeResponses = {
+          include: { candidate: true },
+        };
+      }
+    } else if(req.user.role === UserRole.APPLICANT) {
+      where = { responses: { some: { candidateId: req.user.id } } };
+
+      if(includeResponses) {
+        includeResponses = {
+          where: { candidateId: req.user.id },
+        };
+      }
+    }
 
     const [vacancies, vacanciesCount] = await Promise.all([
       prisma.vacancy.findMany({
         skip: (page - 1) * size,
         take: size,
-        where,
+        where: where!,
         include: {
           employer: include?.includes("employer"),
-          responses: include?.includes("vacancyResponses"),
+          responses: includeResponses,
         },
       }),
-      prisma.vacancy.count({ where }),
+      prisma.vacancy.count({ where: where! }),
     ]);
 
     return new PageResponse(
@@ -225,18 +284,24 @@ export class VacancyController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("employer" | "vacancyResponses")[]
+    @Query() include?: ("employer" | "responses")[]
   ): Promise<GetVacancyResponse> {
+    let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, responses: { some: { id: req.user.id } }};
+    else if(req.user.role === UserRole.APPLICANT && includeResponses) {
+      includeResponses = {
+        where: { candidateId: req.user.id },
+      }
+    }
 
     const vacancy = await prisma.vacancy.findUnique({
       where: where!,
       include: {
         employer: include?.includes("employer"),
-        responses: include?.includes("vacancyResponses"),
+        responses: includeResponses,
       },
     });
 
