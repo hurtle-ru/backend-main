@@ -67,17 +67,13 @@ export class VacancyController extends Controller {
     @Query() size: PageSizeNumber = 20,
     @Query() employerId?: string,
   ): Promise<PageResponse<GetVacancyResponse>> {
-    let where: Prisma.VacancyWhereInput = { employerId: employerId ?? undefined };
+    const where: Prisma.VacancyWhereInput = { employerId: employerId ?? undefined };
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
 
-    if(req.user.role === UserRole.APPLICANT) {
-      where = { ...where, responses: { some: { candidateId: req.user.id } } };
-
-      if(includeResponses) {
-        includeResponses = {
-          where: { candidateId: req.user.id },
-        };
-      }
+    if(req.user.role === UserRole.APPLICANT && includeResponses) {
+      includeResponses = {
+        where: { candidateId: req.user.id },
+      };
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
