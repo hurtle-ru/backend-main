@@ -57,13 +57,13 @@ export function userRateLimit(config: RateLimitConfig) {
     return function(req: Request, res: Response, next: NextFunction) {
         const ip = getIp(req);
         console.log("IP:", ip)
-        const token = getHeaderFirstValue('authorization', req);
+        const token = getHeaderFirstValue('Authorization', req);
 
         const userRate = token ? updateRate(token, USERS_RATE_MAP, config).count : 0;
         const ipRate = ip ? updateRate(ip, IPS_RATE_MAP, config).count : 0;
 
         if (userRate > config.limit || ipRate > config.limit) {
-            throw new HttpError(429, 'Too many Requests')
+            throw new HttpError(429, 'Too Many Requests')
         }
 
         next();
@@ -84,13 +84,13 @@ export function routeRateLimit(config: RateLimitConfig) {
 
     return function(req: Request, res: Response, next: NextFunction) {
         const ip = getIp(req);
-        const token = getHeaderFirstValue('authorization', req);
+        const token = getHeaderFirstValue('Authorization', req);
 
         const userRate = token ? updateRate(token, usersRateMap, config).count : 0;
         const ipRate = ip ? updateRate(ip, ipsRateMap, config).count : 0;
 
         if (userRate > config.limit || ipRate > config.limit) {
-            throw new HttpError(429, 'Too many Requests')
+            throw new HttpError(429, 'Too Many Requests')
         }
 
         next();
