@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Middlewares,
   Patch,
   Path,
   Put,
@@ -32,6 +33,7 @@ import { Readable } from "stream";
 import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
 
 
 @injectable()
@@ -164,6 +166,8 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}/avatar")
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Applicant not found"}>(404)
   public async getAvatar(
     @Request() req: ExpressRequest,
@@ -195,6 +199,7 @@ export class ApplicantController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
@@ -223,9 +228,9 @@ export class ApplicantController extends Controller {
   }
 
   @Delete("{id}")
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   public async deleteById(
     @Path() id: string,
     @Request() req: JwtModel,
@@ -239,8 +244,8 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,

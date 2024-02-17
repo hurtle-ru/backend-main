@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Middlewares,
   Path,
   Post,
   Put,
@@ -32,6 +33,7 @@ import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingPaymentStatus } from "@prisma/client";
@@ -51,6 +53,7 @@ export class MeetingController extends Controller {
 
   @Post("")
   @Security("jwt", [GuestRole, UserRole.APPLICANT, UserRole.EMPLOYER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error":
       | "MeetingSlot already booked"
@@ -64,6 +67,7 @@ export class MeetingController extends Controller {
       | "Invalid body request for guest"
       | "User does not have access to this MeetingSlot type"
   }>(403)
+  @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingGuestRequest | CreateMeetingApplicantOrEmployerRequest,
@@ -234,6 +238,7 @@ export class MeetingController extends Controller {
 
   @Get("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getPassport(
     @Request() req: ExpressRequest & JwtModel,
@@ -241,7 +246,7 @@ export class MeetingController extends Controller {
   ): Promise<Readable | any> {
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport");
     const filePath = `meeting/${id}/${fileName}`;
-    
+
     const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
@@ -261,6 +266,7 @@ export class MeetingController extends Controller {
 
   @Put("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
@@ -288,12 +294,13 @@ export class MeetingController extends Controller {
     if (oldPassportFileName !== null) {
       this.artifactService.deleteFile(passportDirectory + oldPassportFileName);
     }
-    
+
     await this.artifactService.saveFile(file, passportPath, AVAILABLE_PASSPORT_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
   }
 
   @Get("{id}/video")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getVideo(
     @Request() req: ExpressRequest & JwtModel,
@@ -329,6 +336,7 @@ export class MeetingController extends Controller {
 
   @Put("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
@@ -359,9 +367,10 @@ export class MeetingController extends Controller {
   }
 
   @Delete("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Not enough rights to delete another meeting"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
   public async deleteById(
     @Path() id: string,
     @Request() req: JwtModel,

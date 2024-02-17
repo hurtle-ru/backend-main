@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { BasicEmployer, PutByIdEmployerRequest, PutMeEmployerRequest, GetEmployerResponse } from "./employer.dto";
@@ -11,6 +11,7 @@ import { Readable } from "stream";
 import {Request as ExpressRequest} from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
 
 
 @injectable()
@@ -104,6 +105,8 @@ export class EmployerController extends Controller {
 
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 30, interval: 60}))
+  @Response<HttpErrorBody & {"error": "File not found" | "Employer not found"}>(404)
   public async getAvatar(
     @Request() req: ExpressRequest,
     @Path() id: string,
@@ -133,6 +136,7 @@ export class EmployerController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another employer"}>(403)
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
