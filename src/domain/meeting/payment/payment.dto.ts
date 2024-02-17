@@ -32,7 +32,7 @@ export type GetMeetingPaymentResponse = BasicMeetingPayment & {
 export type PatchMeetingPaymentRequest = Pick<MeetingPayment,
   | "status"
 > & {
-  code: "string"
+  code: string;
 };
 
 export type MeetingPaymentTinkoffNotificationRequest = {
