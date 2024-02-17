@@ -1,6 +1,6 @@
 import { Request } from "express";
 import jwt from "jsonwebtoken";
-import { JwtModel, UserRole } from "./auth.dto";
+import { GuestRole, JwtModel, UserRole } from "./auth.dto";
 import { HttpError } from "../../infrastructure/error/http.error";
 import { authConfig } from "./auth.config";
 import { prisma } from "../../infrastructure/database/prisma.provider";
@@ -29,6 +29,8 @@ export const expressAuthentication = async (request: Request, securityName: stri
   if (scopes && !scopes.includes(decoded.role)) {
     throw new HttpError(403, "Forbidden due to inappropriate role. Your role: " + decoded.role);
   }
+
+  if (decoded.role === GuestRole) return decoded;
 
   let model;
   if (decoded.role === UserRole.APPLICANT) model = prisma.applicant;

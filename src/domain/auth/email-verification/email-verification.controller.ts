@@ -1,7 +1,6 @@
 import { Controller, Delete, Path, Post, Request, Route, Security, Tags, Response } from "tsoa";
 import { JwtModel, UserRole } from "../auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
-import otpGenerator from "otp-generator";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { injectable } from "tsyringe";
 import { EmailVerificationService } from "./email-verification.service";
