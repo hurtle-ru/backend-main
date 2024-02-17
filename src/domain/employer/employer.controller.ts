@@ -108,8 +108,8 @@ export class EmployerController extends Controller {
   @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Employer not found"}>(404)
   public async getAvatar(
-      @Request() req: ExpressRequest & JwtModel,
-      @Path() id: string,
+    @Request() req: ExpressRequest,
+    @Path() id: string,
   ): Promise<Readable | any> {
     const employer = await prisma.employer.findUnique({
       where: { id },

@@ -170,8 +170,8 @@ export class ApplicantController extends Controller {
   @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Applicant not found"}>(404)
   public async getAvatar(
-      @Request() req: ExpressRequest & JwtModel,
-      @Path() id: string,
+    @Request() req: ExpressRequest,
+    @Path() id: string,
   ): Promise<Readable | any> {
     const applicant = await prisma.applicant.findUnique({
       where: { id },
