@@ -23,7 +23,6 @@ model Applicant {
   city                 String?           @db.VarChar(255)
   country              String?           @db.VarChar(62)
   aboutMe              String?           @db.VarChar(3000)
-  specialty            String?           @db.VarChar(100)
   nickname             String?           @unique @db.VarChar(50)
   isReadyToRelocate    Boolean?
   isVisibleToEmployers Boolean           @default(true)
