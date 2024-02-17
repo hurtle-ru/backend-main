@@ -166,7 +166,6 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}/avatar")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Applicant not found"}>(404)
   public async getAvatar(
