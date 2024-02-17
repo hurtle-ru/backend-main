@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { BasicManager, GetManagerResponse, PutMeManagerRequest } from "./manager.dto";
@@ -9,6 +9,7 @@ import { Readable } from "stream";
 import {Request as ExpressRequest} from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
 
 
 @injectable()
@@ -87,6 +88,7 @@ export class ManagerController extends Controller {
 
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Manager not found"}>(404)
   public async getAvatar(
       @Request() req: ExpressRequest & JwtModel,
@@ -117,6 +119,7 @@ export class ManagerController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.MANAGER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another manager"}>(403)
   @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)

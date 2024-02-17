@@ -8,7 +8,7 @@ import { appConfig } from "./infrastructure/app.config";
 import cors from "./infrastructure/cors/cors.provider";
 import * as Sentry from "@sentry/node";
 import { ProfilingIntegration } from "@sentry/profiling-node";
-import rateLimit from "./infrastructure/request-limit/request-limit.middleware"
+import { routeRateLimit, userRateLimit } from "./infrastructure/request-limit/request-limit.middleware"
 
 
 const app = express();
@@ -31,10 +31,12 @@ app.use(Sentry.Handlers.tracingHandler());
 
 app.use(requestLogger);
 app.use(cors);
-app.use(bodyParser.json());
 
-app.set("trust proxy", true);
-app.use(rateLimit({limit: 80, interval: 60}));
+app.use(bodyParser.json());
+app.enable("trust proxy");
+
+app.use(routeRateLimit({limit: 80, interval: 60}));
+app.use(userRateLimit({limit: 100, interval: 60}));
 
 RegisterRoutes(app);
 

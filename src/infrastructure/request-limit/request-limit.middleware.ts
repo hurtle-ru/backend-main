@@ -1,51 +1,97 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { JwtModel, } from "../../domain/auth/auth.dto";
 import { HttpError } from "../../infrastructure/error/http.error";
 import { RateInfo, RateLimitConfig } from "./request-limit.dto"
+import { max } from 'lodash';
 
 
 const MILLISECONDS_IN_SECOND = 1000
 
+const USERS_RATE_MAP = new Map<string, RateInfo>();
+const IPS_RATE_MAP = new Map<string, RateInfo>();
 
-function getIp(req: any | JwtModel) {
-    return req.headers['x-real-ip'] || req.connection.remoteAddress;
+
+function getHeaderFirstValue(header: string, req: Request): string | undefined {
+    let value = req.headers[header];
+    value = Array.isArray(value) ? value[0] : value;
+    return value;
 }
 
-function checkAndUpdateRate(identifier: string, rateMap: Map<string, RateInfo>, config: RateLimitConfig) {
+function getIp(req: Request): string | undefined {
+    return getHeaderFirstValue('x-real-ip', req) || req.ip;
+}
+
+
+function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: RateLimitConfig): RateInfo {
     const currentTime = Date.now();
 
-    if (!rateMap.has(identifier)) rateMap.set(identifier, { count: 1, lastReset: currentTime })
-    else {
-        const requestRateInfo = rateMap.get(identifier)!;
-
-        if (currentTime - requestRateInfo.lastReset > config.interval) {
-            requestRateInfo.count = 1;
-            requestRateInfo.lastReset = currentTime;
-        } else {
-            if (requestRateInfo.count >= config.limit) {
-                throw new HttpError(429, 'Too many Requests')}
-            requestRateInfo.count++;
-        }
+    if (!rateMap.has(identifier)) {
+        const rate = { count: 1, lastReset: currentTime }
+        rateMap.set(identifier, rate)
+        return rate
     }
+
+    const rate = rateMap.get(identifier)!;
+
+    if (currentTime - rate.lastReset > config.interval) {
+        rate.count = 1;
+        rate.lastReset = currentTime;
+
+    } else {
+        rate.count++;
+    }
+
+    return rate
 }
 
+
 /**
-* Set max count of user request for route per interval.
+* Set the global maximum number of requests for each user and ip per interval.
+* Should be used only in app.use()
 * @param {number} config.limit Max count of requests per interval
 * @param {number} config.interval Interval in seconds
 */
-export default function rateLimit(config: RateLimitConfig) {
-    const requestUsersRateMap = new Map<string, RateInfo>();
-    const requestIpsRateMap = new Map<string, RateInfo>();
+export function userRateLimit(config: RateLimitConfig) {
+    config.interval *= MILLISECONDS_IN_SECOND;
+
+    return function(req: Request, res: Response, next: NextFunction) {
+        const ip = getIp(req);
+        console.log("IP:", ip)
+        const token = getHeaderFirstValue('authorization', req);
+
+        const userRate = token ? updateRate(token, USERS_RATE_MAP, config).count : 0;
+        const ipRate = ip ? updateRate(ip, IPS_RATE_MAP, config).count : 0;
+
+        if (userRate > config.limit || ipRate > config.limit) {
+            throw new HttpError(429, 'Too many Requests')
+        }
+
+        next();
+    }
+}
+
+
+/**
+* Set the maximum number of requests for each user and ip per route per interval.
+* @param {number} config.limit Max count of requests per interval
+* @param {number} config.interval Interval in seconds
+*/
+export function routeRateLimit(config: RateLimitConfig) {
+    const usersRateMap = new Map<string, RateInfo>();
+    const ipsRateMap = new Map<string, RateInfo>();
 
     config.interval *= MILLISECONDS_IN_SECOND;
 
-    return function(req: any | JwtModel, res: Response, next: NextFunction) {
-        const userId = req.user.id;
-        const userIp = getIp(req);
+    return function(req: Request, res: Response, next: NextFunction) {
+        const ip = getIp(req);
+        const token = getHeaderFirstValue('authorization', req);
 
-        checkAndUpdateRate(userId, requestUsersRateMap, config);
-        checkAndUpdateRate(userIp, requestIpsRateMap, config);
+        const userRate = token ? updateRate(token, usersRateMap, config).count : 0;
+        const ipRate = ip ? updateRate(ip, ipsRateMap, config).count : 0;
+
+        if (userRate > config.limit || ipRate > config.limit) {
+            throw new HttpError(429, 'Too many Requests')
+        }
 
         next();
     }

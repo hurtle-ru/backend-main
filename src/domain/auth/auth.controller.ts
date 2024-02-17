@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse,
@@ -11,6 +11,7 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error"
 import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
+import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
 
 
 @injectable()
@@ -25,6 +26,7 @@ export class AuthController extends Controller {
   }
 
   @Post("accessToken")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Invalid login or password"}>(401)
   public async createAccessToken(
     @Body() body: CreateAccessTokenRequest,
@@ -63,6 +65,7 @@ export class AuthController extends Controller {
   }
 
   @Post("applicant")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   public async registerApplicant(@Body() body: RegisterApplicantRequest): Promise<void> {
     RegisterApplicantRequest.schema.validateSync(body);
@@ -89,6 +92,7 @@ export class AuthController extends Controller {
   }
 
   @Post("employer")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   @Response<HttpErrorBody & {"error": "Company with this inn not found"}>(404)
   public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {

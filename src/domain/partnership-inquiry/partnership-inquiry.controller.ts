@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Path, Post, Put, Query, Response, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Get, Middlewares, Path, Post, Put, Query, Response, Route, Security, Tags } from "tsoa";
 import {
   BasicPartnershipInquiry,
   CreatePartnershipInquiryRequest,
@@ -11,6 +11,7 @@ import { PartnershipInquiryService } from "./partnership-inquiry.service";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { prisma } from "../../infrastructure/database/prisma.provider";
+import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
 
 
 @injectable()
@@ -22,6 +23,7 @@ export class PartnershipInquiryController extends Controller {
   }
 
   @Post("")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
   public async create(
     @Body() body: CreatePartnershipInquiryRequest,
   ): Promise<BasicPartnershipInquiry> {
