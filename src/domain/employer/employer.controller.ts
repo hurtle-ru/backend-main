@@ -104,10 +104,9 @@ export class EmployerController extends Controller {
 
   @Get("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "File not found" | "Employer not found"}>(404)
   public async getAvatar(
-      @Request() req: ExpressRequest & JwtModel,
-      @Path() id: string,
+    @Request() req: ExpressRequest,
+    @Path() id: string,
   ): Promise<Readable | any> {
     const employer = await prisma.employer.findUnique({
       where: { id },

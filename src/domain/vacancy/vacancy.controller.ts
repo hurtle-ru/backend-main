@@ -73,17 +73,17 @@ export class VacancyController extends Controller {
     @Query() include?: ("employer" | "responses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() name?: string,
+    @Query() nameOrEmployerName?: string,
     @Query() employerId?: string,
-    @Query() teamRole?: VacancyTeamRole,
-    @Query() experience?: VacancyExperience,
-    @Query() employmentType?: VacancyEmploymentType,
+    @Query() teamRole?: VacancyTeamRole[],
+    @Query() experience?: VacancyExperience[],
+    @Query() employmentType?: VacancyEmploymentType[],
     @Query("salary") salaryFilter?: IntFilterString,
     @Query() salaryCurrency?: Currency,
     @Query() city?: string,
-    @Query() reportingForm?: VacancyReportingForm,
-    @Query() workingHours?: VacancyWorkingHours,
-    @Query() workplaceModel?: VacancyWorkplaceModel,
+    @Query() reportingForm?: VacancyReportingForm[],
+    @Query() workingHours?: VacancyWorkingHours[],
+    @Query() workplaceModel?: VacancyWorkplaceModel[],
     @Query() employer_isStartup?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const salary = parseIntFilterQueryParam(salaryFilter);
@@ -99,19 +99,26 @@ export class VacancyController extends Controller {
 
     where = {
       ...where,
-      teamRole: teamRole ?? undefined,
-      experience: experience ?? undefined,
-      employmentType: employmentType ?? undefined,
+      teamRole: { in: teamRole ?? undefined },
+      experience: { in: experience ?? undefined },
+      employmentType: { in: employmentType ?? undefined },
       salary: salary ?? undefined,
       salaryCurrency: salaryCurrency ?? undefined,
-      name: name ?? {contains: name},
       city: city ?? undefined,
-      reportingForm: reportingForm ?? undefined,
-      workingHours: workingHours ?? undefined,
-      workplaceModel: workplaceModel ?? undefined,
-      employer: employer_isStartup !== undefined
-        ? { isStartup: employer_isStartup }
-        : undefined,
+      reportingForm: { in: reportingForm ?? undefined },
+      workingHours: { in: workingHours ?? undefined },
+      workplaceModel: { in: workplaceModel ?? undefined },
+      employer: {
+        isStartup: employer_isStartup ?? undefined,
+      },
+      OR: [
+        { name: nameOrEmployerName ? { contains: nameOrEmployerName } : undefined },
+        {
+          employer: {
+            name: nameOrEmployerName ? { contains: nameOrEmployerName } : undefined
+          }
+        }
+      ],
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -294,6 +301,7 @@ export class VacancyController extends Controller {
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
     else if(req.user.role === UserRole.APPLICANT && includeResponses) {
+      where = { id }
       includeResponses = {
         where: { candidateId: req.user.id },
       }

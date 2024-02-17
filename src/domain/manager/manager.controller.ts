@@ -86,11 +86,10 @@ export class ManagerController extends Controller {
   }
 
   @Get("{id}/avatar")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "File not found" | "Manager not found"}>(404)
   public async getAvatar(
-      @Request() req: ExpressRequest & JwtModel,
-      @Path() id: string,
+    @Request() req: ExpressRequest,
+    @Path() id: string,
   ): Promise<Readable | any> {
       const manager = await prisma.manager.findUnique({
         where: { id },

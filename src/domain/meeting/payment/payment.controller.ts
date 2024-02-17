@@ -160,7 +160,7 @@ export class MeetingPaymentController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PatchMeetingPaymentRequest
-  ) {
+  ): Promise<BasicMeetingPayment> {
     const where = { id, guestEmail: req.user.id };
     const payment = await prisma.meetingPayment.findUnique({ where });
 
@@ -169,10 +169,14 @@ export class MeetingPaymentController extends Controller {
     if((body.status === "SUCCESS" && payment.successCode === body.code)
       || (body.status === "FAIL" && payment.failCode === body.code)) {
 
-      await prisma.meetingPayment.update({
+      const updatedPayment = await prisma.meetingPayment.update({
         where,
         data: { status: body.status },
       })
+
+      const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;
+      return paymentResponse;
+
     } else throw new HttpError(401, "Invalid code");
   }
 
