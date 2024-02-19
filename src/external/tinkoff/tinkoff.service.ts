@@ -68,7 +68,7 @@ export class TinkoffPaymentService {
     };
 
     const sortedKeys = Object.keys(dataWithCredentials).sort();
-    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join('');
+    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join("");
 
     return this.sha256(concatenatedValues).toString();
   }

@@ -8,7 +8,7 @@ import { appConfig } from "./infrastructure/app.config";
 import cors from "./infrastructure/cors/cors.provider";
 import * as Sentry from "@sentry/node";
 import { ProfilingIntegration } from "@sentry/profiling-node";
-import { routeRateLimit, userRateLimit } from "./infrastructure/request-limit/request-limit.middleware"
+import { routeRateLimit, userRateLimit } from "./infrastructure/rate-limit/rate-limit.middleware"
 
 
 const app = express();

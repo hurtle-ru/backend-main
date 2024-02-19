@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Middlewares,
   Patch,
   Path,
   Post,
@@ -17,7 +17,7 @@ import {
 } from "tsoa";
 import {
   BasicVacancy,
-  CreateVacancyRequest,
+  CreateVacancyRequest, GetAllVacancyCitiesResponse,
   GetVacancyResponse,
   PatchVacancyRequestFromEmployer,
   PatchVacancyRequestFromManager,
@@ -38,6 +38,7 @@ import {
   VacancyWorkplaceModel,
 } from "@prisma/client";
 import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/controller/filter/number-filter.dto";
+import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 
 
 @injectable()
@@ -111,7 +112,7 @@ export class VacancyController extends Controller {
       employer: { isStartup: employer_isStartup ?? undefined },
       OR: nameOrEmployerName ? [
         { name: { contains: nameOrEmployerName, mode: "insensitive" } },
-        { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } }, },
+        { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } } },
       ] : undefined,
     }
 
@@ -240,6 +241,30 @@ export class VacancyController extends Controller {
         },
       },
     });
+  }
+
+
+  /*
+  * Метод получения всех городов, указанных в вакансиях
+  * Используется краткосрочное кешировние
+  */
+  @Get("cities")
+  @Middlewares(publicCacheMiddleware(20 * 60))
+  public async getAllCities(): Promise<GetAllVacancyCitiesResponse> {
+    console.log("Real: ", new Date().toLocaleTimeString());
+    const citiesAggregation = await prisma.vacancy.groupBy({
+      by: ["city"],
+      _count: {
+        city: true,
+      },
+    });
+
+    const cities = citiesAggregation.map(aggregation => aggregation.city);
+
+    return {
+      cities,
+      total: cities.length,
+    };
   }
 
   @Put("{id}")

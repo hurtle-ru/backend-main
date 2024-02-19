@@ -11,7 +11,7 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error"
 import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
-import { routeRateLimit as rateLimit } from "../../infrastructure/request-limit/request-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
 
 
 @injectable()
