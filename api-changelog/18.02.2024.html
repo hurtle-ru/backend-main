@@ -1,0 +1,829 @@
+<html>
+
+<head>
+    <style>
+
+        @import url(//fonts.googleapis.com/css?family=Nunito);
+
+        * {
+            font-family: 'Nunito','Helvetica Neue',Helvetica,Arial,sans-serif;
+        }
+        
+        .title {
+            margin: 1em 0 0.5em 0;
+            font-size: 36px;
+        }
+
+        .path {
+            color: #016BF8;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .endpoint {
+            color: #21313c;
+            line-height: 24px;
+            margin: 22px 0;
+        }        
+
+        .endpoint-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .change-type {
+            box-sizing: border-box;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 16px;
+            border-radius: 5px;
+            height: 18px;
+            padding-left: 6px;
+            padding-right: 6px;
+            text-transform: uppercase;
+            border: 1px solid;
+            letter-spacing: 1px;
+            background-color: #E3FCF7;
+            border-color: #C0FAE6;
+            color: #00684A;
+            margin-top: 2px;
+        }
+
+        .change {
+        }
+
+        .breaking {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 5px;
+        }
+
+        .breaking-icon {
+            color: #DB3030;
+        }
+
+        .endpoint-changes {
+        }
+
+        .tooltip {
+            position:relative;  
+        }
+
+        .tooltip:before {
+            content: attr(data-text);  
+            position:absolute;
+
+             
+            top:50%;
+            transform:translateY(-50%);
+
+             
+            left:100%;
+            margin-left:15px;  
+
+             
+            width:200px;
+            padding:10px;
+            border-radius:10px;
+            background:#000;
+            color: #fff;
+            text-align:center;
+
+            display:none;  
+        }        
+
+        .tooltip:hover:before {
+            display:block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">API Changelog 1.0.0 vs. 1.0.0 </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#/components/schemas/BasicApplicant]/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#/components/schemas/BasicApplicant]/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/applicants/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;specialty&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/applicants/me</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;specialty&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#/components/schemas/BasicApplicant]/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/applicants/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;specialty&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PUT /api/v1/applicants/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the request property &#39;specialty&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/applicants/{id}/avatar</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            the endpoint scheme security &#39;jwt&#39; was removed from the API
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/employers/{id}/avatar</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            the endpoint scheme security &#39;jwt&#39; was removed from the API
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/managers/{id}/avatar</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            the endpoint scheme security &#39;jwt&#39; was removed from the API
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">PATCH /api/v1/meetingPayments/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;string&#39; of the request property &#39;/allOf[#2]/code&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the success response with the status &#39;204&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the success response with the status &#39;200&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#2]/applicant/allOf[#/components/schemas/BasicApplicant]/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">POST /api/v1/meetings</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            added the non-success response with the status &#39;429&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#2]/applicant/allOf[#/components/schemas/BasicApplicant]/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/meetings/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#2]/applicant/allOf[#/components/schemas/BasicApplicant]/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/resumes/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#2]/applicant/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/resumes/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#2]/applicant/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancies</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;BETWEEN_1_AND_3&#39; from the &#39;query&#39; request parameter &#39;experience&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;BETWEEN_3_AND_6&#39; from the &#39;query&#39; request parameter &#39;experience&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;COLLABORATIVE_WORK&#39; from the &#39;query&#39; request parameter &#39;teamRole&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;DIRECTOR&#39; from the &#39;query&#39; request parameter &#39;reportingForm&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;FIXED_HOURS&#39; from the &#39;query&#39; request parameter &#39;workingHours&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;FREELANCE&#39; from the &#39;query&#39; request parameter &#39;workingHours&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;FULL_TIME&#39; from the &#39;query&#39; request parameter &#39;employmentType&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;GROUP_WORK&#39; from the &#39;query&#39; request parameter &#39;reportingForm&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;GROUP_WORK&#39; from the &#39;query&#39; request parameter &#39;workingHours&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;HYBRID&#39; from the &#39;query&#39; request parameter &#39;workplaceModel&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;INDEPENDENT_WORK&#39; from the &#39;query&#39; request parameter &#39;reportingForm&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;INDEPENDENT_WORK&#39; from the &#39;query&#39; request parameter &#39;teamRole&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;MORE_THAN_6&#39; from the &#39;query&#39; request parameter &#39;experience&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;NO_EXPERIENCE&#39; from the &#39;query&#39; request parameter &#39;experience&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;OFFICE&#39; from the &#39;query&#39; request parameter &#39;workplaceModel&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;PART_TIME&#39; from the &#39;query&#39; request parameter &#39;employmentType&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;PROBATION&#39; from the &#39;query&#39; request parameter &#39;employmentType&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;PROJECT&#39; from the &#39;query&#39; request parameter &#39;employmentType&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;PROJECT_MANAGER&#39; from the &#39;query&#39; request parameter &#39;reportingForm&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;REMOTE&#39; from the &#39;query&#39; request parameter &#39;workplaceModel&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;STRICT_SCHEDULE&#39; from the &#39;query&#39; request parameter &#39;workingHours&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;TEAM_COORDINATION&#39; from the &#39;query&#39; request parameter &#39;teamRole&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;TEAM_MANAGEMENT&#39; from the &#39;query&#39; request parameter &#39;teamRole&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the enum value &#39;VOLUNTEER&#39; from the &#39;query&#39; request parameter &#39;employmentType&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            for the &#39;query&#39; request parameter &#39;employmentType&#39;, the type/format was changed from &#39;string&#39;/&#39;&#39; to &#39;array&#39;/&#39;&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            for the &#39;query&#39; request parameter &#39;experience&#39;, the type/format was changed from &#39;string&#39;/&#39;&#39; to &#39;array&#39;/&#39;&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            for the &#39;query&#39; request parameter &#39;reportingForm&#39;, the type/format was changed from &#39;string&#39;/&#39;&#39; to &#39;array&#39;/&#39;&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            for the &#39;query&#39; request parameter &#39;teamRole&#39;, the type/format was changed from &#39;string&#39;/&#39;&#39; to &#39;array&#39;/&#39;&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            for the &#39;query&#39; request parameter &#39;workingHours&#39;, the type/format was changed from &#39;string&#39;/&#39;&#39; to &#39;array&#39;/&#39;&#39;
+            </li>
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            for the &#39;query&#39; request parameter &#39;workplaceModel&#39;, the type/format was changed from &#39;string&#39;/&#39;&#39; to &#39;array&#39;/&#39;&#39;
+            </li>
+            
+            <li class="change">
+            
+            added the new optional &#39;query&#39; request parameter &#39;nameOrEmployerName&#39;
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancyResponses/my</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;items/items/allOf[#2]/candidate/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="path">
+                <div class="">GET /api/v1/vacancyResponses/{id}</div>
+            </span>
+            <div class="change-type">Updated</div>
+        </div>
+        <ul class="endpoint-changes">
+            
+            <li class="change">
+            
+            <div class="breaking tooltip" data-text="Breaking Change">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" class="breaking-icon" role="img" aria-label="Important With Circle Icon"><path fill="currentColor" fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM7 4.5a1 1 0 0 1 2 0v4a1 1 0 0 1-2 0v-4Zm2 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            removed the required property &#39;/allOf[#2]/candidate/specialty&#39; from the response with the &#39;200&#39; status
+            </li>
+            
+        </ul>
+    </div>
+    
+</body>
+
+</html>
+
