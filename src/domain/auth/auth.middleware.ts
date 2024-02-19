@@ -1,6 +1,6 @@
 import { Request } from "express";
 import jwt from "jsonwebtoken";
-import { GuestRole, JwtModel, UserRole } from "./auth.dto";
+import { GUEST_ROLE, JwtModel, PUBLIC_SCOPE, UserRole } from "./auth.dto";
 import { HttpError } from "../../infrastructure/error/http.error";
 import { authConfig } from "./auth.config";
 import { prisma } from "../../infrastructure/database/prisma.provider";
@@ -17,12 +17,17 @@ export const expressAuthentication = async (request: Request, securityName: stri
   const token = request.header("Authorization");
 
   if (securityName !== "jwt") throw new Error("Invalid security name");
-  if (!token) throw new HttpError(401, "No token provided");
+
+  if (!token) {
+    if(scopes && scopes.includes(PUBLIC_SCOPE)) return null;
+    throw new HttpError(401, "No token provided");
+  }
 
   let decoded: JwtModel["user"];
   try {
     decoded = jwt.verify(token, authConfig.JWT_SECRET_KEY) as JwtModel["user"];
   } catch {
+    if(scopes && scopes.includes(PUBLIC_SCOPE)) return null;
     throw new HttpError(401, "Token is invalid");
   }
 
@@ -30,7 +35,7 @@ export const expressAuthentication = async (request: Request, securityName: stri
     throw new HttpError(403, "Forbidden due to inappropriate role. Your role: " + decoded.role);
   }
 
-  if (decoded.role === GuestRole) return decoded;
+  if (decoded.role === GUEST_ROLE) return decoded;
 
   let model;
   if (decoded.role === UserRole.APPLICANT) model = prisma.applicant;

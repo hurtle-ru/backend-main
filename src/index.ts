@@ -35,8 +35,8 @@ app.use(cors);
 app.use(bodyParser.json());
 app.enable("trust proxy");
 
-app.use(routeRateLimit({limit: 80, interval: 60}));
-app.use(userRateLimit({limit: 100, interval: 60}));
+app.use(routeRateLimit({limit: 160, interval: 60}));
+app.use(userRateLimit({limit: 200, interval: 60}));
 
 RegisterRoutes(app);
 
