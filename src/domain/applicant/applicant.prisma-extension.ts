@@ -30,6 +30,11 @@ export const applicantPrismaExtension = Prisma.defineExtension({
                     answers: true,
                   },
                 },
+                slot: {
+                  include: {
+                    payments: true,
+                  },
+                },
               },
             },
             vacancyResponses: {

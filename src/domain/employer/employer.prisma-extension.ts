@@ -20,6 +20,11 @@ export const employerPrismaExtension = Prisma.defineExtension({
                     answers: true,
                   },
                 },
+                slot: {
+                  include: {
+                    payments: true,
+                  },
+                },
               },
             },
             vacancies: {
