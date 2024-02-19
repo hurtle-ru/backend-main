@@ -108,17 +108,11 @@ export class VacancyController extends Controller {
       reportingForm: { in: reportingForm ?? undefined },
       workingHours: { in: workingHours ?? undefined },
       workplaceModel: { in: workplaceModel ?? undefined },
-      employer: {
-        isStartup: employer_isStartup ?? undefined,
-      },
-      OR: [
-        { name: nameOrEmployerName ? { contains: nameOrEmployerName } : undefined },
-        {
-          employer: {
-            name: nameOrEmployerName ? { contains: nameOrEmployerName } : undefined
-          }
-        }
-      ],
+      employer: { isStartup: employer_isStartup ?? undefined },
+      OR: nameOrEmployerName ? [
+        { name: { contains: nameOrEmployerName, mode: "insensitive" } },
+        { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } }, },
+      ] : undefined,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
