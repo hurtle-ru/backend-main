@@ -294,11 +294,10 @@ export class VacancyController extends Controller {
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT && includeResponses) {
+    else if(req.user.role === UserRole.APPLICANT) {
       where = { id }
-      includeResponses = {
-        where: { candidateId: req.user.id },
-      }
+
+      if(includeResponses) includeResponses = { where: { candidateId: req.user.id } };
     }
 
     const vacancy = await prisma.vacancy.findUnique({
