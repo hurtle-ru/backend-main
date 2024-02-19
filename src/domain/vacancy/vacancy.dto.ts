@@ -1,6 +1,5 @@
 import { Vacancy } from "@prisma/client";
 import { BasicEmployer } from "../employer/employer.dto";
-import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicVacancyResponse } from "./response/response.dto"
 import { RequesterEmployer, RequesterManager } from "../../infrastructure/controller/requester/requester.dto";
 
@@ -16,6 +15,8 @@ export type GetVacancyResponse = BasicVacancy & {
   vacancyResponses?: BasicVacancyResponse[];
   viewersCount: number;
 };
+
+export type GetAllVacancyCitiesResponse = { cities: string[], total: number };
 
 export type CreateVacancyRequest = Pick<
   Vacancy,
