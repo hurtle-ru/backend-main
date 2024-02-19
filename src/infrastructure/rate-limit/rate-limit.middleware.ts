@@ -11,9 +11,9 @@ const IPS_RATE_MAP = new Map<string, RateInfo>();
 
 function getHeaderFirstValue(header: string, req: Request): string | undefined {
     let value = req.headers[header];
-    value = Array.isArray(value) ? value[0] : value;
-    return value;
+    return Array.isArray(value) ? value[0] : value;
 }
+
 
 function getIp(req: Request): string | undefined {
     return getHeaderFirstValue("x-real-ip", req) || req.ip;
@@ -25,7 +25,9 @@ function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: 
 
     if (!rateMap.has(identifier)) {
         const rate = { count: 1, lastReset: currentTime }
+
         rateMap.set(identifier, rate)
+
         return rate
     }
 
@@ -54,13 +56,12 @@ export function userRateLimit(config: RateLimitConfig) {
 
     return function(req: Request, res: Response, next: NextFunction) {
         const ip = getIp(req);
-        console.log("IP:", ip)
         const token = getHeaderFirstValue("Authorization", req);
 
         const userRate = token ? updateRate(token, USERS_RATE_MAP, config).count : 0;
         const ipRate = ip ? updateRate(ip, IPS_RATE_MAP, config).count : 0;
 
-        if (userRate > config.limit || ipRate > config.limit) {
+        if ( Math.max(userRate, ipRate) > config.limit ) {
             throw new HttpError(429, "Too Many Requests")
         }
 
@@ -87,7 +88,7 @@ export function routeRateLimit(config: RateLimitConfig) {
         const userRate = token ? updateRate(token, usersRateMap, config).count : 0;
         const ipRate = ip ? updateRate(ip, ipsRateMap, config).count : 0;
 
-        if (userRate > config.limit || ipRate > config.limit) {
+        if ( Math.max(userRate, ipRate) > config.limit ) {
             throw new HttpError(429, "Too Many Requests")
         }
 

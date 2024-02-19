@@ -274,7 +274,7 @@ model MeetingPayment {
   failCode       String               @db.VarChar(127)
   amount         Int?
   dueDate        DateTime
-  slot           MeetingSlot          @relation(fields: [slotId], references: [id])
+  slot           MeetingSlot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
   slotId         String
   type           MeetingType
 }
