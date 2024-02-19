@@ -1,6 +1,6 @@
 import {AVAILABLE_IMAGE_FILE_MIME_TYPES} from "../../external/artifact/artifact.config";
 import { MeetingType } from "@prisma/client";
-import { GuestRole, UserRole } from "../auth/auth.dto";
+import { GUEST_ROLE, UserRole } from "../auth/auth.dto";
 
 
 export const AVAILABLE_PASSPORT_FILE_MIME_TYPES = [
@@ -12,7 +12,7 @@ export const MeetingTypeByRole = {
     [UserRole.MANAGER]: [],
     [UserRole.EMPLOYER]: [MeetingType.CONSULTATION_B2B],
     [UserRole.APPLICANT]: [MeetingType.CONSULTATION_B2C, MeetingType.INTERVIEW],
-    [GuestRole]: [MeetingType.CONSULTATION_B2C_EXPERT],
+    [GUEST_ROLE]: [MeetingType.CONSULTATION_B2C_EXPERT],
 }
 
 export const meetingNameByType = {

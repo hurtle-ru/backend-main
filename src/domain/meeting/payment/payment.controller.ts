@@ -29,7 +29,7 @@ import moment from "moment";
 import { tinkoffConfig } from "../../../external/tinkoff/tinkoff.config";
 import { MeetingPayment } from "@prisma/client";
 import { BasicMeetingSlot } from "../slot/slot.dto";
-import { GuestRole, JwtModel } from "../../auth/auth.dto";
+import { GUEST_ROLE, JwtModel } from "../../auth/auth.dto";
 import { type } from "node:os";
 
 
@@ -48,7 +48,7 @@ export class MeetingPaymentController extends Controller {
    * Инициирует платежную сессию для оплаты встречи по слоту.
    */
   @Post("")
-  @Security("jwt", [GuestRole])
+  @Security("jwt", [GUEST_ROLE])
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
   @Response<HttpErrorBody & { "error":
@@ -152,7 +152,7 @@ export class MeetingPaymentController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("jwt", [GuestRole])
+  @Security("jwt", [GUEST_ROLE])
   @Response<HttpErrorBody & { "error": "Payment not found" }>(404)
   @Response<HttpErrorBody & { "error": "Invalid code" }>(401)
   @Response<HttpErrorBody & { "error": "Payment expired" }>(409)
@@ -181,7 +181,7 @@ export class MeetingPaymentController extends Controller {
   }
 
   @Get("{id}")
-  @Security("jwt", [GuestRole])
+  @Security("jwt", [GUEST_ROLE])
   @Response<HttpErrorBody & { "error": "Payment not found" }>(404)
   @Response<HttpErrorBody & { "error": "Code is invalid" }>(403)
   public async getById(

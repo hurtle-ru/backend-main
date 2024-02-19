@@ -17,7 +17,7 @@ import {
   UploadedFile,
 } from "tsoa";
 import { MeetingService } from "./meeting.service";
-import { GuestRole, JwtModel, UserRole } from "../auth/auth.dto";
+import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
   CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
@@ -52,7 +52,7 @@ export class MeetingController extends Controller {
   }
 
   @Post("")
-  @Security("jwt", [GuestRole, UserRole.APPLICANT, UserRole.EMPLOYER])
+  @Security("jwt", [GUEST_ROLE, UserRole.APPLICANT, UserRole.EMPLOYER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error":
@@ -76,7 +76,7 @@ export class MeetingController extends Controller {
 
     if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
     if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
-    if(req.user.role === GuestRole && _requester !== GuestRole) throw new HttpError(403, "Invalid body request for guest");
+    if(req.user.role === GUEST_ROLE && _requester !== GUEST_ROLE) throw new HttpError(403, "Invalid body request for guest");
 
     const slot = await prisma.meetingSlot.findUnique({
       where: {
@@ -136,7 +136,7 @@ export class MeetingController extends Controller {
 
     if(req.user.role === UserRole.APPLICANT) user = { _type: "user", ...await prisma.applicant.findUnique(findArgs) as any };
     if(req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
-    else if(req.user.role === GuestRole) user = { _type: "guest", email: req.user.id }
+    else if(req.user.role === GUEST_ROLE) user = { _type: "guest", email: req.user.id }
 
     const roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
     const meeting = await prisma.meeting.create({
@@ -148,7 +148,7 @@ export class MeetingController extends Controller {
         type: bodyData.type,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
         employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
-        guestEmail: req.user.role === GuestRole ? req.user.id : undefined,
+        guestEmail: req.user.role === GUEST_ROLE ? req.user.id : undefined,
       },
     });
 

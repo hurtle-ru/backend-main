@@ -1,7 +1,7 @@
 import { Body, Controller, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
-  CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GuestRole,
+  CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE,
   RegisterApplicantRequest,
   RegisterEmployerRequest,
   UserRole,
@@ -72,7 +72,7 @@ export class AuthController extends Controller {
 
     const token = this.authService.createToken({
       id: body.email,
-      role: GuestRole,
+      role: GUEST_ROLE,
       iat: Date.now(),
     });
 

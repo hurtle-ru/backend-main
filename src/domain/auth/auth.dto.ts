@@ -5,7 +5,7 @@ import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 export interface JwtModel {
   user: {
     id: string; // Contains model id or email if the user is Guest
-    role: UserRole | typeof GuestRole;
+    role: UserRole | typeof GUEST_ROLE;
     iat: number;
   };
 }
@@ -16,7 +16,8 @@ export enum UserRole {
   "MANAGER" = "MANAGER",
 }
 
-export const GuestRole = "GUEST";
+export const GUEST_ROLE = "GUEST";
+export const PUBLIC_SCOPE = "PUBLIC";
 
 export interface CreateAccessTokenRequest {
   login: string;

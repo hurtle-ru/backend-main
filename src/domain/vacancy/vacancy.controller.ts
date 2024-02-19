@@ -25,7 +25,7 @@ import {
   PutVacancyRequestFromManager,
 } from "./vacancy.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
-import { JwtModel, UserRole } from "../auth/auth.dto";
+import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
@@ -39,6 +39,7 @@ import {
 } from "@prisma/client";
 import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/controller/filter/number-filter.dto";
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -68,9 +69,10 @@ export class VacancyController extends Controller {
   }
 
   @Get("")
-  @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT])
+  @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT, PUBLIC_SCOPE])
+  @Response<HttpErrorBody & {"error": "User must be authorized to see vacancy responses"}>(401)
   public async getAll(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel | { user: null },
     @Query() include?: ("employer" | "responses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
@@ -89,17 +91,22 @@ export class VacancyController extends Controller {
   ): Promise<PageResponse<GetVacancyResponse>> {
     const salary = parseIntFilterQueryParam(salaryFilter);
 
-    let where: Prisma.VacancyWhereInput = { employerId: employerId ?? undefined };
-    let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+    let where: Prisma.VacancyWhereInput = {};
+    let includeResponses: boolean | Prisma.Vacancy$responsesArgs | null = include?.includes("responses") ?? false;
 
-    if(req.user.role === UserRole.APPLICANT && includeResponses) {
-      includeResponses = {
-        where: { candidateId: req.user.id },
-      };
+    if(req.user) {
+      switch(req.user.role) {
+        case UserRole.APPLICANT:
+          if(includeResponses) includeResponses = includeResponses = { where: { candidateId: req.user.id } };
+          break;
+      }
+    } else {
+      if(includeResponses) throw new HttpError(401, "User must be authorized to see vacancy responses")
     }
 
     where = {
       ...where,
+      employerId: employerId ?? undefined,
       teamRole: { in: teamRole ?? undefined },
       experience: { in: experience ?? undefined },
       employmentType: { in: employmentType ?? undefined },
@@ -307,22 +314,28 @@ export class VacancyController extends Controller {
   }
 
   @Get("{id}")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT, PUBLIC_SCOPE])
+  @Response<HttpErrorBody & {"error": "User must be authorized to see vacancy responses"}>(401)
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
   public async getById(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel | { user: null },
     @Path() id: string,
     @Query() include?: ("employer" | "responses")[]
   ): Promise<GetVacancyResponse> {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+    const where = { id };
 
-    let where = null;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, employerId: req.user.id };
-    else if(req.user.role === UserRole.APPLICANT) {
-      where = { id }
-
-      if(includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+    if(req.user) {
+      switch (req.user.role) {
+        case UserRole.EMPLOYER:
+          if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
+          break;
+        case UserRole.APPLICANT:
+          if (includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+          break;
+      }
+    } else {
+      if(includeResponses) throw new HttpError(401, "User must be authorized to see responses")
     }
 
     const vacancy = await prisma.vacancy.findUnique({

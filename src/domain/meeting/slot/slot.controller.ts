@@ -14,7 +14,7 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { GuestRole, JwtModel, UserRole } from "../../auth/auth.dto";
+import { GUEST_ROLE, JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -48,7 +48,7 @@ export class MeetingSlotController extends Controller {
   }
 
   @Get("")
-  @Security("jwt", [GuestRole, UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Security("jwt", [GUEST_ROLE, UserRole.MANAGER, UserRole.EMPLOYER, UserRole.APPLICANT])
   @Response<HttpErrorBody & {"error": "Only available slots are accessible to employers, applicants and guests"}>(403)
   public async getAll(
     @Request() req: JwtModel,
