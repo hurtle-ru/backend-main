@@ -5,7 +5,7 @@
  * @param sortBys The array of sort criteria strings, e.g., ["createdAt_desc", "name_asc"].
  * @returns A generic orderBy array suitable for Prisma queries.
  */
-function parseSortBy<T>(sortBys: string[] | undefined): T[] {
+export function parseSortBy<T>(sortBys: string[] | undefined): T[] {
   const orders: T[] = [];
 
   if (sortBys) {
