@@ -46,8 +46,8 @@ model Employer {
   middleName           String?            @db.VarChar(50)
   lastName             String             @db.VarChar(50)
   phone                String?            @unique @db.VarChar(15)
-  name                 String?            @db.VarChar(256)
-  inn                  String             @db.VarChar(12)
+  name                 String             @db.VarChar(256)
+  inn                  String?            @db.VarChar(12)
   ogrn                 String?            @db.VarChar(15)
   legalForm            EmployerLegalForm?
   agreementNumber      Int?               @default(autoincrement())
@@ -362,6 +362,7 @@ model VacancyResponse {
   createdAt                       DateTime              @default(now())
   updatedAt                       DateTime              @updatedAt
   status                          VacancyResponseStatus @default(NEW_APPLICATION)
+  isViewedByEmployer              Boolean               @default(false)
   offer                           Offer?
   candidate                       Applicant             @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId                     String

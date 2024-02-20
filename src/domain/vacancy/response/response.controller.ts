@@ -26,6 +26,7 @@ import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
+import { Prisma, VacancyResponseStatus } from "@prisma/client";
 
 
 @injectable()
@@ -77,18 +78,44 @@ export class VacancyResponseController extends Controller {
     @Query() include?: ("candidate" | "vacancy" | "candidateRecommendedBy")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
+    @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
+    @Query() status?: VacancyResponseStatus[],
+    @Query() candidateId?: string,
+    @Query() candidateRecommendedByManagerId?: string,
+    @Query() vacancyId?: string,
+    @Query() vacancy_city?: string,
+    @Query() vacancy_minSalary?: number,
+    @Query() vacancy_maxSalary?: number,
   ): Promise<PageResponse<GetVacancyResponseResponse>> {
-    let where = null;
+    let where: Prisma.VacancyResponseWhereInput = {
+      status: { in: status ?? undefined },
+      candidateId: candidateId ?? undefined,
+      candidateRecommendedByManagerId: candidateRecommendedByManagerId ?? undefined,
+      vacancyId: vacancyId ?? undefined,
+      vacancy: {
+        city: vacancy_city ?? undefined,
+        salary: {
+          gte: vacancy_minSalary ?? undefined,
+          lte: vacancy_maxSalary ?? undefined,
+        },
+      },
+    };
 
-    if (req.user.role === UserRole.APPLICANT) where = { candidateId: req.user.id };
-    else if (req.user.role === UserRole.EMPLOYER) where = { vacancy: { employerId: req.user.id } };
-    else if (req.user.role === UserRole.MANAGER) where = {};
+    switch (req.user.role) {
+      case UserRole.APPLICANT:
+        where = { ...where, candidateId: req.user.id };
+        break;
+      case UserRole.EMPLOYER:
+        where = { ...where, vacancy: { employerId: req.user.id } };
+        break;
+    }
 
     const [vacancyResponses, vacancyResponsesCount] = await Promise.all([
       prisma.vacancyResponse.findMany({
         skip: (page - 1) * size,
         take: size,
         where: where!,
+        orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
         include: {
           candidate: include?.includes("candidate"),
           vacancy: include?.includes("vacancy"),

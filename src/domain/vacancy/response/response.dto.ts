@@ -21,6 +21,7 @@ export type GetVacancyResponseResponse = BasicVacancyResponse & {
 export type PutVacancyResponseRequest = Pick<
   BasicVacancyResponse,
   | "status"
+  | "isViewedByEmployer"
 >;
 
 export type CreateVacancyResponseRequestFromApplicant = RequesterApplicant & Pick<VacancyResponse,
