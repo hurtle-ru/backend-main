@@ -87,6 +87,7 @@ export class VacancyController extends Controller {
     @Query() reportingForm?: VacancyReportingForm[],
     @Query() workingHours?: VacancyWorkingHours[],
     @Query() workplaceModel?: VacancyWorkplaceModel[],
+    @Query() isConfirmedByManager?: boolean,
     @Query() employer_isStartup?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const salary = parseIntFilterQueryParam(salaryFilter);
@@ -116,6 +117,7 @@ export class VacancyController extends Controller {
       reportingForm: { in: reportingForm ?? undefined },
       workingHours: { in: workingHours ?? undefined },
       workplaceModel: { in: workplaceModel ?? undefined },
+      isConfirmedByManager: isConfirmedByManager ?? undefined,
       employer: { isStartup: employer_isStartup ?? undefined },
       OR: nameOrEmployerName ? [
         { name: { contains: nameOrEmployerName, mode: "insensitive" } },

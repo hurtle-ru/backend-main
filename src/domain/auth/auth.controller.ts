@@ -109,15 +109,11 @@ export class AuthController extends Controller {
   @Post("employer")
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
-  @Response<HttpErrorBody & {"error": "Company with this inn not found"}>(404)
   public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
     RegisterEmployerRequest.schema.validateSync(body);
 
     const existingWithSameEmailEmployer = await prisma.employer.findUnique({ where: { email: body.email } });
     if(existingWithSameEmailEmployer) throw new HttpError(409, "User with this email already exists");
-
-    const dadataEmployer = await this.dadataService.getBasicCompanyInfoByInn(body.inn);
-    if (!dadataEmployer) throw new HttpError(404, "Company with this inn not found");
 
     await prisma.employer.create({
       data: {
@@ -132,9 +128,7 @@ export class AuthController extends Controller {
         firstName: body.firstName,
         middleName: body.middleName,
         login: body.email,
-        inn: body.inn,
-        ogrn: dadataEmployer.ogrn,
-        name: dadataEmployer.name,
+        name: body.name,
       },
     });
   }
