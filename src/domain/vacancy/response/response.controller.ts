@@ -132,7 +132,7 @@ export class VacancyResponseController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("candidate" | "vacancy" | "candidateRecommendedBy")[],
+    @Query() include?: ("candidate" | "candidate.resume" | "vacancy" | "candidateRecommendedBy")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
@@ -143,6 +143,8 @@ export class VacancyResponseController extends Controller {
     @Query() vacancy_city?: string[],
     @Query() vacancy_minSalary?: number,
     @Query() vacancy_maxSalary?: number,
+    @Query() candidate_resume_minDesiredSalary?: number,
+    @Query() candidate_resume_maxDesiredSalary?: number,
   ): Promise<PageResponse<GetVacancyResponseResponse>> {
     let where: Prisma.VacancyResponseWhereInput = {
       status: { in: status ?? undefined },
@@ -154,6 +156,14 @@ export class VacancyResponseController extends Controller {
         salary: {
           gte: vacancy_minSalary ?? undefined,
           lte: vacancy_maxSalary ?? undefined,
+        },
+      },
+      candidate: {
+        resume: {
+          desiredSalary: {
+            gte: candidate_resume_minDesiredSalary ?? undefined,
+            lte: candidate_resume_maxDesiredSalary ?? undefined,
+          },
         },
       },
     };
@@ -174,9 +184,11 @@ export class VacancyResponseController extends Controller {
         where: where!,
         orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
         include: {
-          candidate: include?.includes("candidate"),
           vacancy: include?.includes("vacancy"),
           candidateRecommendedBy: include?.includes("candidateRecommendedBy"),
+          candidate: include?.includes("candidate.resume")
+            ? { include: { resume: true }}
+            : include?.includes("candidate"),
         },
       }),
       prisma.vacancyResponse.count({ where: where! }),
