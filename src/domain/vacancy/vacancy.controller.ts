@@ -260,7 +260,6 @@ export class VacancyController extends Controller {
   @Get("cities")
   @Middlewares(publicCacheMiddleware(20 * 60))
   public async getAllCities(): Promise<GetAllVacancyCitiesResponse> {
-    console.log("Real: ", new Date().toLocaleTimeString());
     const citiesAggregation = await prisma.vacancy.groupBy({
       by: ["city"],
       _count: {

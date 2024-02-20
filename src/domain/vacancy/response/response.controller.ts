@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Middlewares,
   Patch,
   Path,
   Post,
@@ -27,6 +27,8 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { Prisma, VacancyResponseStatus } from "@prisma/client";
+import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
+import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 
 
 @injectable()
@@ -69,6 +71,60 @@ export class VacancyResponseController extends Controller {
         candidateId,
       },
     })
+  }
+
+  /*
+  * Метод получения всех городов, указанных в откликах на вакансии данного пользователя.
+  * Используется краткосрочное кешировние
+  */
+  @Get("my/cities")
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Middlewares(publicCacheMiddleware(20 * 60))
+  public async getAllMyCities(@Request() req: JwtModel): Promise<GetAllVacancyCitiesResponse> {
+    let citiesAggregation;
+
+    if (req.user.role === UserRole.EMPLOYER) {
+      citiesAggregation = await prisma.vacancy.groupBy({
+        by: ["city"],
+        where: {
+          employerId: req.user.id,
+          responses: {
+            some: {},
+          },
+        },
+        _count: {
+          city: true,
+        },
+      });
+    } else if (req.user.role === UserRole.APPLICANT) {
+      citiesAggregation = await prisma.vacancyResponse.findMany({
+        where: {
+          candidateId: req.user.id,
+        },
+        select: {
+          vacancy: {
+            select: {
+              city: true,
+            },
+          },
+        },
+      });
+
+      const citiesSet = new Set(citiesAggregation.map(response => response.vacancy.city));
+      citiesAggregation = Array.from(citiesSet).map(city => ({
+        city,
+        _count: { city: 1 }, // Mock count since actual counts are irrelevant here
+      }));
+    }
+
+    const cities = citiesAggregation!
+      .filter(aggregation => aggregation.city) // Ensuring no null cities
+      .map(aggregation => aggregation.city);
+
+    return {
+      cities,
+      total: cities.length,
+    };
   }
 
   @Get("my")
