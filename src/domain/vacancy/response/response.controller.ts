@@ -80,7 +80,7 @@ export class VacancyResponseController extends Controller {
   @Get("my/cities")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
   @Middlewares(publicCacheMiddleware(20 * 60))
-  public async getAllMyCities(@Request() req: JwtModel): Promise<GetAllVacancyCitiesResponse> {
+  public async getMyCities(@Request() req: JwtModel): Promise<GetAllVacancyCitiesResponse> {
     let citiesAggregation;
 
     if (req.user.role === UserRole.EMPLOYER) {
