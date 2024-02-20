@@ -137,20 +137,20 @@ export class VacancyResponseController extends Controller {
     @Query() size: PageSizeNumber = 20,
     @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
     @Query() status?: VacancyResponseStatus[],
-    @Query() candidateId?: string,
-    @Query() candidateRecommendedByManagerId?: string,
-    @Query() vacancyId?: string,
-    @Query() vacancy_city?: string,
+    @Query() candidateId?: string[],
+    @Query() candidateRecommendedByManagerId?: string[],
+    @Query() vacancyId?: string[],
+    @Query() vacancy_city?: string[],
     @Query() vacancy_minSalary?: number,
     @Query() vacancy_maxSalary?: number,
   ): Promise<PageResponse<GetVacancyResponseResponse>> {
     let where: Prisma.VacancyResponseWhereInput = {
       status: { in: status ?? undefined },
-      candidateId: candidateId ?? undefined,
-      candidateRecommendedByManagerId: candidateRecommendedByManagerId ?? undefined,
-      vacancyId: vacancyId ?? undefined,
+      candidateId: { in: candidateId ?? undefined },
+      candidateRecommendedByManagerId: { in: candidateRecommendedByManagerId ?? undefined },
+      vacancyId: { in: vacancyId ?? undefined },
       vacancy: {
-        city: vacancy_city ?? undefined,
+        city: { in: vacancy_city ?? undefined },
         salary: {
           gte: vacancy_minSalary ?? undefined,
           lte: vacancy_maxSalary ?? undefined,
