@@ -482,6 +482,7 @@ enum VacancyResponseStatus {
   INTERVIEWING
   OFFER_MADE
   HIRED
+  REJECTED
 }
 
 enum OfferStatus {
