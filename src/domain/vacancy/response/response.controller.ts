@@ -29,6 +29,7 @@ import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/p
 import { Prisma, VacancyResponseStatus } from "@prisma/client";
 import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
+import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 
 
 @injectable()
