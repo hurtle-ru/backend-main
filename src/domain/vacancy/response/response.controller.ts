@@ -132,7 +132,7 @@ export class VacancyResponseController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("candidate" | "candidate.resume" | "vacancy" | "candidateRecommendedBy")[],
+    @Query() include?: ("candidate" | "candidate.resume" | "vacancy" | "vacancy.employer" | "candidateRecommendedBy")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
@@ -184,8 +184,10 @@ export class VacancyResponseController extends Controller {
         where: where!,
         orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
         include: {
-          vacancy: include?.includes("vacancy"),
           candidateRecommendedBy: include?.includes("candidateRecommendedBy"),
+          vacancy: include?.includes("vacancy.employer")
+            ? { include: { employer: true } }
+            : include?.includes("vacancy"),
           candidate: include?.includes("candidate.resume")
             ? { include: { resume: true }}
             : include?.includes("candidate"),
