@@ -17,7 +17,7 @@ export class PasswordResetService {
     const link = appConfig.DOMAIN + `/auth/reset-password/${code}`;
 
     await this.mailService.sendEmail(email, "Сброс пароля", {
-      name: "reset-password",
+      name: "reset_password",
       context: { code, link },
     });
   }

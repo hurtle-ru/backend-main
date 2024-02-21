@@ -16,7 +16,7 @@ export class EmailVerificationService {
     const link = appConfig.DOMAIN + "/auth/verify-email/" + code;
 
     await this.mailService.sendEmail(email, "Подтверждение почты", {
-      name: "verify-email",
+      name: "verify_email",
       context: { link, code },
     });
   }

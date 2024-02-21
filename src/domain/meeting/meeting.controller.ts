@@ -375,13 +375,16 @@ export class MeetingController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true } });
+    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true, applicant: true, employer: true } });
     if(!meeting) throw new HttpError(404, "Meeting not found");
 
     if (req.user.id !== meeting?.slot.managerId)
       throw new HttpError(403, "Not enough rights to delete another meeting");
 
     await prisma.meeting.archive(id);
+
+    const userEmail = meeting.applicant?.email || meeting.employer?.email || meeting.guestEmail;
+    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, { dateTime: meeting.slot.dateTime })
   }
 
   @Get("{id}")
