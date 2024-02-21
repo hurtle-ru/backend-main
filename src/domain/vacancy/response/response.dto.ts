@@ -13,8 +13,8 @@ export type BasicVacancyResponse = Omit<
 >;
 
 export type GetVacancyResponseResponse = BasicVacancyResponse & {
-  candidate: BasicApplicant,
-  vacancy: BasicVacancy,
+  candidate?: BasicApplicant,
+  vacancy?: BasicVacancy,
   candidateRecommendedBy?: BasicManager | null,
 };
 
