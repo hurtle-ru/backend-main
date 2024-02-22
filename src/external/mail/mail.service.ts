@@ -36,6 +36,7 @@ export class MailService {
         html: this.templateRendererService.renderTemplate(
           "email-templates",
           template.name,
+          "html",
           template.context,
           true
         ),
