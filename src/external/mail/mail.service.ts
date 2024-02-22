@@ -3,14 +3,16 @@ import { mailConfig } from "./mail.config";
 import * as fs from "fs";
 import path from "path";
 import { render as renderTemplate } from "squirrelly";
-import { singleton } from "tsyringe";
+import { injectable, singleton } from "tsyringe";
+import { TemplateRendererService } from "../template-renderer/template-renderer.service";
 
 
+@injectable()
 @singleton()
 export class MailService {
   private transporter: Transporter;
 
-  constructor() {
+  constructor(readonly templateRendererService: TemplateRendererService) {
     this.transporter = nodemailer.createTransport({
       host: mailConfig.MAIL_HOST,
       port: mailConfig.MAIL_PORT,
@@ -31,7 +33,12 @@ export class MailService {
         from: "hello@hurtle.ru",
         to: email,
         subject: subject,
-        html: this.loadTemplate(template.name, template.context),
+        html: this.templateRendererService.renderTemplate(
+          "email-templates",
+          template.name,
+          template.context,
+          true
+        ),
       };
 
       const info = await this.transporter.sendMail(mailOptions);
@@ -42,11 +49,5 @@ export class MailService {
       console.log("Error occurred during sending email: %s", error);
       return false;
     }
-  }
-
-  loadTemplate(templateName: string, context: any): string {
-    const templatePath = path.join(process.cwd(), `resources/email-templates/${templateName}.template.html`);
-    const templateHtml = fs.readFileSync(templatePath, "utf8");
-    return renderTemplate(templateHtml, context);
   }
 }
