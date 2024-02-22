@@ -85,7 +85,7 @@ export class MeetingService {
 
   async sendMeetingCancelledToEmail(
     userEmail: string,
-    meeting: { dateTime: Date },
+    meeting: { name: string, dateTime: Date },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -97,6 +97,25 @@ export class MeetingService {
       "Встреча отменена!",
       {
         name: "cancel_meeting",
+        context: { name, date },
+      }
+    );
+  }
+
+  async sendMeetingRemindToEmail(
+    userEmail: string,
+    meeting: { dateTime: Date },
+  )  {
+    const date = moment(meeting.dateTime)
+      .locale("ru")
+      .tz(appConfig.TZ)
+      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+
+    await this.mailService.sendEmail(
+      userEmail,
+      "Напоминание о встрече!",
+      {
+        name: "remind_about_meeting",
         context: { date },
       }
     );

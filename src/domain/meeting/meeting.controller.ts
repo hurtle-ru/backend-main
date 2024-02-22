@@ -384,7 +384,9 @@ export class MeetingController extends Controller {
     await prisma.meeting.archive(id);
 
     const userEmail = meeting.applicant?.email || meeting.employer?.email || meeting.guestEmail;
-    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, { dateTime: meeting.slot.dateTime })
+    const userFirstName = meeting.applicant?.firstName || meeting.employer?.firstName || meeting.guestEmail;
+
+    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, { name: userFirstName!, dateTime: meeting.slot.dateTime })
   }
 
   @Get("{id}")

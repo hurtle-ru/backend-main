@@ -152,7 +152,7 @@ export class VacancyController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("employer" | "responses" | "responses.candidate")[],
+    @Query() include?: ("employer" | "responses" | "responses.candidate" | "responses.candidate.resume")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponse>> {
@@ -165,6 +165,11 @@ export class VacancyController extends Controller {
       if(include?.includes("responses.candidate")) {
         includeResponses = {
           include: { candidate: true },
+        };
+      }
+      if(include?.includes("responses.candidate.resume")) {
+        includeResponses = {
+          include: {candidate: { include: { resume: true } } },
         };
       }
     } else if(req.user.role === UserRole.APPLICANT) {
