@@ -11,7 +11,7 @@ import { Readable } from "stream";
 import {Request as ExpressRequest} from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 
 
 @injectable()

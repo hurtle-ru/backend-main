@@ -33,7 +33,7 @@ import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingPaymentStatus } from "@prisma/client";
