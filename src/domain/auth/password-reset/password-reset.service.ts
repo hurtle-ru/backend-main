@@ -14,11 +14,12 @@ export class PasswordResetService {
   }
 
   async sendEmail(email: string, code: string) {
-    const link = appConfig.DOMAIN + `/auth/reset-password/${code}`;
+    const encodedEmail = encodeURIComponent(email);
+    const link = appConfig.DOMAIN + `/auth/reset-password/?email=${encodedEmail}&code=${code}`;
 
     await this.mailService.sendEmail(email, "Сброс пароля", {
-      name: "reset-password",
-      context: { code, link },
+      name: "reset_password",
+      context: { link },
     });
   }
 }

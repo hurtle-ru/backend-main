@@ -12,12 +12,14 @@ export class EmailVerificationService {
   generateCode(): string {
     return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
   }
-  async sendEmail(email: string, code: string) {
-    const link = appConfig.DOMAIN + "/auth/verify-email/" + code;
+  async sendEmail(name: string, email: string, code: string) {
+    const encodedEmail = encodeURIComponent(email);
+    const encodedCode = encodeURIComponent(code);
+    const link = appConfig.DOMAIN + `/auth/verify-email?email=${encodedEmail}&code=${encodedCode}`;
 
     await this.mailService.sendEmail(email, "Подтверждение почты", {
-      name: "verify-email",
-      context: { link, code },
+      name: "verify_email",
+      context: { name, code, link },
     });
   }
 }

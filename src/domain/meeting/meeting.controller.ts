@@ -388,10 +388,15 @@ export class MeetingController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id } });
+    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true, applicant: true, employer: true } });
     if(!meeting) throw new HttpError(404, "Meeting not found");
 
     await prisma.meeting.archive(id);
+
+    const userEmail = meeting.applicant?.email || meeting.employer?.email || meeting.guestEmail;
+    const userFirstName = meeting.applicant?.firstName || meeting.employer?.firstName || meeting.guestEmail;
+
+    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, { name: userFirstName!, dateTime: meeting.slot.dateTime })
   }
 
   @Get("{id}")
