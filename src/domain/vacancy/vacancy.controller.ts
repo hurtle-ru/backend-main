@@ -169,7 +169,15 @@ export class VacancyController extends Controller {
       }
       if(include?.includes("responses.candidate.resume")) {
         includeResponses = {
-          include: {candidate: { include: { resume: true } } },
+          include: { 
+            candidate: { 
+              include: {
+                resume: {
+                  where: { isVisibleToEmployers: true }
+                }
+              }
+            }
+          },
         };
       }
     } else if(req.user.role === UserRole.APPLICANT) {
