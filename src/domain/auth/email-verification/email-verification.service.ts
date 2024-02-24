@@ -13,7 +13,9 @@ export class EmailVerificationService {
     return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
   }
   async sendEmail(name: string, email: string, code: string) {
-    const link = appConfig.DOMAIN + `/auth/verify-email?email=${email}&code=${code}`;
+    const encodedEmail = encodeURIComponent(email);
+    const encodedCode = encodeURIComponent(code);
+    const link = appConfig.DOMAIN + `/auth/verify-email?email=${encodedEmail}&code=${encodedCode}`;
 
     await this.mailService.sendEmail(email, "Подтверждение почты", {
       name: "verify_email",
