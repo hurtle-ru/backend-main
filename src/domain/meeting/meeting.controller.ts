@@ -368,14 +368,16 @@ export class MeetingController extends Controller {
     @Body() body: Partial<PutMeetingManagerRequest>,
     @Path() id: string,
   ): Promise<BasicMeeting> {
+    const where = { id };
+
     const meeting = await prisma.meeting.findUnique({
-      where: { id },
+      where,
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
 
     return await prisma.meeting.update({
-      where: { id: req.user.id },
+      where,
       data: body,
     });
   }
