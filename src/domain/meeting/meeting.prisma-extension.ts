@@ -17,6 +17,11 @@ export const meetingPrismaExtension = Prisma.defineExtension({
                   answers: true,
                 },
               },
+              slot: {
+                include: {
+                  payments: true,
+                },
+              },
             },
         });
 

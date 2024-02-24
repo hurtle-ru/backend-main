@@ -1,0 +1,4 @@
+{{ @each(it.interviews) => interview, index }}
+Название интервью: {{ interview.name }}
+Транскрипт (стенограмма) интервью: {{ interview.transcript }}
+{{ /each }}

@@ -87,6 +87,7 @@ export class VacancyController extends Controller {
     @Query() reportingForm?: VacancyReportingForm[],
     @Query() workingHours?: VacancyWorkingHours[],
     @Query() workplaceModel?: VacancyWorkplaceModel[],
+    @Query() isConfirmedByManager?: boolean,
     @Query() employer_isStartup?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const salary = parseIntFilterQueryParam(salaryFilter);
@@ -116,6 +117,7 @@ export class VacancyController extends Controller {
       reportingForm: { in: reportingForm ?? undefined },
       workingHours: { in: workingHours ?? undefined },
       workplaceModel: { in: workplaceModel ?? undefined },
+      isConfirmedByManager: isConfirmedByManager ?? undefined,
       employer: { isStartup: employer_isStartup ?? undefined },
       OR: nameOrEmployerName ? [
         { name: { contains: nameOrEmployerName, mode: "insensitive" } },
@@ -271,7 +273,6 @@ export class VacancyController extends Controller {
   @Get("cities")
   @Middlewares(publicCacheMiddleware(20 * 60))
   public async getAllCities(): Promise<GetAllVacancyCitiesResponse> {
-    console.log("Real: ", new Date().toLocaleTimeString());
     const citiesAggregation = await prisma.vacancy.groupBy({
       by: ["city"],
       _count: {

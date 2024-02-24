@@ -15,9 +15,8 @@ import { CreateMeetingPaymentRequest } from "./payment/payment.dto";
 
 export type BasicMeeting = Omit<
   Meeting,
-  | "type"
   | "feedback"
-  | "scripts"
+  | "scriptProtocols"
   | "slot"
   | "applicant"
   | "employer"
@@ -53,7 +52,10 @@ export type PutMeetingRequestByApplicantOrEmployer = Pick<
   | "slotId"
 >;
 
-export type PutMeetingRequestByManager = Pick<
+export type PutMeetingManagerRequest = Pick<
   Meeting,
+  | "name"
+  | "description"
   | "status"
+  | "transcript"
 >;

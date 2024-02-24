@@ -33,6 +33,7 @@ model Applicant {
   vacancyResponses     VacancyResponse[]
   hhToken              HhToken?
   password             Password?
+  aiChats              ApplicantAiChat[]
 }
 
 model Employer {
@@ -46,8 +47,8 @@ model Employer {
   middleName           String?            @db.VarChar(50)
   lastName             String             @db.VarChar(50)
   phone                String?            @unique @db.VarChar(15)
-  name                 String?            @db.VarChar(256)
-  inn                  String             @db.VarChar(12)
+  name                 String             @db.VarChar(256)
+  inn                  String?            @db.VarChar(12)
   ogrn                 String?            @db.VarChar(15)
   legalForm            EmployerLegalForm?
   agreementNumber      Int?               @default(autoincrement())
@@ -62,6 +63,7 @@ model Employer {
   meetings             Meeting[]
   vacancies            Vacancy[]
   password             Password?
+  applicantAiChats     ApplicantAiChat[]
 }
 
 model Manager {
@@ -242,6 +244,7 @@ model Meeting {
   status          MeetingStatus           @default(PLANNED)
   feedback        MeetingFeedback[]
   scriptProtocols MeetingScriptProtocol[]
+  transcript      String?                 @db.VarChar(65535)
   slot            MeetingSlot             @relation(fields: [slotId], references: [id], onDelete: Cascade)
   slotId          String                  @unique
   guestEmail      String?                 @db.VarChar(255)
@@ -362,6 +365,7 @@ model VacancyResponse {
   createdAt                       DateTime              @default(now())
   updatedAt                       DateTime              @updatedAt
   status                          VacancyResponseStatus @default(NEW_APPLICATION)
+  isViewedByEmployer              Boolean               @default(false)
   offer                           Offer?
   candidate                       Applicant             @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId                     String
@@ -371,6 +375,29 @@ model VacancyResponse {
   candidateRecommendedByManagerId String?
 
   @@unique([candidateId, vacancyId])
+}
+
+model ApplicantAiChat {
+  id        String                   @id @default(uuid())
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+  history   ApplicantAiChatMessage[]
+
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String
+  employer    Employer  @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId  String
+}
+
+model ApplicantAiChatMessage {
+  id               String          @id @default(uuid())
+  createdAt        DateTime        @default(now())
+  prompt           String          @db.VarChar(65535)
+  response         String          @db.VarChar(65535)
+  promptTokens     Int
+  completionTokens Int
+  chat             ApplicantAiChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId           String
 }
 
 enum ContactType {
@@ -481,6 +508,7 @@ enum VacancyResponseStatus {
   INTERVIEWING
   OFFER_MADE
   HIRED
+  REJECTED
 }
 
 enum OfferStatus {

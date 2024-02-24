@@ -1,6 +1,5 @@
-import { Applicant } from "@prisma/client";
+import { Applicant, ApplicantAiChat } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
-import { BasicVacancy } from "../vacancy/vacancy.dto";
 import { BasicVacancyResponse } from "../vacancy/response/response.dto";
 import { BasicResume } from "../resume/resume.dto";
 
@@ -11,12 +10,14 @@ export type BasicApplicant = Omit<
   | "resume"
   | "meetings"
   | "vacancyResponses"
+  | "aiChats"
 >;
 
 export type GetApplicantResponse = BasicApplicant & {
   resume?: BasicResume | null,
   meetings?: BasicMeeting[],
-  vacancyResponses?: BasicVacancyResponse[]
+  vacancyResponses?: BasicVacancyResponse[],
+  aiChats?: ApplicantAiChat[],
 };
 
 export type PutMeApplicantRequest = Pick<

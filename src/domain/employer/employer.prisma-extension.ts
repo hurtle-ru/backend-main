@@ -20,6 +20,11 @@ export const employerPrismaExtension = Prisma.defineExtension({
                     answers: true,
                   },
                 },
+                slot: {
+                  include: {
+                    payments: true,
+                  },
+                },
               },
             },
             vacancies: {
@@ -29,6 +34,11 @@ export const employerPrismaExtension = Prisma.defineExtension({
                     offer: true,
                   },
                 },
+              },
+            },
+            applicantAiChats: {
+              include: {
+                history: true,
               },
             },
           },

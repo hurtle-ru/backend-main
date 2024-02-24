@@ -17,7 +17,11 @@ export const managerPrismaExtension = Prisma.defineExtension({
           where: { id },
           include: {
             password: true,
-            slots: true,
+            slots: {
+              include: {
+                payments: true,
+              },
+            },
           },
         });
 

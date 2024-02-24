@@ -75,6 +75,7 @@ export class MeetingSlotController extends Controller {
         OR: [
           { payments: { none: {} } }, // No payments at all
           { payments: { every: { status: MeetingPaymentStatus.PENDING, dueDate: { lte: currentDate } } } }, // All payments are expired
+          { payments: { every: { status: MeetingPaymentStatus.FAIL } } }, // All payments are failed
         ],
       }),
     }

@@ -13,14 +13,15 @@ export type BasicVacancyResponse = Omit<
 >;
 
 export type GetVacancyResponseResponse = BasicVacancyResponse & {
-  candidate: BasicApplicant,
-  vacancy: BasicVacancy,
+  candidate?: BasicApplicant,
+  vacancy?: BasicVacancy,
   candidateRecommendedBy?: BasicManager | null,
 };
 
 export type PutVacancyResponseRequest = Pick<
   BasicVacancyResponse,
   | "status"
+  | "isViewedByEmployer"
 >;
 
 export type CreateVacancyResponseRequestFromApplicant = RequesterApplicant & Pick<VacancyResponse,

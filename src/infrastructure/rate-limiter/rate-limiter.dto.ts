@@ -1,4 +1,4 @@
-export interface RateLimitConfig {
+export interface RateLimiterConfig {
     limit: number;
     interval: number;
 }
