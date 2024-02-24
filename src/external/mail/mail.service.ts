@@ -51,4 +51,10 @@ export class MailService {
       return false;
     }
   }
+
+  loadTemplate(templateName: string, context: any): string {
+    const templatePath = path.join(process.cwd(), `resources/email_templates/${templateName}.template.html`);
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
+    return renderTemplate(templateHtml, context);
+  }
 }

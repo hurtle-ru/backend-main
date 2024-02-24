@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    :root {
+      --primary: ##715AFF;
+      --red_primary: #F8485D;
+      --red_primary_hover: #D14051;
+      --red_light_primary_hover: #FFE7EB;
+      --hover-primary: #4C3EC9;
+      --light-primary: #FAFAFF;
+      /*#E1DFF8*/
+      --hover-light-primary: #E1DFF8;
+      /*#E1DFF8*/
+      --hover-success: #057303;
+      --text: #222127;
+      --header-text: #849095;
+      --neutral: #E8E8EC;
+      --light-neutral: #F1F1F1;
+      --gray: #E9F0F6;
+      --orange: #F96D49;
+      --yellow: #FECF77;
+      --black: #18191B;
+      --purple: #715AFF;
+      --skyblue: #50A8EF;
+    }
+
+
+    * {
+      font-family: 'Mont', sans-serif;
+      transition: 0.3s;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    *::-webkit-scrollbar {
+      display: none
+    }
+
+    p {
+      margin: 0;
+      padding: 0
+    }
+
+    input,
+    textarea,
+    select {
+      outline: none;
+    }
+
+    input:disabled,
+    select:disabled {
+      background: none !important;
+      color: #8F8F8F !important;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      color: #272727;
+      border-color: var(--primary) !important;
+      box-shadow: inset 0 0px 0px rgba(255, 255, 255, 1), 0 0 0px rgba(255, 255, 255, 1) !important;
+    }
+
+    img.profilePhoto {
+      -webkit-filter: brightness(100%);
+      filter: brightness(100%);
+    }
+
+    img.profilePhoto:hover {
+      -webkit-filter: brightness(70%);
+      filter: brightness(70%);
+      -webkit-transition: all 0.1s ease;
+      -moz-transition: all 0.1s ease;
+      -o-transition: all 0.1s ease;
+      -ms-transition: all 0.1s ease;
+      transition: all 0.1s ease;
+    }
+
+    img.profilePhoto:hover+#editPhotoTitle {
+      opacity: 1 !important;
+    }
+
+    button {
+      outline: none;
+      border: 0 none;
+    }
+
+    .alert-input {
+      border: 1px solid var(--red_primary_hover);
+    }
+
+    .time:hover {
+      background-color: #D4D1EB !important;
+      color: var(--text) !important;
+    }
+
+    input::-webkit-datetime-edit {
+      line-height: 1;
+      padding: 0;
+      margin-bottom: -2px;
+    }
+
+    .fw-bolded {
+      font-weight: 600 !important;
+    }
+
+    .no_outline {
+      outline: none !important;
+      border: 0 none !important;
+      background: transparent;
+      padding: 0;
+    }
+
+    .underline:hover {
+      text-decoration: underline !important;
+    }
+
+    input[type="checkbox"]:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .loader {
+      animation: show-loader 0.7s forwards;
+    }
+
+    .w-max {
+      width: 100vw;
+      margin-left: calc(-50vw + 50%)
+    }
+
+    .w-max-inner {
+      max-width: 1400px;
+    }
+
+
+    @keyframes show-loader {
+      0% {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0px);
+      }
+    }
+
+
+    @font-face {
+      font-family: 'Mont';
+      src: url('https://resource.studvoyage.ru/Mont-Bold.eot');
+      src: local('Mont Bold'), local('Mont-Bold'),
+        url('https://resource.studvoyage.ru/Mont-Bold.eot?#iefix') format('embedded-opentype'),
+        url('https://resource.studvoyage.ru/Mont-Bold.woff2') format('woff2'),
+        url('https://resource.studvoyage.ru/Mont-Bold.woff') format('woff'),
+        url('https://resource.studvoyage.ru/Mont-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Mont';
+      src: url('https://resource.studvoyage.ru/Mont-SemiBold.eot');
+      src: local('Mont SemiBold'), local('Mont-SemiBold'),
+        url('https://resource.studvoyage.ru/Mont-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('https://resource.studvoyage.ru/Mont-SemiBold.woff2') format('woff2'),
+        url('https://resource.studvoyage.ru/Mont-SemiBold.woff') format('woff'),
+        url('https://resource.studvoyage.ru/Mont-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Mont';
+      src: url('https://resource.studvoyage.ru/Mont-Regular.eot');
+      src: local('Mont Regular'), local('Mont-Regular'),
+        url('https://resource.studvoyage.ru/Mont-Regular.eot?#iefix') format('embedded-opentype'),
+        url('https://resource.studvoyage.ru/Mont-Regular.woff2') format('woff2'),
+        url('https://resource.studvoyage.ru/Mont-Regular.woff') format('woff'),
+        url('https://resource.studvoyage.ru/Mont-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Mont';
+      src: url('https://resource.studvoyage.ru/Mont-Light.eot');
+      src: local('Mont Light'), local('Mont-Light'),
+        url('https://resource.studvoyage.ru/Mont-Light.eot?#iefix') format('embedded-opentype'),
+        url('https://resource.studvoyage.ru/Mont-Light.woff2') format('woff2'),
+        url('https://resource.studvoyage.ru/Mont-Light.woff') format('woff'),
+        url('https://resource.studvoyage.ru/Mont-Light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+    }
+
+    /* Для маленьких экранов */
+    @media (max-width: 576px) {
+      .fs-5 {
+        font-size: 1rem !important;
+      }
+
+      .fs-4 {
+        font-size: 1.3rem !important;
+      }
+    }
+
+    /* Для средних экранов */
+    @media (min-width: 576px) and (max-width: 768px) {
+      .fs-5 {
+        font-size: 1.15rem !important;
+      }
+    }
+
+    /* Для больших экранов */
+    @media (min-width: 768px) {
+      .fs-5 {
+        font-size: 1.2rem !important;
+      }
+    }
+
+    .btn.primary {
+      background-color: var(--primary) !important;
+      color: white !important;
+    }
+
+    .btn.primary:hover {
+      background-color: var(--hover-primary) !important;
+    }
+
+    .btn.primary_outline {
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .btn.primary_outline:hover {
+      background-color: var(--primary) !important;
+      color: white;
+    }
+
+    .btn.red_primary {
+      background-color: var(--red_primary) !important;
+      color: white;
+    }
+
+    .btn.red_primary:hover {
+      background-color: var(--red_primary_hover) !important;
+      color: white;
+    }
+
+    .btn.red_primary_outline {
+      border: 3px solid var(--red_primary) !important;
+      color: var(--red_primary);
+    }
+
+    .btn.red_primary_outline:hover {
+      background-color: var(--red_primary) !important;
+      color: white;
+    }
+
+    .btn.success:hover {
+      background-color: var(--hover-success) !important;
+    }
+
+    .btn.light_light_primary:hover {
+      background-color: var(--light-primary) !important;
+    }
+
+    .btn.light_primary {
+      background-color: var(--light-primary) !important;
+      color: var(--primary) !important;
+    }
+
+    .btn.light_primary:hover {
+      background-color: var(--hover-light-primary) !important;
+    }
+
+    .btn.light_red_primary:hover {
+      background-color: var(--red_light_primary_hover) !important;
+    }
+
+    .btn.black {
+      background-color: var(--black);
+      color: white;
+    }
+
+    .btn.black:hover {
+      background-color: var(--black);
+      color: white;
+    }
+
+    .btn.orange {
+      border: 3px solid var(--orange);
+      color: var(--orange);
+    }
+  </style>
+</head>
+
+<body style="background-color: var(--bs-light);">
+  <div class="container mb-sm-3 mb-2 position-relative px-sm-5 px-4 pt-sm-4 pt-2 overflow-hidden" style="padding: 0px 0px 85px 50px; background-color: var(--purple); border-radius: 50px;">
+    <header style="display: flex; align-items: center;">
+      <div style="margin-right: 20px;">
+        <svg width="27" height="29" viewBox="0 0 27 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.3165 0C10.5207 0 5.73291 4.70384 5.73291 10.5836C5.73291 16.3794 10.4367 21.1673 16.3165 21.1673C17.6605 21.1673 18.8365 20.9153 20.0124 20.4953L19.4244 17.3874C18.5005 17.8074 17.4085 18.0594 16.3165 18.0594C12.2007 18.0594 8.8408 14.6995 8.8408 10.5836C8.8408 6.46778 12.2007 3.10789 16.3165 3.10789C20.4324 3.10789 23.7923 6.46778 23.7923 10.5836C23.7923 12.9356 22.7003 15.0355 20.9364 16.4634L21.6084 19.7393C24.7162 17.8914 26.9002 14.5315 26.9002 10.5836C26.9002 4.70384 22.1123 0 16.3165 0Z" fill="white" />
+          <path d="M18.6681 7.13974H16.4842H15.9802H13.7962C13.2083 7.13974 12.7883 7.72772 12.9563 8.2317L13.8802 11.6756C13.9642 12.0956 14.3002 12.3476 14.7202 12.3476H16.1482H16.4002H17.8281C18.2481 12.3476 18.5841 12.0956 18.6681 11.6756L19.5921 8.2317C19.676 7.72772 19.2561 7.13974 18.6681 7.13974Z" fill="white" />
+          <path d="M1.53295 25.8711C1.11296 25.8711 0.776973 25.7031 0.440985 25.4511C-0.146995 24.8631 -0.146995 23.8552 0.440985 23.2672L7.83273 15.8755C8.42071 15.2875 9.42867 15.2875 10.0166 15.8755C10.6046 16.4634 10.6046 17.4714 10.0166 18.0594L2.62491 25.4511C2.37292 25.7031 1.95294 25.8711 1.53295 25.8711Z" fill="white" />
+          <path d="M15.6445 26.5432H10.7727C10.1007 26.5432 9.5127 25.9552 9.5127 25.2832C9.5127 24.6112 10.1007 24.0233 10.7727 24.0233H15.6445C16.3165 24.0233 16.9044 24.6112 16.9044 25.2832C16.9044 25.9552 16.3165 26.5432 15.6445 26.5432Z" fill="white" />
+          <path d="M14.3848 22.5951H12.3688C11.6969 22.5951 11.1089 22.0072 11.1089 21.3352C11.1089 20.6632 11.6969 20.0752 12.3688 20.0752H14.3848C15.0568 20.0752 15.6447 20.6632 15.6447 21.3352C15.6447 22.0072 15.0568 22.5951 14.3848 22.5951Z" fill="white" />
+          <path d="M21.1044 25.1151L18.8364 14.6155C18.7524 14.1955 18.3325 13.8595 17.8285 13.8595H16.7365H16.2325H15.1406C14.6366 13.8595 14.3006 14.1955 14.1326 14.6155L12.3687 22.5112H15.0566C15.4765 22.5112 15.8125 22.8472 15.8125 23.2672C15.8125 23.6872 15.4765 24.0232 15.0566 24.0232H12.0327L11.7807 25.1151C11.6967 25.5351 11.8647 25.8711 12.2007 26.1231L15.8965 28.811C16.2325 29.063 16.7365 29.063 17.0725 28.811L20.7684 26.1231C21.0204 25.9551 21.1884 25.5351 21.1044 25.1151Z" fill="white" />
+          <path d="M6.99287 26.6271C7.68872 26.6271 8.25282 26.063 8.25282 25.3671C8.25282 24.6713 7.68872 24.1072 6.99287 24.1072C6.29701 24.1072 5.73291 24.6713 5.73291 25.3671C5.73291 26.063 6.29701 26.6271 6.99287 26.6271Z" fill="white" />
+        </svg>
+      </div>
+      <div>
+        <svg width="62" height="17" viewBox="0 0 62 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11.4245 12H7.95948L5.71248 8.24097L3.40248 12H0.0214844L3.88548 6.18297L0.273484 0.65997H3.73848L5.71248 3.93597L7.81248 0.65997H11.1935L7.51848 6.01497L11.4245 12Z" fill="white" />
+          <path d="M21.7032 0.638971H23.9922V11.979H21.5772L21.3252 10.971C20.2892 11.867 19.0642 12.315 17.6502 12.315C15.9422 12.315 14.5212 11.748 13.3872 10.614C12.2672 9.46597 11.7072 8.03097 11.7072 6.30897C11.7072 4.60097 12.2672 3.17997 13.3872 2.04597C14.5212 0.911971 15.9422 0.344971 17.6502 0.344971C19.0922 0.344971 20.3312 0.806971 21.3672 1.73097L21.7032 0.638971ZM15.6762 8.53497C16.2642 9.12297 16.9992 9.41697 17.8812 9.41697C18.7772 9.41697 19.5192 9.12297 20.1072 8.53497C20.6952 7.94697 20.9892 7.20497 20.9892 6.30897C20.9892 5.41297 20.6952 4.67097 20.1072 4.08297C19.5192 3.49497 18.7842 3.20097 17.9022 3.20097C17.3142 3.20097 16.7822 3.34097 16.3062 3.62097C15.8442 3.88697 15.4802 4.25797 15.2142 4.73397C14.9482 5.19597 14.8152 5.72097 14.8152 6.30897C14.8152 7.20497 15.1022 7.94697 15.6762 8.53497Z" fill="white" />
+          <path d="M33.1362 0.344971C34.8442 0.344971 36.2582 0.911971 37.3782 2.04597C38.5122 3.17997 39.0792 4.60797 39.0792 6.32997C39.0792 8.05197 38.5122 9.48697 37.3782 10.635C36.2442 11.769 34.8302 12.336 33.1362 12.336C31.9742 12.336 30.9312 12.021 30.0072 11.391V16.095H26.9412V0.65997H28.9782L29.5032 1.68897C30.5112 0.79297 31.7222 0.344971 33.1362 0.344971ZM30.6582 8.55597C31.2462 9.14397 31.9812 9.43797 32.8632 9.43797C33.7592 9.43797 34.5012 9.14397 35.0892 8.55597C35.6772 7.96797 35.9712 7.22597 35.9712 6.32997C35.9712 5.74197 35.8382 5.20997 35.5722 4.73397C35.3062 4.25797 34.9352 3.88697 34.4592 3.62097C33.9972 3.35497 33.4722 3.22197 32.8842 3.22197C32.2962 3.22197 31.7642 3.35497 31.2882 3.62097C30.8122 3.88697 30.4412 4.25797 30.1752 4.73397C29.9232 5.20997 29.7972 5.74197 29.7972 6.32997C29.7972 7.22597 30.0842 7.96797 30.6582 8.55597Z" fill="white" />
+          <path d="M50.3125 0.65997V3.41097H46.6165V12H43.6135V3.41097H39.9175V0.65997H50.3125Z" fill="white" />
+          <path d="M53.3825 0.65997H61.4885V12H58.4855V3.32697H55.8815L55.5035 7.35897C55.3355 9.06697 54.8805 10.278 54.1385 10.992C53.3965 11.706 52.2835 12.063 50.7995 12.063H50.2955V9.29097H51.0515C51.4715 9.29097 51.8215 9.14397 52.1015 8.84997C52.3815 8.55597 52.5495 8.13597 52.6055 7.58997L53.3825 0.65997Z" fill="white" />
+        </svg>
+      </div>
+    </header>
+    <main class="fs-3 pt-sm-3 pt-1" style="font-weight:800;color:#FFFFFF; padding-right: 50px;">
+      Встреча отменена
+    </main>
+    <picture class="position-absolute " style="right: 0; bottom: 0px; transform: rotate(30.05 deg);">
+      <svg width="250" height="197" viewBox="0 0 250 197" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <rect width="334" height="334" fill="url(#pattern0)" />
+        <defs>
+          <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+            <use xlink:href="#image0_13_1078" transform="scale(0.00025)" />
+          </pattern>
+          <image id="image0_13_1078" width="4000" height="4000" xlink:href="https://resource.studvoyage.ru/cancelmail.webp"/>
+        </defs>
+      </svg>
+    </picture>
+  </div>
+
+  <div class="container p-sm-5 p-4 mb-sm-3 mb-2" style="background-color: #FFFFFF; border-radius: 50px;">
+    <main class="d-flex align-items-center" style="flex-direction: column; ">
+      <picture>
+        <svg width="142" height="142" viewBox="0 0 142 142" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M130.167 71C130.167 103.675 103.675 130.167 71 130.167C38.3252 130.167 11.8333 103.675 11.8333 71C11.8333 38.3252 38.3252 11.8333 71 11.8333C103.675 11.8333 130.167 38.3252 130.167 71Z" fill="#FFEEF0" />
+          <path d="M91.8628 44.0046L98.0001 50.1415L50.1373 97.9981L44.0001 91.8612L91.8628 44.0046Z" fill="#F8485D" />
+          <path d="M97.9956 91.8653L91.8586 98L44.0022 50.1347L50.1392 44L97.9956 91.8653Z" fill="#F8485D" />
+        </svg>
+      </picture>
+      <div class="h3 fw-bold" style="margin-bottom: 0;">
+        Первое интервью
+      </div>
+      <div class="pb-3" style="color: #272727E5;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 2.99479C0 1.34081 1.34081 0 2.99479 0H14.2552C15.9092 0 17.25 1.34081 17.25 2.99479V3.83333H0V2.99479ZM0 5.03125V14.2552C0 15.9092 1.34081 17.25 2.99479 17.25H14.2552C15.9092 17.25 17.25 15.9092 17.25 14.2552V5.03125H0ZM5.75 8.38542C5.75 9.04701 5.21367 9.58333 4.55208 9.58333C3.89049 9.58333 3.35417 9.04701 3.35417 8.38542C3.35417 7.72383 3.89049 7.1875 4.55208 7.1875C5.21367 7.1875 5.75 7.72383 5.75 8.38542ZM8.625 9.58333C7.96341 9.58333 7.42708 9.04701 7.42708 8.38542C7.42708 7.72383 7.96341 7.1875 8.625 7.1875C9.28659 7.1875 9.82292 7.72383 9.82292 8.38542C9.82292 9.04701 9.28659 9.58333 8.625 9.58333ZM13.8958 8.38542C13.8958 9.04701 13.3595 9.58333 12.6979 9.58333C12.0363 9.58333 11.5 9.04701 11.5 8.38542C11.5 7.72383 12.0363 7.1875 12.6979 7.1875C13.3595 7.1875 13.8958 7.72383 13.8958 8.38542ZM4.55208 13.4167C3.89049 13.4167 3.35417 12.8803 3.35417 12.2188C3.35417 11.5572 3.89049 11.0208 4.55208 11.0208C5.21367 11.0208 5.75 11.5572 5.75 12.2188C5.75 12.8803 5.21367 13.4167 4.55208 13.4167ZM9.82292 12.2188C9.82292 12.8803 9.28659 13.4167 8.625 13.4167C7.96341 13.4167 7.42708 12.8803 7.42708 12.2188C7.42708 11.5572 7.96341 11.0208 8.625 11.0208C9.28659 11.0208 9.82292 11.5572 9.82292 12.2188Z" fill="#6757F1" />
+        </svg>
+        5 июн. 2023 г. 18:00
+      </div>
+      <div class="h6" style="color: #272727; font-weight: 600;">
+        Привет, {{ it.name }}! Твоя встреча отменена.<br><br>
+        Мы надеемся увидеть тебя снова! Если захочешь перенести встречу, просто воспользуйся нашим сервисом.<br><br>
+        До новых встреч в Хартл!
+      </div>
+      <button class="w-100 btn black d-inline-block mx-5 py-3 my-5" style="background-color: var(--purple); border-radius: 50px; font-weight: 600;">
+        Назначить новую встречу
+      </button>
+    </main>
+  </div>
+  <div class="container p-sm-5 p-4 mb-sm-3 mb-2" style="background-color: #EDEBFF; border-radius: 50px;">
+    <div class="row row-cols-sm-2 row-cols-1" style="gap: 20px">
+      <div class="col-sm-5 col-12 h6" style="color: #272727;">
+        А ещё у нас есть классный блог в телеграме и ты можешь на него подписаться!
+      </div>
+      <a href="https://t.me/hurtleru" target="_blank" class="col-sm-6 col-12 btn black py-3" style="background-color: var(--purple); border-radius: 50px; font-weight: 600; max-height: 60px;">
+        Подписаться
+      </a>
+    </div>
+  </div>
+  <div class="container p-sm-5 p-4" style="background-color: #E9F0F6; border-radius: 50px;">
+    <div class="d-flex align-items-center h6" style="flex-direction: column; color: #272727;">
+      <div class="w-100 row row-cols-sm-2 row-cols-1">
+        <div class="col-sm-6 col-12 text-center text-sm-start">
+          <header class="d-flex justify-content-center justify-content-sm-start align-items-center">
+            <div style="margin-right: 20px;">
+              <svg width="27" height="29" viewBox="0 0 27 29" fill="#6757F1" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16.3165 0C10.5207 0 5.73291 4.70384 5.73291 10.5836C5.73291 16.3794 10.4367 21.1673 16.3165 21.1673C17.6605 21.1673 18.8365 20.9153 20.0124 20.4953L19.4244 17.3874C18.5005 17.8074 17.4085 18.0594 16.3165 18.0594C12.2007 18.0594 8.8408 14.6995 8.8408 10.5836C8.8408 6.46778 12.2007 3.10789 16.3165 3.10789C20.4324 3.10789 23.7923 6.46778 23.7923 10.5836C23.7923 12.9356 22.7003 15.0355 20.9364 16.4634L21.6084 19.7393C24.7162 17.8914 26.9002 14.5315 26.9002 10.5836C26.9002 4.70384 22.1123 0 16.3165 0Z" fill="#6757F1" />
+                <path d="M18.6681 7.13974H16.4842H15.9802H13.7962C13.2083 7.13974 12.7883 7.72772 12.9563 8.2317L13.8802 11.6756C13.9642 12.0956 14.3002 12.3476 14.7202 12.3476H16.1482H16.4002H17.8281C18.2481 12.3476 18.5841 12.0956 18.6681 11.6756L19.5921 8.2317C19.676 7.72772 19.2561 7.13974 18.6681 7.13974Z" fill="#6757F1" />
+                <path d="M1.53295 25.8711C1.11296 25.8711 0.776973 25.7031 0.440985 25.4511C-0.146995 24.8631 -0.146995 23.8552 0.440985 23.2672L7.83273 15.8755C8.42071 15.2875 9.42867 15.2875 10.0166 15.8755C10.6046 16.4634 10.6046 17.4714 10.0166 18.0594L2.62491 25.4511C2.37292 25.7031 1.95294 25.8711 1.53295 25.8711Z" fill="#6757F1" />
+                <path d="M15.6445 26.5432H10.7727C10.1007 26.5432 9.5127 25.9552 9.5127 25.2832C9.5127 24.6112 10.1007 24.0233 10.7727 24.0233H15.6445C16.3165 24.0233 16.9044 24.6112 16.9044 25.2832C16.9044 25.9552 16.3165 26.5432 15.6445 26.5432Z" fill="#6757F1" />
+                <path d="M14.3848 22.5951H12.3688C11.6969 22.5951 11.1089 22.0072 11.1089 21.3352C11.1089 20.6632 11.6969 20.0752 12.3688 20.0752H14.3848C15.0568 20.0752 15.6447 20.6632 15.6447 21.3352C15.6447 22.0072 15.0568 22.5951 14.3848 22.5951Z" fill="#6757F1" />
+                <path d="M21.1044 25.1151L18.8364 14.6155C18.7524 14.1955 18.3325 13.8595 17.8285 13.8595H16.7365H16.2325H15.1406C14.6366 13.8595 14.3006 14.1955 14.1326 14.6155L12.3687 22.5112H15.0566C15.4765 22.5112 15.8125 22.8472 15.8125 23.2672C15.8125 23.6872 15.4765 24.0232 15.0566 24.0232H12.0327L11.7807 25.1151C11.6967 25.5351 11.8647 25.8711 12.2007 26.1231L15.8965 28.811C16.2325 29.063 16.7365 29.063 17.0725 28.811L20.7684 26.1231C21.0204 25.9551 21.1884 25.5351 21.1044 25.1151Z" fill="#6757F1" />
+                <path d="M6.99287 26.6271C7.68872 26.6271 8.25282 26.063 8.25282 25.3671C8.25282 24.6713 7.68872 24.1072 6.99287 24.1072C6.29701 24.1072 5.73291 24.6713 5.73291 25.3671C5.73291 26.063 6.29701 26.6271 6.99287 26.6271Z" fill="#6757F1" />
+              </svg>
+            </div>
+            <div>
+              <svg width="62" height="17" viewBox="0 0 62 17" fill="#6757F1" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.4245 12H7.95948L5.71248 8.24097L3.40248 12H0.0214844L3.88548 6.18297L0.273484 0.65997H3.73848L5.71248 3.93597L7.81248 0.65997H11.1935L7.51848 6.01497L11.4245 12Z" fill="#6757F1" />
+                <path d="M21.7032 0.638971H23.9922V11.979H21.5772L21.3252 10.971C20.2892 11.867 19.0642 12.315 17.6502 12.315C15.9422 12.315 14.5212 11.748 13.3872 10.614C12.2672 9.46597 11.7072 8.03097 11.7072 6.30897C11.7072 4.60097 12.2672 3.17997 13.3872 2.04597C14.5212 0.911971 15.9422 0.344971 17.6502 0.344971C19.0922 0.344971 20.3312 0.806971 21.3672 1.73097L21.7032 0.638971ZM15.6762 8.53497C16.2642 9.12297 16.9992 9.41697 17.8812 9.41697C18.7772 9.41697 19.5192 9.12297 20.1072 8.53497C20.6952 7.94697 20.9892 7.20497 20.9892 6.30897C20.9892 5.41297 20.6952 4.67097 20.1072 4.08297C19.5192 3.49497 18.7842 3.20097 17.9022 3.20097C17.3142 3.20097 16.7822 3.34097 16.3062 3.62097C15.8442 3.88697 15.4802 4.25797 15.2142 4.73397C14.9482 5.19597 14.8152 5.72097 14.8152 6.30897C14.8152 7.20497 15.1022 7.94697 15.6762 8.53497Z" fill="#6757F1" />
+                <path d="M33.1362 0.344971C34.8442 0.344971 36.2582 0.911971 37.3782 2.04597C38.5122 3.17997 39.0792 4.60797 39.0792 6.32997C39.0792 8.05197 38.5122 9.48697 37.3782 10.635C36.2442 11.769 34.8302 12.336 33.1362 12.336C31.9742 12.336 30.9312 12.021 30.0072 11.391V16.095H26.9412V0.65997H28.9782L29.5032 1.68897C30.5112 0.79297 31.7222 0.344971 33.1362 0.344971ZM30.6582 8.55597C31.2462 9.14397 31.9812 9.43797 32.8632 9.43797C33.7592 9.43797 34.5012 9.14397 35.0892 8.55597C35.6772 7.96797 35.9712 7.22597 35.9712 6.32997C35.9712 5.74197 35.8382 5.20997 35.5722 4.73397C35.3062 4.25797 34.9352 3.88697 34.4592 3.62097C33.9972 3.35497 33.4722 3.22197 32.8842 3.22197C32.2962 3.22197 31.7642 3.35497 31.2882 3.62097C30.8122 3.88697 30.4412 4.25797 30.1752 4.73397C29.9232 5.20997 29.7972 5.74197 29.7972 6.32997C29.7972 7.22597 30.0842 7.96797 30.6582 8.55597Z" fill="#6757F1" />
+                <path d="M50.3125 0.65997V3.41097H46.6165V12H43.6135V3.41097H39.9175V0.65997H50.3125Z" fill="#6757F1" />
+                <path d="M53.3825 0.65997H61.4885V12H58.4855V3.32697H55.8815L55.5035 7.35897C55.3355 9.06697 54.8805 10.278 54.1385 10.992C53.3965 11.706 52.2835 12.063 50.7995 12.063H50.2955V9.29097H51.0515C51.4715 9.29097 51.8215 9.14397 52.1015 8.84997C52.3815 8.55597 52.5495 8.13597 52.6055 7.58997L53.3825 0.65997Z" fill="#6757F1" />
+              </svg>
+            </div>
+          </header>
+          <div class="my-1 my-sm-3">
+            Сервис поиска работы
+          </div>
+        </div>
+        <div class="col-sm-6 col-12 text-center text-sm-end">
+          <div class="d-flex justify-content-center justify-content-sm-end my-3 my-sm-1">
+            <a href="https://t.me/hurtleru" target="_blank">
+              <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 0C15.2422 0 11.5687 1.11433 8.44417 3.20208C5.31964 5.28982 2.88436 8.25722 1.4463 11.729C0.00823234 15.2008 -0.368031 19.0211 0.365088 22.7067C1.09821 26.3923 2.90778 29.7778 5.56498 32.435C8.22217 35.0922 11.6076 36.9018 15.2933 37.6349C18.9789 38.368 22.7992 37.9918 26.271 36.5537C29.7428 35.1156 32.7102 32.6804 34.7979 29.5558C36.8857 26.4313 38 22.7578 38 19C38 13.9609 35.9982 9.12816 32.435 5.56497C28.8718 2.00178 24.0391 0 19 0ZM28.3338 13.015L25.2225 27.7162C24.985 28.7612 24.3675 28.9987 23.4888 28.5237L18.7388 25.0087L16.3638 27.2175C16.2519 27.3636 16.1082 27.4824 15.9436 27.5647C15.779 27.647 15.5978 27.6907 15.4138 27.6925L15.7463 22.9425L24.5338 14.9862C24.9375 14.6537 24.5338 14.4637 23.9638 14.7962L13.1813 21.565L8.43126 20.0925C7.41001 19.7837 7.38626 19.0712 8.64501 18.5962L26.9563 11.4712C27.8588 11.21 28.6188 11.7325 28.3338 13.015Z" fill="#715AFF" />
+              </svg>
+            </a>
+            <div style="margin-left: 27px;">
+              <a href="https://vk.com/hurtleru" target="_blank">
+                <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M25.4923 0H13.5272C2.59935 0 0 2.59935 0 13.5076V25.4728C0 36.3987 2.57985 39 13.5076 39H25.4728C36.3987 39 39 36.4202 39 25.4923V13.5272C39 2.59935 36.4202 0 25.4923 0ZM31.4847 27.8265H28.6397C27.5632 27.8265 27.2395 26.9548 25.309 25.0243C23.6242 23.4 22.9125 23.1972 22.4855 23.1972C21.8966 23.1972 21.7347 23.359 21.7347 24.1722V26.7306C21.7347 27.4228 21.5104 27.8284 19.7028 27.8284C17.9485 27.7106 16.2473 27.1776 14.7393 26.2734C13.2313 25.3692 11.9597 24.1197 11.0292 22.6278C8.82018 19.8783 7.28314 16.6513 6.5403 13.2034C6.5403 12.7764 6.70215 12.3903 7.5153 12.3903H10.3584C11.0896 12.3903 11.3529 12.716 11.6395 13.4667C13.0201 17.5305 15.3757 21.0639 16.3312 21.0639C16.6978 21.0639 16.8577 20.9021 16.8577 19.9875V15.8028C16.7369 13.8938 15.7228 13.7319 15.7228 13.0416C15.7359 12.8595 15.8193 12.6897 15.9555 12.5681C16.0916 12.4465 16.2698 12.3827 16.4522 12.3903H20.9215C21.5319 12.3903 21.7347 12.6945 21.7347 13.4257V19.073C21.7347 19.6833 21.9979 19.8861 22.1812 19.8861C22.5478 19.8861 22.8306 19.6833 23.5014 19.0125C24.9422 17.2554 26.1193 15.2979 26.9958 13.2015C27.0854 12.9497 27.2549 12.7341 27.4785 12.5876C27.7021 12.4412 27.9674 12.3719 28.234 12.3903H31.0791C31.9312 12.3903 32.1126 12.8174 31.9312 13.4257C30.8968 15.7432 29.6167 17.943 28.1131 19.9875C27.807 20.4555 27.6841 20.6992 28.1131 21.2472C28.3959 21.6742 29.3923 22.5069 30.0631 23.2986C31.038 24.271 31.8475 25.396 32.4597 26.6292C32.7034 27.4209 32.2959 27.8265 31.4847 27.8265Z" fill="#715AFF" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-100 row row-cols-sm-2 row-cols-1 flex-row-reverse">
+        <div class="col-sm-6 col-12 text-center text-sm-end mb-5 mb-sm-1">
+          <div>
+            +7 (800) 300–48–75
+          </div>
+          <div class="my-1 my-sm-3">
+            hello@hurtle.ru
+          </div>
+          <div>
+            @hurtle_support_bot
+          </div>
+        </div>
+        <div class="text-muted" style="line-height: 21px;">
+          <div>
+            <div class="mb-1 mb-sm-5">
+              Вы получили это письмо, поскольку зарегистрированы на hurtle.ru
+            </div>
+            <div>
+              © 2024, ООО «Хартл»
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+
+</html>

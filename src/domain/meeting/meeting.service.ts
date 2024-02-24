@@ -63,6 +63,7 @@ export class MeetingService {
 
     await this.telegramService.sendMessage(text, { parse_mode: "HTML" });
   }
+
   async sendMeetingCreatedToEmail(
     userEmail: string,
     meeting: { name: string, link: string, dateTime: Date },
@@ -76,8 +77,46 @@ export class MeetingService {
       userEmail,
       "Встреча забронирована!",
       {
-        name: "meeting-create",
+        name: "create_meeting",
         context: { name: meeting.name, date, link: meeting.link},
+      }
+    );
+  }
+
+  async sendMeetingCancelledToEmail(
+    userEmail: string,
+    meeting: { name: string, dateTime: Date },
+  )  {
+    const date = moment(meeting.dateTime)
+      .locale("ru")
+      .tz(appConfig.TZ)
+      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+
+    await this.mailService.sendEmail(
+      userEmail,
+      "Встреча отменена!",
+      {
+        name: "cancel_meeting",
+        context: { name, date },
+      }
+    );
+  }
+
+  async sendMeetingRemindToEmail(
+    userEmail: string,
+    meeting: { dateTime: Date },
+  )  {
+    const date = moment(meeting.dateTime)
+      .locale("ru")
+      .tz(appConfig.TZ)
+      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+
+    await this.mailService.sendEmail(
+      userEmail,
+      "Напоминание о встрече!",
+      {
+        name: "remind_about_meeting",
+        context: { date },
       }
     );
   }

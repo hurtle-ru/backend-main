@@ -39,11 +39,11 @@ export class EmailVerificationController extends Controller {
       },
     });
 
-    let user: { email: string } | null = null;
+    let user: { firstName: string, email: string } | null = null;
     if(req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { id: req.user.id } });
     if(req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { id: req.user.id } });
 
-    await this.emailVerificationService.sendEmail(user!.email, code);
+    await this.emailVerificationService.sendEmail(user!.firstName, user!.email, code);
   }
 
   @Post("{code}")
