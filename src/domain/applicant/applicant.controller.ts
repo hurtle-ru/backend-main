@@ -248,13 +248,21 @@ export class ApplicantController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[]
   ): Promise<GetApplicantResponse> {
     let includeResume: any = false;
-    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
-      includeResume = true;
-    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
-      includeResume = { where: { isVisibleToEmployers: true } };
+    let includeAiChats: any = false;
+
+    switch(req.user.role) {
+      case UserRole.MANAGER:
+        if(include?.includes("resume")) includeResume = true;
+        if(include?.includes("aiChats")) includeAiChats = true;
+        break;
+      case UserRole.EMPLOYER:
+        if(include?.includes("resume")) includeResume = { where: { isVisibleToEmployers: true } };
+        if(include?.includes("aiChats")) includeAiChats = { where: { employerId: req.user.id } }
+        break;
+    }
 
     const applicant = await prisma.applicant.findUnique({
       where: { id },
@@ -262,6 +270,7 @@ export class ApplicantController extends Controller {
         resume: includeResume,
         meetings: include?.includes("meetings"),
         vacancyResponses: include?.includes("vacancyResponses"),
+        aiChats: includeAiChats,
       },
     });
 

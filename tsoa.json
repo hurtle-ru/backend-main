@@ -19,6 +19,6 @@
     "routesDir": "./src/route",
     "authenticationModule": "src/domain/auth/auth.middleware.ts",
     "baseRouteName": "/api/v1",
-    "iocModule": "src/infrastructure/di/iocContainer.ts"
+    "iocModule": "src/infrastructure/di/ioc-container.ts"
   }
 }

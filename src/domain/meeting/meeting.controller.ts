@@ -4,7 +4,7 @@ import {
   Controller,
   Delete,
   Get,
-  Middlewares,
+  Middlewares, Patch,
   Path,
   Post,
   Put,
@@ -22,7 +22,7 @@ import {
   BasicMeeting,
   CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
   CreateMeetingRequest,
-  GetMeetingResponse,
+  GetMeetingResponse, PutMeetingManagerRequest,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -267,7 +267,6 @@ export class MeetingController extends Controller {
   @Put("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -282,11 +281,9 @@ export class MeetingController extends Controller {
 
     const meeting = await prisma.meeting.findUnique({
       where: { id },
-      include: {slot: true},
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
-    if (req.user.id !== meeting?.slot.managerId) throw new HttpError(403, "Not enough rights to edit another applicant");
 
     await this.artifactService.validateFileAttributes(file, AVAILABLE_PASSPORT_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
     const oldPassportFileName = await this.artifactService.getFullFileName(passportDirectory, "passport");
@@ -337,7 +334,6 @@ export class MeetingController extends Controller {
   @Put("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -348,11 +344,9 @@ export class MeetingController extends Controller {
   ): Promise<void> {
     const meeting = await prisma.meeting.findUnique({
       where: { id },
-      include: {slot: true},
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
-    if (req.user.id !== meeting?.slot.managerId) throw new HttpError(403, "Not enough rights to edit another applicant");
 
     const videoExtension = path.extname(file.originalname);
     const videoDirectory = `meeting/${id}/`;
@@ -366,20 +360,36 @@ export class MeetingController extends Controller {
     await this.artifactService.saveVideoFile(file, videoPath);
   }
 
+  @Patch("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
+  public async patchById(
+    @Request() req: JwtModel,
+    @Body() body: Partial<PutMeetingManagerRequest>,
+    @Path() id: string,
+  ): Promise<BasicMeeting> {
+    const meeting = await prisma.meeting.findUnique({
+      where: { id },
+    });
+
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+
+    return await prisma.meeting.update({
+      where: { id: req.user.id },
+      data: body,
+    });
+  }
+
   @Delete("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Not enough rights to delete another meeting"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   public async deleteById(
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true } });
+    const meeting = await prisma.meeting.findUnique({ where: { id } });
     if(!meeting) throw new HttpError(404, "Meeting not found");
-
-    if (req.user.id !== meeting?.slot.managerId)
-      throw new HttpError(403, "Not enough rights to delete another meeting");
 
     await prisma.meeting.archive(id);
   }

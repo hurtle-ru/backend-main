@@ -1,7 +1,9 @@
 import OpenAI from "openai";
 import { singleton } from "tsyringe";
-import { chatGPTConfig } from "./chatgpt.config";
-import { ChatCompletionMessageParam } from "openai/src/resources/chat/completions";
+import { chatGptConfig } from "./chatgpt.config";
+import { SocksProxyAgent } from "socks-proxy-agent";
+import { ChatCompletionMessageParam } from "openai/resources";
+
 
 
 @singleton()
@@ -10,7 +12,8 @@ export class ChatGPTService {
 
   constructor() {
     this.openai = new OpenAI({
-      apiKey: chatGPTConfig.CHATGPT_API_KEY,
+      apiKey: chatGptConfig.CHATGPT_API_KEY,
+      httpAgent: new SocksProxyAgent(chatGptConfig.CHATGPT_PROXY_URL),
     });
   }
 
@@ -18,7 +21,7 @@ export class ChatGPTService {
     const updatedHistory: ChatCompletionMessageParam[] = [...chatHistory, { role: "user", content: newPrompt }];
 
     return this.openai.chat.completions.create({
-      model: chatGPTConfig.CHATGPT_MODEL,
+      model: chatGptConfig.CHATGPT_MODEL,
       messages: updatedHistory,
     });
   }

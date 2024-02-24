@@ -244,6 +244,7 @@ model Meeting {
   status          MeetingStatus           @default(PLANNED)
   feedback        MeetingFeedback[]
   scriptProtocols MeetingScriptProtocol[]
+  transcript      String?                 @db.VarChar(65535)
   slot            MeetingSlot             @relation(fields: [slotId], references: [id], onDelete: Cascade)
   slotId          String                  @unique
   guestEmail      String?                 @db.VarChar(255)
