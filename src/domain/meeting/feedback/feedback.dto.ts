@@ -22,5 +22,5 @@ export type PutMeetingFeedbackRequest = Pick<
 >;
 
 export type GetMeetingFeedbackResponse = BasicMeetingFeedback & {
-  meeting: BasicMeeting,
+  meeting?: BasicMeeting,
 };

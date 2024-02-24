@@ -42,6 +42,11 @@ export const applicantPrismaExtension = Prisma.defineExtension({
                 offer: true,
               },
             },
+            aiChats: {
+              include: {
+                history: true,
+              },
+            },
           },
         });
 

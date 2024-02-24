@@ -1,5 +1,5 @@
 import { University } from "@prisma/client";
-import yup from "../../infrastructure/validation/yup.provider";
+import * as yup from "yup";
 
 
 export type BasicUniversity = Omit<

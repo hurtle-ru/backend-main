@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../error/http.error";
-import { RateInfo, RateLimitConfig } from "./rate-limit.dto"
+import { RateInfo, RateLimiterConfig } from "./rate-limiter.dto"
 
 
 const MILLISECONDS_IN_SECOND = 1000
@@ -20,7 +20,7 @@ function getIp(req: Request): string | undefined {
 }
 
 
-function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: RateLimitConfig): RateInfo {
+function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: RateLimiterConfig): RateInfo {
     const currentTime = Date.now();
 
     if (!rateMap.has(identifier)) {
@@ -51,7 +51,7 @@ function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: 
 * @param {number} config.limit Max count of requests per interval
 * @param {number} config.interval Interval in seconds
 */
-export function userRateLimit(config: RateLimitConfig) {
+export function userRateLimit(config: RateLimiterConfig) {
     config.interval *= MILLISECONDS_IN_SECOND;
 
     return function(req: Request, res: Response, next: NextFunction) {
@@ -75,7 +75,7 @@ export function userRateLimit(config: RateLimitConfig) {
 * @param {number} config.limit Max count of requests per interval
 * @param {number} config.interval Interval in seconds
 */
-export function routeRateLimit(config: RateLimitConfig) {
+export function routeRateLimit(config: RateLimiterConfig) {
     const usersRateMap = new Map<string, RateInfo>();
     const ipsRateMap = new Map<string, RateInfo>();
 

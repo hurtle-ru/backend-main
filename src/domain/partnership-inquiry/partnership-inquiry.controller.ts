@@ -11,7 +11,7 @@ import { PartnershipInquiryService } from "./partnership-inquiry.service";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { prisma } from "../../infrastructure/database/prisma.provider";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 
 
 @injectable()
