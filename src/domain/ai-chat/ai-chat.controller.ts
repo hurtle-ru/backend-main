@@ -85,7 +85,7 @@ export class ApplicantAiChatController extends Controller {
   @Response<HttpErrorBody & {"error": "AI Chat not found"}>(404)
   public async getById(
     @Request() req: JwtModel,
-    @Query() id: string,
+    @Path() id: string,
     @Query() include?: ("applicant" | "employer" | "history")[]
   ): Promise<GetApplicantAiChatResponse> {
       const chat = await prisma.applicantAiChat.findUnique({
