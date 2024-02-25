@@ -270,9 +270,10 @@ export class VacancyResponseController extends Controller {
   ): Promise<void> {
     const where = {
       id,
-      ...(req.user.role === UserRole.APPLICANT && { vacancy: { candidateId: req.user.id } }),
+      ...(req.user.role === UserRole.APPLICANT && { candidateId: req.user.id }),
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     }
+
 
     if(!await prisma.vacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
 
