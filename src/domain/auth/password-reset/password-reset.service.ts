@@ -15,8 +15,7 @@ export class PasswordResetService {
 
   async sendEmail(email: string, code: string) {
     const encodedEmail = encodeURIComponent(email);
-
-    const link = appConfig.DOMAIN + `/auth/reset-password/?email=${encodedEmail}&code=${code}`;
+    const link = appConfig.DOMAIN + `/auth/reset-password/${code}?email=${encodedEmail}`;
 
     await this.mailService.sendEmail(email, "Сброс пароля", {
       name: "reset_password",
