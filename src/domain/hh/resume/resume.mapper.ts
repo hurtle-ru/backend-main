@@ -2,7 +2,6 @@ import momentTimezone from "moment-timezone";
 import moment from "moment";
 import {
   ContactType, Currency,
-  LanguageLevel,
   Resume,
   ResumeCertificate,
   ResumeContact,
@@ -102,7 +101,7 @@ export class HhResumeMapper {
   mapLanguage(hhLanguage: hh.Language): MappedLanguage {
     return {
       name: hhLanguage.name,
-      level: LanguageLevel[hhLanguage.level.id.toUpperCase() as keyof typeof LanguageLevel],
+      level: hhLanguage.level.id.toUpperCase(),
     };
   }
 
