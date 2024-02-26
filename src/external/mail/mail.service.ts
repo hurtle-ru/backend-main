@@ -38,7 +38,7 @@ export class MailService {
           template.name,
           "html",
           template.context,
-          false
+          true
         ),
       };
 
