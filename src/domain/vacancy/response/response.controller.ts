@@ -276,6 +276,6 @@ export class VacancyResponseController extends Controller {
 
     if(!await prisma.vacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
 
-    await prisma.vacancyResponse.delete({ where: { id } });
+    await prisma.vacancyResponse.delete({ where });
   }
 }
