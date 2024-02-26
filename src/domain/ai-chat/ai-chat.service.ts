@@ -60,7 +60,7 @@ export class ApplicantAiChatService {
   mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
     return history.flatMap(message => [
       { content: message.prompt, role: "user" },
-      { content: message.response, role: "assistant" }
+      { content: message.response, role: "assistant" },
     ]);
   }
 }
