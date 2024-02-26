@@ -1,1 +1,100 @@
-кандидата зовут Олег
+Имя: {{ it.applicant.firstName }}
+Фамилия: {{ it.applicant.lastName }}
+
+{{@if(it.applicant.middleName)}}
+Отчество: {{ it.applicant.middleName }}
+{{/if}}
+
+Название резюме (желаемая должность): {{ it.resume.title }}
+
+{{@if(it.resume.summary)}}
+Краткое описание резюме: {{ it.resume.summary }}
+{{/if}}
+
+{{@if(it.resume.city)}}
+Город: {{ it.resume.city }}
+{{/if}}
+
+{{@if(it.resume.skills && it.resume.skills.length > 0)}}
+Навыки: {{ it.resume.skills.join() }}
+{{/if}}
+
+{{@if(it.resume.desiredSalary)}}
+Желаемая зарплата: {{ it.resume.desiredSalary }}{{@if(it.resume.desiredSalaryCurrency)}} {{ it.resume.desiredSalaryCurrency }} {{/if}}
+{{/if}}
+
+{{@if(it.resume.certificates && it.resume.certificates.length > 0)}}
+Сертификаты:
+{{ @each(it.resume.certificates) => certificate, index }}
+№{{ index + 1}}
+
+Название: {{ certificate.name }}
+Год получения: {{ certificate.year }}
+
+{{@if(certificate.description)}}
+Описание: {{ certificate.description }}
+{{/if}}
+
+{{ /each }}
+{{/if}}
+
+
+{{@if(it.resume.education && it.resume.education.length > 0)}}
+Образование:
+{{ @each(it.resume.education) => education, index }}
+№{{ index + 1}}
+
+Название: {{ education.name }}
+
+{{@if(education.description)}}
+Описание: {{ education.description }}
+{{/if}}
+
+{{@if(education.degree)}}
+Степень: {{ education.degree }}
+{{/if}}
+
+{{@if(education.startYear)}}
+Год начала обучения: {{ education.startYear }}
+{{/if}}
+Год окончания обучения: {{ education.endYear }}
+
+{{ /each }}
+{{/if}}
+
+
+{{@if(it.resume.experience && it.resume.experience.length > 0)}}
+Опыт работы:
+{{ @each(it.resume.experience) => experience, index }}
+№{{ index + 1}}
+
+Должность: {{ experience.position }}
+
+{{@if(experience.company)}}
+Компания: {{ experience.company }}
+{{/if}}
+
+{{@if(experience.description)}}
+Описание: {{ experience.description }}
+{{/if}}
+
+Месяц/Год найма: {{ experience.startMonth }}/{{ experience.startYear }}
+
+{{@if(experience.endMonth && experience.endYear)}}
+Месяц/Год завершения работы: {{ experience.endMonth }}/{{ experience.endYear }}
+{{#elif(experience.endYear)}}
+Год завершения работы: {{ experience.endYear }}
+{{/if}}
+
+{{ /each }}
+{{/if}}
+
+
+{{@if(it.resume.languages && it.resume.languages.length > 0)}}
+Знает следующие языки:
+{{ @each(it.resume.languages) => language, index }}
+
+{{ language.name }} {{@if(language.level)}} на уровне: {{ language.level }} {{/if}}
+
+{{ /each }}
+{{/if}}

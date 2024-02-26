@@ -17,8 +17,9 @@ export class ChatGPTService {
     });
   }
 
-  async generateChatCompletion(chatHistory: ChatCompletionMessageParam[], newPrompt: string): Promise<OpenAI.ChatCompletion> {
-    const updatedHistory: ChatCompletionMessageParam[] = [...chatHistory, { role: "user", content: newPrompt }];
+  async generateChatCompletion(chatHistory: ChatCompletionMessageParam[], prompt: string): Promise<OpenAI.ChatCompletion> {
+    prompt = this.cleanUpPrompt(prompt);
+    const updatedHistory: ChatCompletionMessageParam[] = [...chatHistory, { role: "user", content: prompt }];
 
     return this.openai.chat.completions.create({
       model: chatGptConfig.CHATGPT_MODEL,
@@ -28,5 +29,17 @@ export class ChatGPTService {
 
   async generatePromptCompletion(prompt: string): Promise<OpenAI.ChatCompletion> {
     return this.generateChatCompletion([], prompt);
+  }
+
+  cleanUpPrompt(prompt: string): string {
+    while(prompt.includes("\n\n\n")) {
+      prompt = prompt.replaceAll("\n\n\n", "\n\n");
+    }
+
+    while(prompt.includes("  ")) {
+      prompt = prompt.replaceAll("  ", " ");
+    }
+
+    return prompt;
   }
 }

@@ -268,7 +268,7 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const where = {
+    const where: Prisma.VacancyResponseWhereUniqueInput = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { candidateId: req.user.id }),
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
@@ -276,6 +276,6 @@ export class VacancyResponseController extends Controller {
 
     if(!await prisma.vacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
 
-    await prisma.vacancyResponse.delete({ where: { id } });
+    await prisma.vacancyResponse.delete({ where });
   }
 }
