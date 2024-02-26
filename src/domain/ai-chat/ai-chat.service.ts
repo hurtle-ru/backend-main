@@ -29,7 +29,7 @@ export class ApplicantAiChatService {
     },
   ): Promise<BasicApplicantAiChatMessage> {
     const renderedResume = this.templateRendererService.renderTemplate(
-      this.TEMPLATE_TYPE, "resume", this.TEMPLATE_EXTENSION, applicant, true);
+      this.TEMPLATE_TYPE, "resume", this.TEMPLATE_EXTENSION, { applicant }, true);
 
     const renderedInterviews = this.templateRendererService.renderTemplate(
       this.TEMPLATE_TYPE, "interviews", this.TEMPLATE_EXTENSION, {
