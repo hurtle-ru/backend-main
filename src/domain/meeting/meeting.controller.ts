@@ -159,7 +159,7 @@ export class MeetingController extends Controller {
     );
     await this.meetingService.sendMeetingCreatedToEmail(
       user!.email,
-      { name: bodyData.name, link: roomUrl, dateTime: slot.dateTime },
+      { link: roomUrl, dateTime: slot.dateTime },
     );
 
     return meeting;
@@ -396,7 +396,13 @@ export class MeetingController extends Controller {
     const userEmail = meeting.applicant?.email || meeting.employer?.email || meeting.guestEmail;
     const userFirstName = meeting.applicant?.firstName || meeting.employer?.firstName || meeting.guestEmail;
 
-    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, { name: userFirstName!, dateTime: meeting.slot.dateTime })
+    let role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE;
+
+    if (meeting.applicant) role = UserRole.APPLICANT
+    else if (meeting.employer) role = UserRole.EMPLOYER
+    else role = GUEST_ROLE
+
+    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, role, { name: userFirstName!, dateTime: meeting.slot.dateTime })
   }
 
   @Get("{id}")
