@@ -5,6 +5,7 @@ import { prisma } from "../../infrastructure/database/prisma.provider";
 import { ApplicantAiChatMessage, Meeting, Resume } from "@prisma/client";
 import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
 import { ChatCompletionMessageParam } from "openai/resources";
+import { BasicApplicant } from "../applicant/applicant.dto";
 
 
 @injectable()
@@ -22,7 +23,7 @@ export class ApplicantAiChatService {
     question: string,
     chatId: string,
     history: ApplicantAiChatMessage[],
-    applicant: {
+    applicant: BasicApplicant & {
       interviews: Meeting[],
       resume: Resume,
     },

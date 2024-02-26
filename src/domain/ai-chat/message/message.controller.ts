@@ -81,6 +81,7 @@ export class ApplicantAiChatMessageController extends Controller {
         body.question,
         body.chatId,
         chat.history,{
+          ...chat.applicant,
           interviews: chat.applicant.meetings,
           resume: chat.applicant.resume,
         }
