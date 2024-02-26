@@ -226,10 +226,10 @@ model ResumeExperience {
 }
 
 model ResumeLanguage {
-  id       String        @id @default(uuid())
-  name     String        @db.VarChar(20)
-  level    LanguageLevel
-  resume   Resume        @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  id       String  @id @default(uuid())
+  name     String  @db.VarChar(20)
+  level    String? @db.VarChar(20)
+  resume   Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId String
 }
 
