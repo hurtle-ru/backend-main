@@ -15,6 +15,7 @@ export class EmailVerificationService {
   async sendEmail(name: string, email: string, code: string) {
     const encodedEmail = encodeURIComponent(email);
     const encodedCode = encodeURIComponent(code);
+
     const link = appConfig.DOMAIN + `/auth/verify-email?email=${encodedEmail}&code=${encodedCode}`;
 
     await this.mailService.sendEmail(email, "Подтверждение почты", {

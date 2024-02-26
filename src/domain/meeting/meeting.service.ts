@@ -43,9 +43,6 @@ export class MeetingService {
     user: { _type: "user", firstName: string, lastName: string, id: string, role: string }
         | { _type: "guest", email: string, id: string, role: string},
   )  {
-    const dateString = moment(meeting.dateTime)
-      .tz(appConfig.TZ)
-      .format(`HH:mm | DD.MM.YYYY | [GMT]Z`);
 
     let text =
       `Забронирована новая встреча!` +
@@ -66,7 +63,7 @@ export class MeetingService {
 
   async sendMeetingCreatedToEmail(
     userEmail: string,
-    meeting: { name: string, link: string, dateTime: Date },
+    meeting: { link: string, dateTime: Date },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -78,15 +75,17 @@ export class MeetingService {
       "Встреча забронирована!",
       {
         name: "create_meeting",
-        context: { name: meeting.name, date, link: meeting.link},
+        context: { date, link: meeting.link },
       }
     );
   }
 
   async sendMeetingCancelledToEmail(
     userEmail: string,
+    role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE,
     meeting: { name: string, dateTime: Date },
   )  {
+    const link = this.getMeetingCreateLink(role);
     const date = moment(meeting.dateTime)
       .locale("ru")
       .tz(appConfig.TZ)
@@ -97,14 +96,14 @@ export class MeetingService {
       "Встреча отменена!",
       {
         name: "cancel_meeting",
-        context: { name, date },
+        context: { name: meeting.name, date, link },
       }
     );
   }
 
   async sendMeetingRemindToEmail(
     userEmail: string,
-    meeting: { dateTime: Date },
+    meeting: { link: string, dateTime: Date },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -116,8 +115,16 @@ export class MeetingService {
       "Напоминание о встрече!",
       {
         name: "remind_about_meeting",
-        context: { date },
+        context: { link: meeting.link, date },
       }
     );
+  }
+
+  getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
+    return {
+      "APPLICANT": appConfig.DOMAIN + "/account/meetings/",
+      "EMPLOYER": "https://t.me/hurtle_support_bot",  // TODO: update link
+      "GUEST": "https://hurtle.ru/expert",
+    }[role];
   }
 }
