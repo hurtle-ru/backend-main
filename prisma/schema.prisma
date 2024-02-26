@@ -141,7 +141,7 @@ model Vacancy {
   reportingForm            VacancyReportingForm
   workingHours             VacancyWorkingHours
   workplaceModel           VacancyWorkplaceModel
-  isConfirmedByManager     Boolean               @default(false)
+  status                   VacancyStatus         @default(UNDER_REVIEW)
   keySkills                String[]              @db.VarChar(50)
   responses                VacancyResponse[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
@@ -497,9 +497,10 @@ enum VacancyWorkplaceModel {
 }
 
 enum VacancyStatus {
-  DRAFT
+  UNDER_REVIEW
+  FAILED_TO_PASS_REVIEW
   PUBLISHED
-  ARCHIVED
+  HIDDEN
 }
 
 enum VacancyResponseStatus {
