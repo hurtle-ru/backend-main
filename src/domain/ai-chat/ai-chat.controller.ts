@@ -19,10 +19,6 @@ import {
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
-import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { Request as ExpressRequest } from "express";
-import path from "path";
 import { ApplicantAiChatService } from "./ai-chat.service";
 import { BasicApplicantAiChat, CreateApplicantAiChatRequest, GetApplicantAiChatResponse } from "./ai-chat.dto";
 import { MeetingStatus, MeetingType } from "@prisma/client";
