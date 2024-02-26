@@ -34,7 +34,7 @@ export class MailService {
         to: email,
         subject: subject,
         html: this.templateRendererService.renderTemplate(
-          "email-templates",
+          "email_templates",
           template.name,
           "html",
           template.context,
@@ -50,11 +50,5 @@ export class MailService {
       console.log("Error occurred during sending email: %s", error);
       return false;
     }
-  }
-
-  loadTemplate(templateName: string, context: any): string {
-    const templatePath = path.join(process.cwd(), `resources/email_templates/${templateName}.template.html`);
-    const templateHtml = fs.readFileSync(templatePath, "utf8");
-    return renderTemplate(templateHtml, context);
   }
 }

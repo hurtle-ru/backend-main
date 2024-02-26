@@ -270,7 +270,7 @@ export class VacancyResponseController extends Controller {
   ): Promise<void> {
     const where = {
       id,
-      ...(req.user.role === UserRole.APPLICANT && { vacancy: { candidateId: req.user.id } }),
+      ...(req.user.role === UserRole.APPLICANT && { candidateId: req.user.id }),
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     }
 
