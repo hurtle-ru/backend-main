@@ -268,7 +268,7 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const where = {
+    const where: Prisma.VacancyResponseWhereUniqueInput = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { candidateId: req.user.id }),
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
