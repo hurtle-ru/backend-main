@@ -8,16 +8,6 @@ import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { MailService } from "../../external/mail/mail.service";
 import { meetingNameByType, MeetingTypeByRole } from "./meeting.config";
-import { User } from "@sentry/node";
-
-
-function getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
-  return {
-    'APPLICANT': appConfig.DOMAIN + '/account/meetings/',
-    'EMPLOYER': 't.me/hurtle_support_bot',  // TODO: update link
-    'GUEST': 'hurtle.ru/expert',
-  }[role]
-}
 
 
 @injectable()
@@ -95,7 +85,7 @@ export class MeetingService {
     role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE,
     meeting: { name: string, dateTime: Date },
   )  {
-    const link = getMeetingCreateLink(role)
+    const link = this.getMeetingCreateLink(role);
     const date = moment(meeting.dateTime)
       .locale("ru")
       .tz(appConfig.TZ)
@@ -128,5 +118,13 @@ export class MeetingService {
         context: { link: meeting.link, date },
       }
     );
+  }
+
+  getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
+    return {
+      "APPLICANT": appConfig.DOMAIN + "/account/meetings/",
+      "EMPLOYER": "https://t.me/hurtle_support_bot",  // TODO: update link
+      "GUEST": "https://hurtle.ru/expert",
+    }[role];
   }
 }
