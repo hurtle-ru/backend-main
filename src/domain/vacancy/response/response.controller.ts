@@ -274,7 +274,6 @@ export class VacancyResponseController extends Controller {
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     }
 
-
     if(!await prisma.vacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
 
     await prisma.vacancyResponse.delete({ where: { id } });
