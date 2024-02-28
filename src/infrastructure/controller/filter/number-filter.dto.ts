@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { int32 } from '../../validation/yup/int32.yup'
 
 
 /**
@@ -19,13 +20,13 @@ import * as yup from "yup";
 export type IntFilterString = string;
 
 const intFilter = yup.object({
-  equals: yup.number().optional(),
-  in: yup.array().of(yup.number()).optional(),
-  notIn: yup.array().of(yup.number()).optional(),
-  lt: yup.number().optional(),
-  lte: yup.number().optional(),
-  gt: yup.number().optional(),
-  gte: yup.number().optional(),
+  equals: int32().optional(),
+  in: yup.array().of(int32()).optional(),
+  notIn: yup.array().of(int32()).optional(),
+  lt: int32().optional(),
+  lte: int32().optional(),
+  gt: int32().optional(),
+  gte: int32().optional(),
 }).noUnknown(true);
 
 export const parseIntFilterQueryParam = (param: string | undefined): any => {

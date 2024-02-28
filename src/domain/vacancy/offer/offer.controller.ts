@@ -125,7 +125,7 @@ export class OfferController extends Controller {
   public async putStatus(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() status: OfferStatus,
+    @Body() body: { status: OfferStatus },
   ): Promise<BasicOffer> {
     const offer = await prisma.offer.findUnique({
       where: { id, vacancyResponse: { candidateId: req.user.id } },
@@ -135,7 +135,7 @@ export class OfferController extends Controller {
 
     return prisma.offer.update({
       where: { id },
-      data: { status },
+      data: { ...body },
     });
   }
 
