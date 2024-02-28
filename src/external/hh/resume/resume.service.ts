@@ -1,7 +1,7 @@
 import { singleton } from "tsyringe";
 import axios from "axios";
 import { HttpError } from "../../../infrastructure/error/http.error";
-import camelize from "../../../util/camelize";
+import { camelize } from "../../../util";
 import { GetMineResumeResponse } from "./resume.dto";
 import { hh } from "../hh.dto";
 

@@ -1,4 +1,5 @@
 import { injectable } from "tsyringe";
+import { getIp } from "../../util";
 import {
   Body,
   Controller,
@@ -31,7 +32,7 @@ import { PageResponse } from "../../infrastructure/controller/pagination/page.re
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import {
   Currency,
-  Prisma, Vacancy,
+  Prisma,
   VacancyEmploymentType, VacancyExperience,
   VacancyReportingForm, VacancyStatus, VacancyTeamRole,
   VacancyWorkingHours,
@@ -39,6 +40,7 @@ import {
 } from "@prisma/client";
 import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/controller/filter/number-filter.dto";
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -223,30 +225,43 @@ export class VacancyController extends Controller {
    * Фронтенд должен локально хранить вакансии (их ID), которые уже были просмотрены соискателем, чтобы не вызывать этот метод повторно
    */
   @Post("{id}/viewed")
-  @Security("jwt", [UserRole.APPLICANT])
+  @Security("jwt", [UserRole.APPLICANT, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
   @Response<HttpErrorBody & {"error": "Applicant already viewed this vacancy"}>(409)
   public async addViewed(
     @Path() id: string,
-    @Request() req: JwtModel,
+    @Request() req: ExpressRequest & (JwtModel | { user: null }),
   ): Promise<void> {
+    const requestIp = getIp(req);
     const vacancy = await prisma.vacancy.findUnique({
       where: { id },
     });
 
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
-    if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
 
-    await prisma.vacancy.update({
-      where: { id },
-      data: {
-        uniqueViewerApplicantIds: {
-          push: req.user.id,
+    if (req.user && req.user.role === UserRole.APPLICANT) {
+      if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
+      await prisma.vacancy.update({
+        where: { id },
+        data: {
+          uniqueViewerApplicantIds: {
+            push: req.user.id,
+          },
         },
-      },
-    });
+      });
+    }
+    else if (requestIp) {
+      if(vacancy.uniqueViewerIps.includes(requestIp)) throw new HttpError(409, "Anonymous with this ip already viewed this vacancy");
+      await prisma.vacancy.update({
+        where: { id },
+        data: {
+          uniqueViewerIps: {
+            push: requestIp,
+          },
+        },
+      });
+    }
   }
-
 
   /*
   * Метод получения всех городов, указанных в вакансиях

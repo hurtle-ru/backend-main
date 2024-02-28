@@ -1,23 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../error/http.error";
 import { RateInfo, RateLimiterConfig } from "./rate-limiter.dto"
+import { getHeaderFirstValue, getIp } from '../../util'
 
 
 const MILLISECONDS_IN_SECOND = 1000
 
 const USERS_RATE_MAP = new Map<string, RateInfo>();
 const IPS_RATE_MAP = new Map<string, RateInfo>();
-
-
-function getHeaderFirstValue(header: string, req: Request): string | undefined {
-    let value = req.headers[header];
-    return Array.isArray(value) ? value[0] : value;
-}
-
-
-function getIp(req: Request): string | undefined {
-    return getHeaderFirstValue("x-real-ip", req) || req.ip;
-}
 
 
 function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: RateLimiterConfig): RateInfo {
