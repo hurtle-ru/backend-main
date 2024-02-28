@@ -172,8 +172,8 @@ export class VacancyController extends Controller {
       }
       if(include?.includes("responses.candidate.resume")) {
         includeResponses = {
-          include: { 
-            candidate: { 
+          include: {
+            candidate: {
               include: {
                 resume: {
                   where: { isVisibleToEmployers: true },

@@ -1,7 +1,9 @@
+import * as yup from "yup";
 import { Vacancy } from "@prisma/client";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicVacancyResponse } from "./response/response.dto"
 import { RequesterEmployer, RequesterManager } from "../../infrastructure/controller/requester/requester.dto";
+
 
 export type BasicVacancy = Omit<
   Vacancy,
