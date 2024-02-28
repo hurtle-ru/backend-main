@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { yupPostgresNumber } from '../../validation/number.yup.postgres'
+import { int32 } from '../../validation/yup/int32.yup'
 
 
 /**
@@ -20,13 +20,13 @@ import { yupPostgresNumber } from '../../validation/number.yup.postgres'
 export type IntFilterString = string;
 
 const intFilter = yup.object({
-  equals: yupPostgresNumber().optional(),
-  in: yup.array().of(yupPostgresNumber()).optional(),
-  notIn: yup.array().of(yupPostgresNumber()).optional(),
-  lt: yupPostgresNumber().optional(),
-  lte: yupPostgresNumber().optional(),
-  gt: yupPostgresNumber().optional(),
-  gte: yupPostgresNumber().optional(),
+  equals: int32().optional(),
+  in: yup.array().of(int32()).optional(),
+  notIn: yup.array().of(int32()).optional(),
+  lt: int32().optional(),
+  lte: int32().optional(),
+  gt: int32().optional(),
+  gte: int32().optional(),
 }).noUnknown(true);
 
 export const parseIntFilterQueryParam = (param: string | undefined): any => {
