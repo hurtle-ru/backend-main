@@ -132,6 +132,7 @@ model Vacancy {
   description              String                @db.VarChar(3000)
   shortDescription         String?               @db.VarChar(255)
   uniqueViewerApplicantIds String[]
+  uniqueViewerIps          String[]
   salary                   Int
   salaryCurrency           Currency
   experience               VacancyExperience

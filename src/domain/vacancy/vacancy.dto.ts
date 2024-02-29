@@ -10,6 +10,7 @@ export type BasicVacancy = Omit<
   | "employer"
   | "vacancyResponses"
   | "uniqueViewerApplicantIds"
+  | "uniqueViewerIps"
 >;
 
 export type GetVacancyResponse = BasicVacancy & {
