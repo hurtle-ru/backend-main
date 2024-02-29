@@ -21,7 +21,6 @@ import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
   CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
-  CreateMeetingRequest,
   GetMeetingResponse, PutMeetingManagerRequest,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
