@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../error/http.error";
 import { RateInfo, RateLimiterConfig } from "./rate-limiter.dto"
-import { getHeaderFirstValue, getIp } from '../../util'
+import { getHeaderFirstValue, getIp } from "../controller/express-request/express-request.utils";
 
 
 const MILLISECONDS_IN_SECOND = 1000

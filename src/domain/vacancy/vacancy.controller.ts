@@ -1,5 +1,4 @@
 import { injectable } from "tsyringe";
-import { getIp } from "../../util";
 import {
   Body,
   Controller,
@@ -41,6 +40,7 @@ import {
 import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/controller/filter/number-filter.dto";
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 import { Request as ExpressRequest } from "express";
+import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
 
 
 @injectable()
@@ -143,10 +143,10 @@ export class VacancyController extends Controller {
 
     return new PageResponse(
       vacancies.map(vacancy => {
-        const { uniqueViewerApplicantIds, ...vacancyWithoutViewers } = vacancy;
+        const { uniqueViewerApplicantIds, uniqueViewerIps, ...vacancyWithoutViewers } = vacancy;
         return {
           ...vacancyWithoutViewers,
-          viewersCount: uniqueViewerApplicantIds.length,
+          viewersCount: vacancy.uniqueViewerApplicantIds.length + vacancy.uniqueViewerIps.length,
         };
       }),
       page, size, vacanciesCount
@@ -210,10 +210,10 @@ export class VacancyController extends Controller {
 
     return new PageResponse(
       vacancies.map(vacancy => {
-        const { uniqueViewerApplicantIds, ...vacancyWithoutViewers } = vacancy;
+        const { uniqueViewerApplicantIds, uniqueViewerIps, ...vacancyWithoutViewers } = vacancy;
         return {
           ...vacancyWithoutViewers,
-          viewersCount: uniqueViewerApplicantIds.length,
+          viewersCount: vacancy.uniqueViewerApplicantIds.length + vacancy.uniqueViewerIps.length,
         };
       }),
       page, size, vacanciesCount
@@ -227,7 +227,10 @@ export class VacancyController extends Controller {
   @Post("{id}/viewed")
   @Security("jwt", [UserRole.APPLICANT, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Applicant already viewed this vacancy"}>(409)
+  @Response<HttpErrorBody & {"error":
+      | "Applicant already viewed this vacancy"
+      | "Anonymous with this ip already viewed this vacancy"
+  }>(409)
   public async addViewed(
     @Path() id: string,
     @Request() req: ExpressRequest & (JwtModel | { user: null }),
@@ -241,6 +244,7 @@ export class VacancyController extends Controller {
 
     if (req.user && req.user.role === UserRole.APPLICANT) {
       if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
+
       await prisma.vacancy.update({
         where: { id },
         data: {
@@ -249,9 +253,9 @@ export class VacancyController extends Controller {
           },
         },
       });
-    }
-    else if (requestIp) {
+    } else if (requestIp) {
       if(vacancy.uniqueViewerIps.includes(requestIp)) throw new HttpError(409, "Anonymous with this ip already viewed this vacancy");
+
       await prisma.vacancy.update({
         where: { id },
         data: {
@@ -362,10 +366,10 @@ export class VacancyController extends Controller {
 
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
 
-    const { uniqueViewerApplicantIds, ...vacancyWithoutViewers } = vacancy;
+    const { uniqueViewerApplicantIds, uniqueViewerIps, ...vacancyWithoutViewers } = vacancy;
     return {
       ...vacancyWithoutViewers,
-      viewersCount: vacancy.uniqueViewerApplicantIds.length,
+      viewersCount: vacancy.uniqueViewerApplicantIds.length + vacancy.uniqueViewerIps.length,
     };
   }
 
