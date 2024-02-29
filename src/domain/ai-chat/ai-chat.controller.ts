@@ -84,20 +84,20 @@ export class ApplicantAiChatController extends Controller {
     @Path() id: string,
     @Query() include?: ("applicant" | "employer" | "history")[]
   ): Promise<GetApplicantAiChatResponse> {
-      const chat = await prisma.applicantAiChat.findUnique({
-        where: {
-          id,
-          ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
-        },
-        include: {
-          applicant: include?.includes("applicant"),
-          employer: include?.includes("employer"),
-          history: include?.includes("history"),
-        },
-      });
+    const chat = await prisma.applicantAiChat.findUnique({
+      where: {
+        id,
+        ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
+      },
+      include: {
+        applicant: include?.includes("applicant"),
+        employer: include?.includes("employer"),
+        history: include?.includes("history"),
+      },
+    });
 
-      if(!chat) throw new HttpError(404, "AI Chat not found");
+    if(!chat) throw new HttpError(404, "AI Chat not found");
 
-      return chat;
+    return chat;
   }
 }

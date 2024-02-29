@@ -19,40 +19,24 @@ export class ApplicantAiChatService {
     private readonly templateRendererService: TemplateRendererService,
   ) {}
 
-  async generateMessage(
+  async createMessage(
     question: string,
-    chatId: string,
-    history: ApplicantAiChatMessage[],
-    applicant: BasicApplicant & {
-      interviews: Meeting[],
-      resume: Resume,
-    },
+    systemPrompt: string,
+    chat: {
+      id: string,
+      history: ApplicantAiChatMessage[],
+    }
   ): Promise<BasicApplicantAiChatMessage> {
-    const renderedResume = this.templateRendererService.renderTemplate(
-      this.TEMPLATE_TYPE, "resume", this.TEMPLATE_EXTENSION, {
-        applicant,
-        resume: applicant.resume,
-      }, true);
-
-    const renderedInterviews = this.templateRendererService.renderTemplate(
-      this.TEMPLATE_TYPE, "interviews", this.TEMPLATE_EXTENSION, {
-        interviews: applicant.interviews,
-      }, true);
-
-    const renderedPrompt = this.templateRendererService.renderTemplate(
-      this.TEMPLATE_TYPE, "applicant-ai-chat-question", this.TEMPLATE_EXTENSION, {
-        resume: renderedResume,
-        interviews: renderedInterviews,
-        question,
-      }, true);
-
     const completion = await this.chatgptService.generateChatCompletion(
-      this.mapHistory(history), renderedPrompt
+      question, [
+        { content: systemPrompt, role: "system" },
+        ...this.mapHistory(chat.history),
+      ]
     );
 
     return prisma.applicantAiChatMessage.create({
       data: {
-        chatId,
+        chatId: chat.id,
         prompt: question,
         response: completion.choices[0].message.content!,
         promptTokens: completion.usage!.prompt_tokens,
@@ -61,7 +45,34 @@ export class ApplicantAiChatService {
     });
   }
 
-  mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
+  getSystemPrompt(
+    applicant: BasicApplicant & {
+      interviews: Meeting[],
+      resume: Resume,
+    },
+  ): string {
+    const renderedResume = this.templateRendererService.renderTemplate(
+      this.TEMPLATE_TYPE, "resume", this.TEMPLATE_EXTENSION, {
+        applicant,
+        resume: applicant.resume,
+      }, true
+    );
+
+    const renderedInterviews = this.templateRendererService.renderTemplate(
+      this.TEMPLATE_TYPE, "interviews", this.TEMPLATE_EXTENSION, {
+        interviews: applicant.interviews,
+      }, true
+    );
+
+    return this.templateRendererService.renderTemplate(
+      this.TEMPLATE_TYPE, "applicant-ai-chat-question", this.TEMPLATE_EXTENSION, {
+        resume: renderedResume,
+        interviews: renderedInterviews,
+      }, true
+    );
+  }
+
+  private mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
     return history.flatMap(message => [
       { content: message.prompt, role: "user" },
       { content: message.response, role: "assistant" },
