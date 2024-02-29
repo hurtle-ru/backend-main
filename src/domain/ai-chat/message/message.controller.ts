@@ -76,16 +76,14 @@ export class ApplicantAiChatMessageController extends Controller {
 
     if(applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
 
+    const systemPrompt = this.applicantAiChatService.getSystemPrompt({
+      ...chat.applicant,
+      interviews: chat.applicant.meetings,
+      resume: chat.applicant.resume,
+    });
+
     try {
-      return await this.applicantAiChatService.generateMessage(
-        body.question,
-        body.chatId,
-        chat.history,{
-          ...chat.applicant,
-          interviews: chat.applicant.meetings,
-          resume: chat.applicant.resume,
-        }
-      );
+      return await this.applicantAiChatService.createMessage(body.question, systemPrompt, chat);
     } catch(e) {
       console.log(e);
       throw new HttpError(503, "External text generation service is unavailable");

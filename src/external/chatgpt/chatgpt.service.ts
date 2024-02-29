@@ -17,7 +17,7 @@ export class ChatGPTService {
     });
   }
 
-  async generateChatCompletion(chatHistory: ChatCompletionMessageParam[], prompt: string): Promise<OpenAI.ChatCompletion> {
+  async generateChatCompletion(prompt: string, chatHistory: ChatCompletionMessageParam[]): Promise<OpenAI.ChatCompletion> {
     prompt = this.cleanUpPrompt(prompt);
     const updatedHistory: ChatCompletionMessageParam[] = [...chatHistory, { role: "user", content: prompt }];
 
@@ -28,7 +28,7 @@ export class ChatGPTService {
   }
 
   async generatePromptCompletion(prompt: string): Promise<OpenAI.ChatCompletion> {
-    return this.generateChatCompletion([], prompt);
+    return this.generateChatCompletion(prompt, []);
   }
 
   cleanUpPrompt(prompt: string): string {
