@@ -76,7 +76,7 @@ export class OfferController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("vacancyResponse" | "vacancyResponse.vacancy")[],
+    @Query() include?: ("vacancyResponse" | "vacancyResponse.vacancy" | "vacancyResponse.vacancy.employer")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetOfferResponse>> {
@@ -91,7 +91,13 @@ export class OfferController extends Controller {
         where,
         include: {
           vacancyResponse: include?.includes("vacancyResponse.vacancy")
-          ? { include: { vacancy: true }}
+          ? {
+            include: {
+              vacancy: include?.includes("vacancyResponse.vacancy.employer")
+              ? { include: { employer: true } }
+              : true
+            }
+          }
           : include?.includes("vacancyResponse"),
         },
       }),
