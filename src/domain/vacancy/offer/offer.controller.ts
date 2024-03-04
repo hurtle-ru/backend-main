@@ -90,12 +90,12 @@ export class OfferController extends Controller {
         take: size,
         where,
         include: {
-          vacancyResponse: include?.includes("vacancyResponse.vacancy")
+          vacancyResponse: include?.includes("vacancyResponse.vacancy") || include?.includes("vacancyResponse.vacancy.employer")
           ? {
             include: {
               vacancy: include?.includes("vacancyResponse.vacancy.employer")
               ? { include: { employer: true } }
-              : true
+              : include?.includes("vacancyResponse.vacancy")
             }
           }
           : include?.includes("vacancyResponse"),
