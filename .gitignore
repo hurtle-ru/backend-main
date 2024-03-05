@@ -11,3 +11,4 @@ typings
 .sentryclirc
 .DS_Store
 logs
+/logs/
