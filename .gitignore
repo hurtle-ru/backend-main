@@ -10,3 +10,4 @@ typings
 # Sentry Config File
 .sentryclirc
 .DS_Store
+logs
