@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { int32 } from '../../validation/yup/int32.yup'
+import { int32 } from '../../validation/requests/int32.yup'
 import { HttpError } from "../../error/http.error";
 
 
