@@ -1,36 +1,32 @@
-class CustomInclude {
+export default class CustomInclude {
     SEPARATOR = '.';
-    includes: string[] | undefined
+    private includes_: string[] | undefined
 
     constructor(
         includes: string[] | undefined
-    ) { this.includes = includes }
+    ) { this.includes_ = includes }
 
     /**
     Advanced check include initially or full exist:
     @example
     ci = new CustomInclude(['person', 'person.post', 'person.post.comments.tags'])
-    ci.include('person')                    // [true, true]
-    ci.include('person.post')               // [true, true]
-    ci.include('person.post.comments')      // [true, false]
-    ci.include('person.post.comments.tags') // [false, true]
+    ci.includes('person')                    // true
+    ci.includes('person.post')               // true
+    ci.includes('person.unknown')           // false
+    ci.includes('person.post.comments')      // true
+    ci.includes('person.post.comments.tags') // true
     */
-    include(include: string): [initialMatch: boolean, fullMatch: boolean] {
-        let initialMatch: boolean = false;
-        let fullMatch: boolean = false;
+    includes(value: string): boolean {
+        if (!this.includes_) return false
 
-        if (!this.includes) return [false, false]
+        for ( const existInclude of this.includes_ ) {
+            if (
+                existInclude === value
+                || existInclude.startsWith( value + this.SEPARATOR )
+            ) return true
+        }
 
-        this.includes.forEach(( existInclude ) => {
-            if ( !fullMatch && existInclude === include) fullMatch = true
-
-            if ( !initialMatch && existInclude.startsWith( include + this.SEPARATOR ) ) {
-                initialMatch = true
-            }
-
-            if ( fullMatch && initialMatch ) return [true, true]
-        })
-
-        return [initialMatch, fullMatch]
+        return false
     }
 }
+
