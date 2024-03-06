@@ -7,7 +7,7 @@
     "dev": "npm run build && npm run start",
     "build:tsc": "tsoa spec-and-routes && tsc",
     "build:post": "copyfiles -u 3 src/infrastructure/openapi/redoc.html dist/src/infrastructure/openapi/ && node src/infrastructure/openapi/postProcessSwagger.js",
-    "build": "npm run build:tsc && npm run build:post && npm run sentry:sourcemaps",
+    "build": "npm run build:tsc && npm run build:post && ([ \"$NODE_ENV\" != \"dev\" ] && npm run sentry:sourcemaps || echo Skipping sentry:sourcemaps in dev environment)",
     "prisma:studio": "npx prisma db pull && npx prisma studio",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org hurtle --project hurtle-main-backend ./dist && sentry-cli sourcemaps upload --org hurtle --project hurtle-main-backend ./dist"
