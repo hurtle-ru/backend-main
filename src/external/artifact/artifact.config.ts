@@ -1,5 +1,5 @@
 import { cleanEnv, str } from "envalid";
-import { int } from "../../infrastructure/validation/envalid/int.envalid";
+import { int } from "../../infrastructure/validation/env/int.envalid";
 
 
 const MB = 2**20;

@@ -5,6 +5,7 @@ import path from "path";
 import { render as renderTemplate } from "squirrelly";
 import { injectable, singleton } from "tsyringe";
 import { TemplateRendererService } from "../template-renderer/template-renderer.service";
+import pino from "pino";
 
 
 @injectable()
@@ -24,7 +25,7 @@ export class MailService {
     });
   }
 
-  async sendEmail (email: string, subject: string, template: {
+  async sendEmail(logger: pino.Logger, email: string, subject: string, template: {
     name: string,
     context: object,
   }): Promise<boolean> {
@@ -43,11 +44,11 @@ export class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log("Email sent: %s", info.messageId);
+      logger.info("Email sent: %s", info.messageId);
 
       return true;
     } catch (error) {
-      console.log("Error occurred during sending email: %s", error);
+      logger.error("Error occurred during sending email: %s", error);
       return false;
     }
   }

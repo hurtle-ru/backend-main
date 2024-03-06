@@ -12,6 +12,7 @@ import {
 } from "./artifact.config";
 import { singleton } from "tsyringe";
 import { Readable } from "stream";
+import { logger } from "../../infrastructure/logger/logger";
 
 
 export const ARTIFACT_ROOT_DIR = "data/";
@@ -26,11 +27,10 @@ async function saveMulterFile(file: Express.Multer.File, filePath: string): Prom
     await fs.mkdir(directory, { recursive: true });
     await fs.writeFile(filePath, file.buffer);
 
-    console.log(`succeed save save file ${filePath}`, directory);
+    logger.trace(`Succeed save file ${filePath}`, directory);
     return filePath;
   } catch (err) {
-    console.log(err);
-    throw new Error(`Error while saving file: ${err}`);
+    throw new Error("saveMulterFile: Error while saving file", { cause: err });
   }
 }
 
@@ -80,8 +80,7 @@ export class ArtifactService {
       ];
     }
     catch (err) {
-      console.log(err);
-      throw new Error(`Error while loading file: ${err}`);
+      throw new Error("loadFile: Error while loading file", { cause: err });
     }
   }
   async exists(filePath: string): Promise<boolean> {

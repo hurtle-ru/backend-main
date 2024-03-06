@@ -20,7 +20,7 @@ export type GetApplicantResponse = BasicApplicant & {
   aiChats?: ApplicantAiChat[],
 };
 
-export type PutMeApplicantRequest = Pick<
+export type PutMeRequestByApplicant = Pick<
   BasicApplicant,
   | "contact"
   | "firstName"
@@ -37,7 +37,7 @@ export type PutMeApplicantRequest = Pick<
   | "isVisibleToEmployers"
 >
 
-export type PutByIdApplicantRequest = Pick<
+export type PutByIdRequestByApplicant = Pick<
   BasicApplicant,
   | "email"
   | "login"

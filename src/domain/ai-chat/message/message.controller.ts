@@ -26,6 +26,7 @@ import {
 } from "./message.dto";
 import { MeetingStatus, MeetingType } from "@prisma/client";
 import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -46,7 +47,7 @@ export class ApplicantAiChatMessageController extends Controller {
   @Response<HttpErrorBody & {"error": "Completed applicant interviews with transcript not found"}>(409)
   @Response<HttpErrorBody & {"error": "External text generation service is unavailable"}>(503)
   public async create(
-    @Request() req: JwtModel,
+    @Request() req: ExpressRequest & JwtModel,
     @Body() body: CreateApplicantAiChatMessageRequest
   ): Promise<BasicApplicantAiChatMessage> {
     CreateApplicantAiChatMessageRequest.schema.validateSync(body);
@@ -85,7 +86,6 @@ export class ApplicantAiChatMessageController extends Controller {
     try {
       return await this.applicantAiChatService.createMessage(body.question, systemPrompt, chat);
     } catch(e) {
-      console.log(e);
       throw new HttpError(503, "External text generation service is unavailable");
     }
   }

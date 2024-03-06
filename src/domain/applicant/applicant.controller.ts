@@ -21,8 +21,8 @@ import {
   BasicApplicant,
   GetApplicantResponse,
   GetApplicantStatusResponse,
-  PutByIdApplicantRequest,
-  PutMeApplicantRequest,
+  PutByIdRequestByApplicant,
+  PutMeRequestByApplicant,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -117,7 +117,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async putMe(
     @Request() req: JwtModel,
-    @Body() body: PutMeApplicantRequest
+    @Body() body: PutMeRequestByApplicant
   ): Promise<BasicApplicant> {
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -129,7 +129,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeApplicantRequest>
+    @Body() body: Partial<PutMeRequestByApplicant>
   ): Promise<BasicApplicant> {
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -185,7 +185,7 @@ export class ApplicantController extends Controller {
 
     const response = req.res;
     if (response) {
-      console.log("File path: ", filePath);
+      req.log.trace("File path: ", filePath);
       const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
@@ -283,7 +283,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: Partial<PutByIdApplicantRequest>
+    @Body() body: Partial<PutByIdRequestByApplicant>
   ): Promise<BasicApplicant> {
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
@@ -299,7 +299,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async putById(
     @Path() id: string,
-    @Body() body: PutByIdApplicantRequest
+    @Body() body: PutByIdRequestByApplicant
   ): Promise<BasicApplicant> {
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

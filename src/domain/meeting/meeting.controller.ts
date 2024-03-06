@@ -20,8 +20,8 @@ import { MeetingService } from "./meeting.service";
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
-  CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
-  GetMeetingResponse, PutMeetingManagerRequest,
+  CreateMeetingRequestByApplicantOrEmployer, CreateMeetingGuestRequest,
+  GetMeetingResponse, PutMeetingRequestByManager,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -35,7 +35,7 @@ import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
-import { MeetingPaymentStatus } from "@prisma/client";
+import { MeetingStatus } from "@prisma/client";
 
 
 @injectable()
@@ -68,8 +68,8 @@ export class MeetingController extends Controller {
   }>(403)
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
-    @Request() req: JwtModel,
-    @Body() body: CreateMeetingGuestRequest | CreateMeetingApplicantOrEmployerRequest,
+    @Request() req: ExpressRequest & JwtModel,
+    @Body() body: CreateMeetingGuestRequest | CreateMeetingRequestByApplicantOrEmployer,
   ): Promise<BasicMeeting> {
     const { _requester, ...bodyData } = body;
 
@@ -157,6 +157,7 @@ export class MeetingController extends Controller {
       { ...user!, id: req.user.id, role: req.user.role }
     );
     await this.meetingService.sendMeetingCreatedToEmail(
+      req.log,
       user!.email,
       { link: roomUrl, dateTime: slot.dateTime },
     );
@@ -323,7 +324,7 @@ export class MeetingController extends Controller {
           stream.destroy();
         }
         catch (e) {
-          console.log("Error:", e);
+          req.log.error(e, "Stream response error");
         }
       });
       return stream;
@@ -364,7 +365,7 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   public async patchById(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeetingManagerRequest>,
+    @Body() body: Partial<PutMeetingRequestByManager>,
     @Path() id: string,
   ): Promise<BasicMeeting> {
     const where = { id };
@@ -382,15 +383,37 @@ export class MeetingController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("jwt", [UserRole.MANAGER])
+  @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT, UserRole.EMPLOYER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Applicant and employer unable to delete finished meeting"}>(409)
   public async deleteById(
+    @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
-    @Request() req: JwtModel,
   ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true, applicant: true, employer: true } });
+    const meeting = await prisma.meeting.findUnique({
+      where: {
+        id,
+        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
+        ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
+      },
+      include: {
+        slot: true,
+        applicant: true,
+        employer: true,
+      },
+    });
+
     if(!meeting) throw new HttpError(404, "Meeting not found");
+    switch(req.user.role) {
+      case UserRole.APPLICANT:
+      case UserRole.EMPLOYER:
+        if(meeting.status !== MeetingStatus.PLANNED) {
+          throw new HttpError(409, "Applicant and employer unable to delete finished meeting");
+        }
+
+        break;
+    }
 
     await prisma.meeting.archive(id);
 
@@ -403,7 +426,12 @@ export class MeetingController extends Controller {
     else if (meeting.employer) role = UserRole.EMPLOYER
     else role = GUEST_ROLE
 
-    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, role, { name: userFirstName!, dateTime: meeting.slot.dateTime })
+    await this.meetingService.sendMeetingCancelledToEmail(
+      req.log,
+      userEmail!,
+      role,
+      { name: userFirstName!, dateTime: meeting.slot.dateTime }
+    );
   }
 
   @Get("{id}")

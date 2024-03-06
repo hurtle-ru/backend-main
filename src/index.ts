@@ -1,3 +1,4 @@
+import { logger } from "./infrastructure/logger/logger";
 import express from "express";
 import bodyParser from "body-parser";
 import requestLogger from "./infrastructure/logger/request-logger.middleware";
@@ -15,12 +16,14 @@ import { validateChatGptConfig } from "./external/chatgpt/chatgpt.config";
 const app = express();
 
 startServer().catch(error => {
-  console.error("Failed to start the server:", error);
+  logger.fatal(error, "Failed to start the server");
   process.exit(1);
 });
 
 async function startServer() {
   await validateConfig();
+
+  app.enable("trust proxy");
 
   Sentry.init({
     dsn: appConfig.SENTRY_DSN,
@@ -42,7 +45,6 @@ async function startServer() {
   app.use(cors);
 
   app.use(bodyParser.json());
-  app.enable("trust proxy");
 
   app.use(routeRateLimit({ limit: 160, interval: 60 }));
   app.use(userRateLimit({ limit: 200, interval: 60 }));
@@ -55,15 +57,14 @@ async function startServer() {
   setupSwaggerRoutes(app);
 
   app.listen(appConfig.BACKEND_PORT, () => {
-    console.log(`Server is running on port ${appConfig.BACKEND_PORT}`);
+    logger.info(`Server is running on port ${appConfig.BACKEND_PORT}`);
   });
 }
 
 async function validateConfig() {
   try {
     await validateChatGptConfig();
-  } catch(e) {
-    console.log("Config is invalid", e);
-    process.exit(1);
+  } catch(e: any) {
+    throw new Error("ChatGPT config is invalid", { cause: e });
   }
 }

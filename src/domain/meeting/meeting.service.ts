@@ -8,6 +8,7 @@ import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { MailService } from "../../external/mail/mail.service";
 import { meetingNameByType, MeetingTypeByRole } from "./meeting.config";
+import pino from "pino";
 
 
 @injectable()
@@ -62,6 +63,7 @@ export class MeetingService {
   }
 
   async sendMeetingCreatedToEmail(
+    logger: pino.Logger,
     userEmail: string,
     meeting: { link: string, dateTime: Date },
   )  {
@@ -71,6 +73,7 @@ export class MeetingService {
       .format(`D MMM YYYY г. HH:mm по московскому времени`);
 
     await this.mailService.sendEmail(
+      logger,
       userEmail,
       "Встреча забронирована!",
       {
@@ -81,6 +84,7 @@ export class MeetingService {
   }
 
   async sendMeetingCancelledToEmail(
+    logger: pino.Logger,
     userEmail: string,
     role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE,
     meeting: { name: string, dateTime: Date },
@@ -92,6 +96,7 @@ export class MeetingService {
       .format(`D MMM YYYY г. HH:mm по московскому времени`);
 
     await this.mailService.sendEmail(
+      logger,
       userEmail,
       "Встреча отменена!",
       {
@@ -102,6 +107,7 @@ export class MeetingService {
   }
 
   async sendMeetingRemindToEmail(
+    logger: pino.Logger,
     userEmail: string,
     meeting: { link: string, dateTime: Date },
   )  {
@@ -111,6 +117,7 @@ export class MeetingService {
       .format(`D MMM YYYY г. HH:mm по московскому времени`);
 
     await this.mailService.sendEmail(
+      logger,
       userEmail,
       "Напоминание о встрече!",
       {
