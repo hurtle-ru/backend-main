@@ -35,6 +35,7 @@ import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
+import { MeetingStatus } from "@prisma/client";
 
 
 @injectable()
@@ -382,15 +383,37 @@ export class MeetingController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("jwt", [UserRole.MANAGER])
+  @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT, UserRole.EMPLOYER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Applicant and employer unable to delete finished meeting"}>(409)
   public async deleteById(
     @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
   ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true, applicant: true, employer: true } });
+    const meeting = await prisma.meeting.findUnique({
+      where: {
+        id,
+        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
+        ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
+      },
+      include: {
+        slot: true,
+        applicant: true,
+        employer: true
+      }
+    });
+
     if(!meeting) throw new HttpError(404, "Meeting not found");
+    switch(req.user.role) {
+      case UserRole.APPLICANT:
+      case UserRole.EMPLOYER:
+        if(meeting.status !== MeetingStatus.PLANNED) {
+          throw new HttpError(409, "Applicant and employer unable to delete finished meeting");
+        }
+
+        break;
+    }
 
     await prisma.meeting.archive(id);
 
