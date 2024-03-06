@@ -296,20 +296,32 @@ export class MeetingController extends Controller {
   }
 
   @Get("{id}/video")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getVideo(
     @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
   ): Promise<Readable | any> {
+    const meeting = await prisma.meeting.findUnique( {
+      where: {
+        id,
+        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
+        ...(req.user.role === UserRole.EMPLOYER && {
+          OR: [
+            { employerId: req.user.id },
+            { applicantId: { not: null } }
+          ],
+        })
+      }
+    });
+
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video");
     const filePath = `meeting/${id}/${fileName}`;
 
     if(fileName == null) throw new HttpError(404, "File not found");
-    const meeting = await prisma.meeting.findUnique({where: { id }});
-
-    if (!meeting) throw new HttpError(404, "Meeting not found");
 
     const response = req.res;
     if (response) {
