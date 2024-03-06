@@ -400,8 +400,8 @@ export class MeetingController extends Controller {
       include: {
         slot: true,
         applicant: true,
-        employer: true
-      }
+        employer: true,
+      },
     });
 
     if(!meeting) throw new HttpError(404, "Meeting not found");
