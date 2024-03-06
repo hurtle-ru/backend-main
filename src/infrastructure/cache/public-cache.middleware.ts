@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import NodeCache from "node-cache";
+import { logger } from "../logger/logger";
 
 
 const cache = new NodeCache();
@@ -20,7 +21,7 @@ export function publicCacheMiddleware(ttl: number) {
     res.setHeader("Cache-Control", `public, max-age=${ttl}`);
 
     if (cachedContent) {
-      console.log(`Serving from cache: ${cacheKey}`);
+      logger.trace(`Serving from cache: ${cacheKey}`);
       res.send(cachedContent);
       return;
     }

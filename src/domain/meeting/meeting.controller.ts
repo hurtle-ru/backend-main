@@ -323,7 +323,7 @@ export class MeetingController extends Controller {
           stream.destroy();
         }
         catch (e) {
-          console.log("Error:", e);
+          req.log.error(e, "Stream response error");
         }
       });
       return stream;

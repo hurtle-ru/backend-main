@@ -1,4 +1,4 @@
-import { Body, Controller, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Request, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE,
