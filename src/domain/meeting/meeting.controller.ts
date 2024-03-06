@@ -20,8 +20,8 @@ import { MeetingService } from "./meeting.service";
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
-  CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
-  GetMeetingResponse, PutMeetingManagerRequest,
+  CreateMeetingRequestByApplicantOrEmployer, CreateMeetingGuestRequest,
+  GetMeetingResponse, PutMeetingRequestByManager,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -69,7 +69,7 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
     @Request() req: ExpressRequest & JwtModel,
-    @Body() body: CreateMeetingGuestRequest | CreateMeetingApplicantOrEmployerRequest,
+    @Body() body: CreateMeetingGuestRequest | CreateMeetingRequestByApplicantOrEmployer,
   ): Promise<BasicMeeting> {
     const { _requester, ...bodyData } = body;
 
@@ -365,7 +365,7 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   public async patchById(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeetingManagerRequest>,
+    @Body() body: Partial<PutMeetingRequestByManager>,
     @Path() id: string,
   ): Promise<BasicMeeting> {
     const where = { id };

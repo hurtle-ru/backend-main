@@ -42,7 +42,7 @@ export type CreateMeetingGuestRequest = CreateMeetingRequest & RequesterGuest & 
   "successCode": string
 }
 
-export type CreateMeetingApplicantOrEmployerRequest = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
+export type CreateMeetingRequestByApplicantOrEmployer = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
 
 
 export type PutMeetingRequestByApplicantOrEmployer = Pick<
@@ -52,7 +52,7 @@ export type PutMeetingRequestByApplicantOrEmployer = Pick<
   | "slotId"
 >;
 
-export type PutMeetingManagerRequest = Pick<
+export type PutMeetingRequestByManager = Pick<
   Meeting,
   | "name"
   | "description"

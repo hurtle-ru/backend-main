@@ -15,7 +15,7 @@ export type GetEmployerResponse = BasicEmployer & {
   vacancies?: BasicVacancy[]
 };
 
-export type PutMeEmployerRequest = Pick<
+export type PutMeRequestByEmployer = Pick<
   BasicEmployer,
   | "contact"
   | "firstName"
@@ -33,7 +33,7 @@ export type PutMeEmployerRequest = Pick<
   | "description"
 >
 
-export type PutByIdEmployerRequest = Pick<
+export type PutByIdRequestByEmployer = Pick<
   BasicEmployer,
   | "email"
   | "login"
