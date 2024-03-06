@@ -51,7 +51,7 @@ export default (err: any, req: Request, res: Response, next: NextFunction) => {
   const logObject = { "errorResponse": errorResponse.body };
   const logMsg = `HTTP Error ${errorResponse.status}`;
 
-  if(errorResponse.status === 500) req.log.error({ ...logObject, err }, logMsg);
+  if(errorResponse.status >= 500) req.log.error({ ...logObject, err }, logMsg);
   else req.log.warn(logObject, logMsg);
 
   return res.status(errorResponse.status).json(errorResponse.body);
