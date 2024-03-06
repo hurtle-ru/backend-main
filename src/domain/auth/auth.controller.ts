@@ -12,6 +12,7 @@ import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -66,6 +67,7 @@ export class AuthController extends Controller {
 
   @Post("guest/accessToken")
   public async createGuestAccessToken(
+    @Request() req: ExpressRequest,
     @Body() body: CreateGuestAccessTokenRequest,
   ): Promise<CreateAccessTokenResponse> {
     CreateGuestAccessTokenRequest.schema.validateSync(body);

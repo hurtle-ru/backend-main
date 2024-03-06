@@ -3,6 +3,7 @@ import axios from "axios";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import OpenAI from "openai";
 import { Agent } from "agent-base";
+import { logger } from "../../infrastructure/logger/logger";
 export const chatGptConfig = cleanEnv(process.env, {
   CHATGPT_API_KEY: str(),
   CHATGPT_MODEL: str(),
@@ -23,7 +24,7 @@ async function validateProxy(agent: SocksProxyAgent) {
     throw new Error("ChatGPT proxy doesnt work");
   }
 
-  console.log("ChatGPT proxy is operational");
+  logger.info("ChatGPT proxy is operational");
 }
 
 async function validateApiKey(agent: SocksProxyAgent) {
@@ -33,5 +34,5 @@ async function validateApiKey(agent: SocksProxyAgent) {
   });
   const models = await openai.models.list();
 
-  console.log("OpenAI API key is valid.");
+  logger.info("OpenAI API key is valid.");
 }

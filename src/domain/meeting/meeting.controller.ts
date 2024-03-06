@@ -35,7 +35,6 @@ import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
-import { MeetingPaymentStatus } from "@prisma/client";
 
 
 @injectable()
@@ -68,7 +67,7 @@ export class MeetingController extends Controller {
   }>(403)
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
-    @Request() req: JwtModel,
+    @Request() req: ExpressRequest & JwtModel,
     @Body() body: CreateMeetingGuestRequest | CreateMeetingApplicantOrEmployerRequest,
   ): Promise<BasicMeeting> {
     const { _requester, ...bodyData } = body;
@@ -157,6 +156,7 @@ export class MeetingController extends Controller {
       { ...user!, id: req.user.id, role: req.user.role }
     );
     await this.meetingService.sendMeetingCreatedToEmail(
+      req.log,
       user!.email,
       { link: roomUrl, dateTime: slot.dateTime },
     );
@@ -386,8 +386,8 @@ export class MeetingController extends Controller {
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   public async deleteById(
+    @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
-    @Request() req: JwtModel,
   ): Promise<void> {
     const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true, applicant: true, employer: true } });
     if(!meeting) throw new HttpError(404, "Meeting not found");
@@ -403,7 +403,12 @@ export class MeetingController extends Controller {
     else if (meeting.employer) role = UserRole.EMPLOYER
     else role = GUEST_ROLE
 
-    await this.meetingService.sendMeetingCancelledToEmail(userEmail!, role, { name: userFirstName!, dateTime: meeting.slot.dateTime })
+    await this.meetingService.sendMeetingCancelledToEmail(
+      req.log,
+      userEmail!,
+      role,
+      { name: userFirstName!, dateTime: meeting.slot.dateTime }
+    );
   }
 
   @Get("{id}")
