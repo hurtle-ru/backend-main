@@ -92,7 +92,9 @@ export class ApplicantAiChatController extends Controller {
       include: {
         applicant: include?.includes("applicant"),
         employer: include?.includes("employer"),
-        history: include?.includes("history"),
+        history: include?.includes("history") ? {
+          orderBy: { createdAt: "asc" },
+        } : undefined,
       },
     });
 
