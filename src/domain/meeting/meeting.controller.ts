@@ -296,7 +296,6 @@ export class MeetingController extends Controller {
   }
 
   @Get("{id}/video")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getVideo(
@@ -306,14 +305,7 @@ export class MeetingController extends Controller {
     const meeting = await prisma.meeting.findUnique( {
       where: {
         id,
-        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
-        ...(req.user.role === UserRole.EMPLOYER && {
-          OR: [
-            { employerId: req.user.id },
-            { applicantId: { not: null } }
-          ],
-        })
-      }
+      },
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
