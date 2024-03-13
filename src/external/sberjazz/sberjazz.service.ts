@@ -1,5 +1,6 @@
 import { singleton } from "tsyringe";
 import axios from "axios";
+import { sberjazzConfig } from "./sberjazz.config";
 
 
 @singleton()
@@ -12,7 +13,7 @@ export class SberJazzService {
    * @returns Ссылка на созданную комнату.
    */
   async createRoom(name: string): Promise<string> {
-    const url = "https://vc-backend.sberdevices.ru/room/create";
+    const url = `${sberjazzConfig.API_BASE}/room/create`;
     const response = await axios.post(url, {
       roomType: "ANONYMOUS",
       roomTitle: name,
