@@ -49,7 +49,7 @@ export class ResumeController extends Controller {
       data: {
         ...body,
         applicant: { connect: { id: req.user.id } },
-        isVisibleToEmployers: false,
+        isVisibleToEmployers: true,
       },
     });
   }
