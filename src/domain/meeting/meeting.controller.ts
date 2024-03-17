@@ -137,12 +137,19 @@ export class MeetingController extends Controller {
     if(req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
     else if(req.user.role === GUEST_ROLE) user = { _type: "guest", email: req.user.id }
 
+    // TODO: description должен браться из bodyData.description
     const roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
+    let description = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
+        + "\n Также, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
+        + "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
+
+    if(bodyData.type !== "INTERVIEW") description = bodyData.description;
+
     const meeting = await prisma.meeting.create({
       data: {
         roomUrl,
         name: bodyData.name,
-        description: bodyData.description,
+        description: description,
         slotId: bodyData.slotId,
         type: bodyData.type,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
