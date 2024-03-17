@@ -6,6 +6,7 @@ import { logger } from "../../infrastructure/logger/logger";
 import { EmailQueue } from "./mq/email.queue";
 import { EmailJobData } from "./email.dto";
 import { JobsOptions } from "bullmq/dist/esm/types";
+import { Job } from "bullmq";
 
 
 @injectable()
@@ -30,6 +31,15 @@ export class EmailService {
 
   async enqueueEmail(data: EmailJobData, opts?: JobsOptions) {
     await this.queue.enqueueEmail(data, opts);
+  }
+
+  async removeJob(jobId: string) {
+    await this.queue.removeJob(jobId);
+  }
+
+  // TODO: refactor
+  async findIncompleteJobsByEmailAndLink(email: string, link: string): Promise<Job<EmailJobData>[]> {
+    return await this.queue.findIncompleteJobsByEmailAndLink(email, link);
   }
 
   async sendEmail({ to, subject, template }: EmailJobData): Promise<boolean> {

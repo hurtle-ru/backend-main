@@ -443,6 +443,12 @@ export class MeetingController extends Controller {
       role,
       { name: userFirstName!, dateTime: meeting.slot.dateTime }
     );
+
+    await this.meetingService.removeMeetingReminderToEmail(
+      req.log,
+      userEmail!,
+      meeting.roomUrl,
+    );
   }
 
   @Get("{id}")
