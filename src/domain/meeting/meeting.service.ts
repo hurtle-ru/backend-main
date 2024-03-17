@@ -168,5 +168,4 @@ export class MeetingService {
     const reminderTime = new Date(meetingDateTime.getTime() - minutesBefore * 60 * 1000); // 60000 ms in a minute
     return reminderTime.getTime() - new Date().getTime();
   }
-
 }
