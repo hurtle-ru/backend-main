@@ -16,6 +16,6 @@
     // This improves issue grouping in Sentry.
     "sourceRoot": "/"
   },
-  "include": ["src/**/*.ts", "prisma/**/*.ts"],
+  "include": ["src/**/*.ts", "prisma/**/*.ts", "src/infrastructure/controller/include copy.js"],
   "exclude": ["node_modules"]
 }

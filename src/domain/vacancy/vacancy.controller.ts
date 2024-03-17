@@ -41,6 +41,7 @@ import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
+import CustomInclude from "../../infrastructure/controller/include"
 
 
 @injectable()
@@ -163,28 +164,23 @@ export class VacancyController extends Controller {
   ): Promise<PageResponse<GetVacancyResponse>> {
     let where = null;
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+    let ci = new CustomInclude(include);
 
     if(req.user.role === UserRole.EMPLOYER) {
       where = { employerId: req.user.id };
 
-      if(include?.includes("responses.candidate")) {
-        includeResponses = {
-          include: { candidate: true },
-        };
-      }
-      if(include?.includes("responses.candidate.resume")) {
-        includeResponses = {
-          include: {
-            candidate: {
-              include: {
-                resume: {
-                  where: { isVisibleToEmployers: true },
-                },
-              },
-            },
-          },
-        };
-      }
+      includeResponses = ci.includes("responses") && {
+        include: {
+          candidate: ci.includes("responses.candidate") && {
+            include: {
+              resume: ci.includes("responses.candidate.resume") && {
+                where: { isVisibleToEmployers: true },
+              }
+            }
+          }
+        },
+      };
+
     } else if(req.user.role === UserRole.APPLICANT) {
       where = { responses: { some: { candidateId: req.user.id } } };
 
