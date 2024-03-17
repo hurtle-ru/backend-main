@@ -1,14 +1,14 @@
 import otpGenerator from "otp-generator";
 import { appConfig } from "../../../infrastructure/app.config";
 import { injectable, singleton } from "tsyringe";
-import { MailService } from "../../../external/mail/mail.service";
+import { EmailService } from "../../../external/email/email.service";
 import pino from "pino";
 
 
 @injectable()
 @singleton()
 export class EmailVerificationService {
-  constructor(private readonly mailService: MailService) {}
+  constructor(private readonly emailService: EmailService) {}
 
   generateCode(): string {
     return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
@@ -20,9 +20,13 @@ export class EmailVerificationService {
 
     const link = appConfig.DOMAIN + `/auth/verify-email?email=${encodedEmail}&code=${encodedCode}`;
 
-    await this.mailService.sendEmail(logger, email, "Подтверждение почты", {
-      name: "verify_email",
-      context: { name, code, link },
+    await this.emailService.enqueueEmail({
+      to: email,
+      subject: "Подтверждение почты",
+      template: {
+        name: "verify_email",
+        context: { name, code, link },
+      },
     });
   }
 }

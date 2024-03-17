@@ -6,8 +6,8 @@ import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
 import { TelegramService } from "../../external/telegram/telegram.service";
-import { MailService } from "../../external/mail/mail.service";
-import { meetingNameByType, MeetingTypeByRole } from "./meeting.config";
+import { EmailService } from "../../external/email/email.service";
+import { MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
 
 
@@ -17,7 +17,7 @@ export class MeetingService {
   constructor(
     private readonly jazzService: SberJazzService,
     private readonly telegramService: TelegramService,
-    private readonly mailService: MailService,
+    private readonly emailService: EmailService,
   ) {}
 
   doesUserHaveAccessToMeetingSlot(userRole: UserRole | typeof GUEST_ROLE, slotTypes: MeetingType[]): boolean {
@@ -29,7 +29,7 @@ export class MeetingService {
     user: { _type: "user", firstName: string, lastName: string }
         | { _type: "guest" }
   ): Promise<string> {
-    const meetingName = meetingNameByType[meetingType];
+    const meetingName = MeetingNameByType[meetingType];
 
     let roomName;
     if(user._type === "guest") roomName = `Хартл ${meetingName}`;
@@ -59,7 +59,10 @@ export class MeetingService {
 
     text += `\nРоль: <b>${user.role}</b>`;
 
-    await this.telegramService.sendMessage(text, { parse_mode: "HTML" });
+    await this.telegramService.enqueueAdminNotification({
+      text,
+      options: { parse_mode: "HTML" },
+    });
   }
 
   async sendMeetingCreatedToEmail(
@@ -72,15 +75,14 @@ export class MeetingService {
       .tz(appConfig.TZ)
       .format(`D MMM YYYY г. HH:mm по московскому времени`);
 
-    await this.mailService.sendEmail(
-      logger,
-      userEmail,
-      "Встреча забронирована!",
-      {
+    await this.emailService.enqueueEmail({
+      to: userEmail,
+      subject: "Встреча забронирована!",
+      template: {
         name: "create_meeting",
         context: { date, link: meeting.link },
-      }
-    );
+      },
+    });
   }
 
   async sendMeetingCancelledToEmail(
@@ -95,18 +97,17 @@ export class MeetingService {
       .tz(appConfig.TZ)
       .format(`D MMM YYYY г. HH:mm по московскому времени`);
 
-    await this.mailService.sendEmail(
-      logger,
-      userEmail,
-      "Встреча отменена!",
-      {
+    await this.emailService.enqueueEmail({
+      to: userEmail,
+      subject: "Встреча отменена!",
+      template: {
         name: "cancel_meeting",
         context: { name: meeting.name, date, link },
-      }
-    );
+      },
+    });
   }
 
-  async sendMeetingRemindToEmail(
+  async scheduleMeetingReminderToEmail(
     logger: pino.Logger,
     userEmail: string,
     meeting: { link: string, dateTime: Date },
@@ -116,15 +117,24 @@ export class MeetingService {
       .tz(appConfig.TZ)
       .format(`D MMM YYYY г. HH:mm по московскому времени`);
 
-    await this.mailService.sendEmail(
-      logger,
-      userEmail,
-      "Напоминание о встрече!",
-      {
+    const emailData = {
+      to: userEmail,
+      subject: "Напоминание о встрече!",
+      template: {
         name: "remind_about_meeting",
         context: { link: meeting.link, date },
+      },
+    };
+
+    for (const minutesBefore of ReminderMinutesBeforeMeeting) {
+      const reminderDelay = this.calculateReminderDelay(meeting.dateTime, minutesBefore);
+
+      if (reminderDelay > 0) {
+        await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
+          .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
+          .catch(error => logger.error(error, "Error scheduling meeting reminder"));
       }
-    );
+    }
   }
 
   getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
@@ -133,5 +143,10 @@ export class MeetingService {
       "EMPLOYER": "https://t.me/hurtle_support_bot",  // TODO: update link
       "GUEST": "https://hurtle.ru/expert",
     }[role];
+  }
+
+  calculateReminderDelay(meetingDateTime: Date, minutesBefore: number): number {
+    const reminderTime = new Date(meetingDateTime.getTime() - minutesBefore * 60 * 1000); // 60000 ms in a minute
+    return reminderTime.getTime() - new Date().getTime();
   }
 }
