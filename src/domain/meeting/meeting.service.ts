@@ -137,6 +137,25 @@ export class MeetingService {
     }
   }
 
+  // TODO: replace roomUrl with meeting id
+  async removeMeetingReminderToEmail(
+    logger: pino.Logger,
+    userEmail: string,
+    roomUrl: string,
+  ) {
+    const jobs = await this.emailService.findIncompleteJobsByEmailAndLink(userEmail, roomUrl);
+    for (const job of jobs) {
+      if(job.id) {
+        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job")
+        try {
+          await this.emailService.removeJob(job.id);
+        } catch(e) {
+          logger.error( { jobId: job.id }, "Error while removing job");
+        }
+      }
+    }
+  }
+
   getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
     return {
       "APPLICANT": appConfig.DOMAIN + "/account/meetings/",
@@ -149,4 +168,5 @@ export class MeetingService {
     const reminderTime = new Date(meetingDateTime.getTime() - minutesBefore * 60 * 1000); // 60000 ms in a minute
     return reminderTime.getTime() - new Date().getTime();
   }
+
 }
