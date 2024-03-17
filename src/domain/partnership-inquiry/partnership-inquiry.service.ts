@@ -17,6 +17,9 @@ export class PartnershipInquiryService {
       `\nКонтакт: <b>${inquiry.contact}</b>` +
       `\nПочта: <b>${inquiry.email}</b>`;
 
-    await this.telegramService.sendMessage(text, { parse_mode: "HTML" });
+    await this.telegramService.enqueueAdminNotification({
+      text,
+      options: { parse_mode: "HTML" },
+    });
   }
 }

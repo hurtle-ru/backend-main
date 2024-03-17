@@ -1,6 +1,6 @@
 import { appConfig } from "../../../infrastructure/app.config";
 import { injectable, singleton } from "tsyringe";
-import { MailService } from "../../../external/mail/mail.service";
+import { EmailService } from "../../../external/email/email.service";
 import otpGenerator from "otp-generator";
 import pino from "pino";
 
@@ -8,7 +8,7 @@ import pino from "pino";
 @injectable()
 @singleton()
 export class PasswordResetService {
-  constructor(private readonly mailService: MailService) {}
+  constructor(private readonly emailService: EmailService) {}
 
   generateCode(): string {
     return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
@@ -18,9 +18,13 @@ export class PasswordResetService {
     const encodedEmail = encodeURIComponent(email);
     const link = appConfig.DOMAIN + `/auth/reset-password/${code}?email=${encodedEmail}`;
 
-    await this.mailService.sendEmail(logger, email, "Сброс пароля", {
-      name: "reset_password",
-      context: { link },
+    await this.emailService.enqueueEmail({
+      to: email,
+      subject: "Сброс пароля",
+      template: {
+        name: "reset_password",
+        context: { link },
+      },
     });
   }
 }

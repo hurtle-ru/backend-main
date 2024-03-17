@@ -156,7 +156,14 @@ export class MeetingController extends Controller {
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
     );
+
     await this.meetingService.sendMeetingCreatedToEmail(
+      req.log,
+      user!.email,
+      { link: roomUrl, dateTime: slot.dateTime },
+    );
+
+    await this.meetingService.scheduleMeetingReminderToEmail(
       req.log,
       user!.email,
       { link: roomUrl, dateTime: slot.dateTime },

@@ -11,10 +11,18 @@ import * as Sentry from "@sentry/node";
 import { ProfilingIntegration } from "@sentry/profiling-node";
 import { routeRateLimit, userRateLimit } from "./infrastructure/rate-limiter/rate-limiter.middleware"
 import { validateChatGptConfig } from "./external/chatgpt/chatgpt.config";
+import * as http from "node:http";
+import { MqManager } from "./infrastructure/mq/mq-manager";
 
+const mqManager = new MqManager();
+let server: http.Server | null = null;
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
 
 const app = express();
 
+mqManager.run();
 startServer().catch(error => {
   logger.fatal(error, "Failed to start the server");
   process.exit(1);
@@ -56,7 +64,7 @@ async function startServer() {
 
   setupSwaggerRoutes(app);
 
-  app.listen(appConfig.BACKEND_PORT, () => {
+  server = app.listen(appConfig.BACKEND_PORT, () => {
     logger.info(`Server is running on port ${appConfig.BACKEND_PORT}`);
   });
 }
@@ -67,4 +75,14 @@ async function validateConfig() {
   } catch(e: any) {
     throw new Error("ChatGPT config is invalid", { cause: e });
   }
+}
+
+async function shutdown() {
+  logger.info("Shutting down gracefully");
+
+  await mqManager.close();
+
+  server?.close(() => {
+    logger.info("Server shut down");
+  });
 }
