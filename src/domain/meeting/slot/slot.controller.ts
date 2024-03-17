@@ -19,7 +19,7 @@ import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, Put
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
-import { MeetingPaymentStatus, MeetingType } from "@prisma/client";
+import { MeetingPaymentStatus, MeetingSlot, MeetingType } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { MeetingPaymentController } from "../payment/payment.controller";
@@ -53,7 +53,7 @@ export class MeetingSlotController extends Controller {
   public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
-    @Query() size: PageSizeNumber = 60,
+    @Query() size: PageSizeNumber = 80,
     @Query() types?: MeetingType[],
     @Query() available: boolean = true,
     @Query() afterDateTime?: Date,
@@ -80,16 +80,27 @@ export class MeetingSlotController extends Controller {
       }),
     }
 
-    const [meetingSlots, meetingSlotsCount] = await Promise.all([
+    // TODO: fix pagination, slots count
+    const [fetchedMeetingSlots, fetchedMeetingSlotsCount] = await Promise.all([
       prisma.meetingSlot.findMany({
         where,
         skip: (page - 1) * size,
         take: size,
+        orderBy: { dateTime: "asc" },
       }),
       prisma.meetingSlot.count({ where }),
     ]);
 
-    return new PageResponse(meetingSlots, page, size, meetingSlotsCount)
+    const uniqueDateTimeSlotsMap = new Map();
+    for(const slot of fetchedMeetingSlots) {
+      const dateTimeStr = slot.dateTime.toISOString();
+      if (!uniqueDateTimeSlotsMap.has(dateTimeStr)) {
+        uniqueDateTimeSlotsMap.set(dateTimeStr, slot);
+      }
+    }
+    const meetingSlots = Array.from(uniqueDateTimeSlotsMap.values());
+
+    return new PageResponse(meetingSlots, page, size, meetingSlots.length)
   }
 
   @Get("my")
