@@ -1,4 +1,4 @@
-import { Body, Controller, Path, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Request, Path, Post, Query, Response, Route, Tags } from "tsoa";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { Applicant, Employer } from "@prisma/client";
@@ -6,6 +6,7 @@ import { UserRole } from "../auth.dto";
 import { injectable } from "tsyringe";
 import { PasswordResetService } from "./password-reset.service";
 import { AuthService } from "../auth.service";
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -19,6 +20,7 @@ export class PasswordResetController extends Controller {
   @Post()
   @Response<HttpErrorBody & {"error": "User not found"}>(404)
   public async initiateReset(
+    @Request() req: ExpressRequest,
     @Query() email: string,
     @Query() role: "APPLICANT" | "EMPLOYER",
   ): Promise<void> {
@@ -37,7 +39,7 @@ export class PasswordResetController extends Controller {
       data: { email, role, code },
     });
 
-    await this.passwordResetService.sendEmail(email, passwordResetRequest.code);
+    await this.passwordResetService.sendEmail(req.log, email, passwordResetRequest.code);
   }
 
   @Post("{code}")

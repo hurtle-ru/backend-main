@@ -1,5 +1,5 @@
-import yup from "../../infrastructure/validation/yup.provider";
 import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
+import * as yup from "yup";
 
 
 export interface JwtModel {
@@ -46,7 +46,7 @@ export class RegisterApplicantRequest {
     password: yup.string().trim().min(8),
     firstName: yup.string().trim().min(1),
     lastName: yup.string().trim().min(1),
-    middleName: yup.string().trim().min(1),
+    middleName: yup.string().trim().min(1).optional(),
   });
 
   constructor(

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { BasicEmployer, PutByIdEmployerRequest, PutMeEmployerRequest, GetEmployerResponse } from "./employer.dto";
+import { BasicEmployer, PutByIdRequestByEmployer, PutMeRequestByEmployer, GetEmployerResponse } from "./employer.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
@@ -11,7 +11,7 @@ import { Readable } from "stream";
 import {Request as ExpressRequest} from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 
 
 @injectable()
@@ -79,7 +79,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async putMe(
     @Request() req: JwtModel,
-    @Body() body: PutMeEmployerRequest
+    @Body() body: PutMeRequestByEmployer
   ): Promise<BasicEmployer> {
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
@@ -93,7 +93,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeEmployerRequest>
+    @Body() body: Partial<PutMeRequestByEmployer>
   ): Promise<BasicEmployer> {
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
@@ -178,7 +178,7 @@ export class EmployerController extends Controller {
     const employer = await prisma.employer.findUnique({ where: { id } });
 
     if(!employer) throw new HttpError(404, "Employer not found");
-    if (req.user.id != id && req.user.role != UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another employer");
+    if (req.user.id !== id && req.user.role !== UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another employer");
 
     await prisma.employer.archive(id);
   }
@@ -188,7 +188,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async putById(
     @Path() id: string,
-    @Body() body: PutByIdEmployerRequest
+    @Body() body: PutByIdRequestByEmployer
   ): Promise<BasicEmployer> {
     const where = { id };
     if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
@@ -204,7 +204,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: Partial<PutByIdEmployerRequest>
+    @Body() body: Partial<PutByIdRequestByEmployer>
   ): Promise<BasicEmployer> {
     const where = { id };
     if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");

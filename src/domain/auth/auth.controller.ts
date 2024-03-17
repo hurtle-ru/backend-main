@@ -1,4 +1,4 @@
-import { Body, Controller, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Request, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE,
@@ -11,7 +11,8 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error"
 import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -66,6 +67,7 @@ export class AuthController extends Controller {
 
   @Post("guest/accessToken")
   public async createGuestAccessToken(
+    @Request() req: ExpressRequest,
     @Body() body: CreateGuestAccessTokenRequest,
   ): Promise<CreateAccessTokenResponse> {
     CreateGuestAccessTokenRequest.schema.validateSync(body);

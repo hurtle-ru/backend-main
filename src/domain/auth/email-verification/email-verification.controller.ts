@@ -4,6 +4,7 @@ import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { injectable } from "tsyringe";
 import { EmailVerificationService } from "./email-verification.service";
+import { Request as ExpressRequest } from "express";
 
 
 @injectable()
@@ -16,7 +17,9 @@ export class EmailVerificationController extends Controller {
 
   @Post()
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
-  public async createEmailVerification(@Request() req: JwtModel) {
+  public async createEmailVerification(
+    @Request() req: ExpressRequest & JwtModel
+  ) {
     let code = this.emailVerificationService.generateCode();
     while (await prisma.emailVerification.findUnique({ where: { code } })) {
       code = this.emailVerificationService.generateCode();
@@ -39,11 +42,11 @@ export class EmailVerificationController extends Controller {
       },
     });
 
-    let user: { email: string } | null = null;
+    let user: { firstName: string, email: string } | null = null;
     if(req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { id: req.user.id } });
     if(req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { id: req.user.id } });
 
-    await this.emailVerificationService.sendEmail(user!.email, code);
+    await this.emailVerificationService.sendEmail(req.log, user!.firstName, user!.email, code);
   }
 
   @Post("{code}")

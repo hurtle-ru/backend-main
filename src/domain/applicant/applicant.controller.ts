@@ -21,8 +21,8 @@ import {
   BasicApplicant,
   GetApplicantResponse,
   GetApplicantStatusResponse,
-  PutByIdApplicantRequest,
-  PutMeApplicantRequest,
+  PutByIdRequestByApplicant,
+  PutMeRequestByApplicant,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -33,7 +33,7 @@ import { Readable } from "stream";
 import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 
 
 @injectable()
@@ -117,7 +117,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async putMe(
     @Request() req: JwtModel,
-    @Body() body: PutMeApplicantRequest
+    @Body() body: PutMeRequestByApplicant
   ): Promise<BasicApplicant> {
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -129,7 +129,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeApplicantRequest>
+    @Body() body: Partial<PutMeRequestByApplicant>
   ): Promise<BasicApplicant> {
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -185,7 +185,7 @@ export class ApplicantController extends Controller {
 
     const response = req.res;
     if (response) {
-      console.log("File path: ", filePath);
+      req.log.trace("File path: ", filePath);
       const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
 
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
@@ -237,7 +237,7 @@ export class ApplicantController extends Controller {
     const applicant = await prisma.applicant.findUnique({ where: { id } });
 
     if(!applicant) throw new HttpError(404, "Applicant not found");
-    if (req.user.id != id && req.user.role != UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another applicant");
+    if (req.user.id !== id && req.user.role !== UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another applicant");
 
     await prisma.applicant.archive(id);
   }
@@ -248,13 +248,21 @@ export class ApplicantController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[]
   ): Promise<GetApplicantResponse> {
     let includeResume: any = false;
-    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
-      includeResume = true;
-    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
-      includeResume = { where: { isVisibleToEmployers: true } };
+    let includeAiChats: any = false;
+
+    switch(req.user.role) {
+      case UserRole.MANAGER:
+        if(include?.includes("resume")) includeResume = true;
+        if(include?.includes("aiChats")) includeAiChats = true;
+        break;
+      case UserRole.EMPLOYER:
+        if(include?.includes("resume")) includeResume = { where: { isVisibleToEmployers: true } };
+        if(include?.includes("aiChats")) includeAiChats = { where: { employerId: req.user.id } }
+        break;
+    }
 
     const applicant = await prisma.applicant.findUnique({
       where: { id },
@@ -262,6 +270,7 @@ export class ApplicantController extends Controller {
         resume: includeResume,
         meetings: include?.includes("meetings"),
         vacancyResponses: include?.includes("vacancyResponses"),
+        aiChats: includeAiChats,
       },
     });
 
@@ -274,7 +283,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: Partial<PutByIdApplicantRequest>
+    @Body() body: Partial<PutByIdRequestByApplicant>
   ): Promise<BasicApplicant> {
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
@@ -290,7 +299,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async putById(
     @Path() id: string,
-    @Body() body: PutByIdApplicantRequest
+    @Body() body: PutByIdRequestByApplicant
   ): Promise<BasicApplicant> {
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

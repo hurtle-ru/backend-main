@@ -2,7 +2,7 @@ import { injectable, singleton } from "tsyringe";
 import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service";
 import { MeetingType } from "@prisma/client";
 import { meetingPriceByType, paymentConfig } from "./payment.config";
-import { meetingNameByType } from "../meeting.config";
+import { MeetingNameByType } from "../meeting.config";
 import { MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
 import otpGenerator from "otp-generator";
 
@@ -19,7 +19,7 @@ export class MeetingPaymentService {
     failCode: string,
     dueDate: string,
   ) {
-    const description = `Хартл. ${meetingNameByType[type]}`;
+    const description = `Хартл. ${MeetingNameByType[type]}`;
 
     const successUrl = new URL(paymentConfig.MEETING_PAYMENT_SUCCESS_URL_BASE);
     successUrl.searchParams.append("meetingPaymentId", meetingPaymentId);

@@ -1,5 +1,20 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Patch, Path, Post, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Path,
+  Post,
+  Put,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  Tags,
+} from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { BasicOffer, CreateOfferRequest, GetOfferResponse, PutOfferRequest } from "./offer.dto";
@@ -61,7 +76,7 @@ export class OfferController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("vacancyResponse" | "vacancyResponse.vacancy")[],
+    @Query() include?: ("vacancyResponse" | "vacancyResponse.vacancy" | "vacancyResponse.vacancy.employer")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetOfferResponse>> {
@@ -75,8 +90,14 @@ export class OfferController extends Controller {
         take: size,
         where,
         include: {
-          vacancyResponse: include?.includes("vacancyResponse.vacancy")
-          ? { include: { vacancy: true }}
+          vacancyResponse: include?.includes("vacancyResponse.vacancy") || include?.includes("vacancyResponse.vacancy.employer")
+          ? {
+            include: {
+              vacancy: include?.includes("vacancyResponse.vacancy.employer")
+              ? { include: { employer: true } }
+              : include?.includes("vacancyResponse.vacancy")
+            }
+          }
           : include?.includes("vacancyResponse"),
         },
       }),
@@ -125,7 +146,7 @@ export class OfferController extends Controller {
   public async putStatus(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() status: OfferStatus,
+    @Body() body: { status: OfferStatus },
   ): Promise<BasicOffer> {
     const offer = await prisma.offer.findUnique({
       where: { id, vacancyResponse: { candidateId: req.user.id } },
@@ -135,7 +156,7 @@ export class OfferController extends Controller {
 
     return prisma.offer.update({
       where: { id },
-      data: { status },
+      data: { ...body },
     });
   }
 
@@ -212,5 +233,22 @@ export class OfferController extends Controller {
     if(!offer) throw new HttpError(404, "Offer not found");
 
     return offer;
+  }
+
+  @Delete("{id}")
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  @Response<HttpErrorBody & {"error": "Offer not found"}>(404)
+  public async deleteById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+  ) {
+    let where = null;
+    if(req.user.role === UserRole.MANAGER) where = { id };
+    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
+
+    const offer = await prisma.offer.findUnique({ where: where! });
+    if(!offer) throw new HttpError(404, "Offer not found");
+
+    await prisma.offer.delete({ where: where! });
   }
 }

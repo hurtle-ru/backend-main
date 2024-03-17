@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Middlewares,
   Patch,
   Path,
   Post,
@@ -27,6 +27,9 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { Prisma, VacancyResponseStatus } from "@prisma/client";
+import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
+import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
+import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 
 
 @injectable()
@@ -71,32 +74,96 @@ export class VacancyResponseController extends Controller {
     })
   }
 
+  /*
+  * Метод получения всех городов, указанных в откликах на вакансии данного пользователя.
+  * Используется краткосрочное кешировние
+  */
+  @Get("my/cities")
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
+  @Middlewares(publicCacheMiddleware(20 * 60))
+  public async getMyCities(@Request() req: JwtModel): Promise<GetAllVacancyCitiesResponse> {
+    let citiesAggregation;
+
+    if (req.user.role === UserRole.EMPLOYER) {
+      citiesAggregation = await prisma.vacancy.groupBy({
+        by: ["city"],
+        where: {
+          employerId: req.user.id,
+          responses: {
+            some: {},
+          },
+        },
+        _count: {
+          city: true,
+        },
+      });
+    } else if (req.user.role === UserRole.APPLICANT) {
+      citiesAggregation = await prisma.vacancyResponse.findMany({
+        where: {
+          candidateId: req.user.id,
+        },
+        select: {
+          vacancy: {
+            select: {
+              city: true,
+            },
+          },
+        },
+      });
+
+      const citiesSet = new Set(citiesAggregation.map(response => response.vacancy.city));
+      citiesAggregation = Array.from(citiesSet).map(city => ({
+        city,
+        _count: { city: 1 }, // Mock count since actual counts are irrelevant here
+      }));
+    }
+
+    const cities = citiesAggregation!
+      .filter(aggregation => aggregation.city) // Ensuring no null cities
+      .map(aggregation => aggregation.city);
+
+    return {
+      cities,
+      total: cities.length,
+    };
+  }
+
   @Get("my")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("candidate" | "vacancy" | "candidateRecommendedBy")[],
+    @Query() include?: ("candidate" | "candidate.resume" | "vacancy" | "vacancy.employer" | "candidateRecommendedBy")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
     @Query() status?: VacancyResponseStatus[],
-    @Query() candidateId?: string,
-    @Query() candidateRecommendedByManagerId?: string,
-    @Query() vacancyId?: string,
-    @Query() vacancy_city?: string,
+    @Query() candidateId?: string[],
+    @Query() candidateRecommendedByManagerId?: string[],
+    @Query() vacancyId?: string[],
+    @Query() vacancy_city?: string[],
     @Query() vacancy_minSalary?: number,
     @Query() vacancy_maxSalary?: number,
+    @Query() candidate_resume_minDesiredSalary?: number,
+    @Query() candidate_resume_maxDesiredSalary?: number,
   ): Promise<PageResponse<GetVacancyResponseResponse>> {
     let where: Prisma.VacancyResponseWhereInput = {
       status: { in: status ?? undefined },
-      candidateId: candidateId ?? undefined,
-      candidateRecommendedByManagerId: candidateRecommendedByManagerId ?? undefined,
-      vacancyId: vacancyId ?? undefined,
+      candidateId: { in: candidateId ?? undefined },
+      candidateRecommendedByManagerId: { in: candidateRecommendedByManagerId ?? undefined },
+      vacancyId: { in: vacancyId ?? undefined },
       vacancy: {
-        city: vacancy_city ?? undefined,
+        city: { in: vacancy_city ?? undefined },
         salary: {
           gte: vacancy_minSalary ?? undefined,
           lte: vacancy_maxSalary ?? undefined,
+        },
+      },
+      candidate: {
+        resume: {
+          desiredSalary: {
+            gte: candidate_resume_minDesiredSalary ?? undefined,
+            lte: candidate_resume_maxDesiredSalary ?? undefined,
+          },
         },
       },
     };
@@ -117,9 +184,13 @@ export class VacancyResponseController extends Controller {
         where: where!,
         orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
         include: {
-          candidate: include?.includes("candidate"),
-          vacancy: include?.includes("vacancy"),
           candidateRecommendedBy: include?.includes("candidateRecommendedBy"),
+          vacancy: include?.includes("vacancy.employer")
+            ? { include: { employer: true } }
+            : include?.includes("vacancy"),
+          candidate: include?.includes("candidate.resume")
+            ? { include: { resume: true }}
+            : include?.includes("candidate"),
         },
       }),
       prisma.vacancyResponse.count({ where: where! }),
@@ -197,14 +268,14 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Request() req: JwtModel,
   ): Promise<void> {
-    const where = {
+    const where: Prisma.VacancyResponseWhereUniqueInput = {
       id,
-      ...(req.user.role === UserRole.APPLICANT && { vacancy: { candidateId: req.user.id } }),
+      ...(req.user.role === UserRole.APPLICANT && { candidateId: req.user.id }),
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     }
 
     if(!await prisma.vacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
 
-    await prisma.vacancyResponse.delete({ where: { id } });
+    await prisma.vacancyResponse.delete({ where });
   }
 }

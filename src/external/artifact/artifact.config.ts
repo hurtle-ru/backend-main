@@ -1,13 +1,14 @@
 import { cleanEnv, str } from "envalid";
-import { int } from "../../infrastructure/validation/int.envalid";
+import { int } from "../../infrastructure/validation/env/int.envalid";
 
 
 const MB = 2**20;
+const GB = 1024 * MB;
 
 export const artifactConfig = cleanEnv(process.env, {
   MAX_IMAGE_FILE_SIZE: int({ default: 5 * MB }),
   MAX_DOCUMENT_FILE_SIZE: int({ default: 15 * MB }),
-  MAX_VIDEO_FILE_SIZE: int({ default: 800 * MB }),
+  MAX_VIDEO_FILE_SIZE: int({ default: 2 * GB }),
   READ_STREAM_HIGH_WATER_MARK: int({ default: 1000 * MB }),
 });
 

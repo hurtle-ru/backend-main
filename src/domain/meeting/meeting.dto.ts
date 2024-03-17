@@ -8,16 +8,15 @@ import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
 import {
   RequesterApplicant,
   RequesterEmployer,
-  RequesterGuest,
+  RequesterGuest, RequesterManager,
 } from "../../infrastructure/controller/requester/requester.dto";
 import { CreateMeetingPaymentRequest } from "./payment/payment.dto";
 
 
 export type BasicMeeting = Omit<
   Meeting,
-  | "type"
   | "feedback"
-  | "scripts"
+  | "scriptProtocols"
   | "slot"
   | "applicant"
   | "employer"
@@ -43,17 +42,21 @@ export type CreateMeetingGuestRequest = CreateMeetingRequest & RequesterGuest & 
   "successCode": string
 }
 
-export type CreateMeetingApplicantOrEmployerRequest = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
+export type CreateMeetingRequestByApplicantOrEmployer = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
 
-
-export type PutMeetingRequestByApplicantOrEmployer = Pick<
-  Meeting,
-  | "name"
-  | "description"
-  | "slotId"
->;
 
 export type PutMeetingRequestByManager = Pick<
   Meeting,
+  | "name"
+  | "description"
   | "status"
+  | "transcript"
 >;
+
+export type PutMeetingRequestByApplicantOrEmployer = Pick<
+  Meeting,
+  | "slotId"
+>;
+
+// export type PatchMeetingRequestByManager = Partial<PutMeetingRequestByManager> & RequesterManager;
+// export type PatchMeetingRequestByApplicantOrEmployer = Partial<PutMeetingRequestByApplicantOrEmployer> & (RequesterApplicant | RequesterEmployer);

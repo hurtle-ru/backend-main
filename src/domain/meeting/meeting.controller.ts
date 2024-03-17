@@ -4,7 +4,7 @@ import {
   Controller,
   Delete,
   Get,
-  Middlewares,
+  Middlewares, Patch,
   Path,
   Post,
   Put,
@@ -20,9 +20,8 @@ import { MeetingService } from "./meeting.service";
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
-  CreateMeetingApplicantOrEmployerRequest, CreateMeetingGuestRequest,
-  CreateMeetingRequest,
-  GetMeetingResponse,
+  CreateMeetingRequestByApplicantOrEmployer, CreateMeetingGuestRequest,
+  GetMeetingResponse, PutMeetingRequestByManager,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -33,10 +32,10 @@ import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limit/rate-limit.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
-import { MeetingPaymentStatus } from "@prisma/client";
+import { MeetingStatus } from "@prisma/client";
 
 
 @injectable()
@@ -69,8 +68,8 @@ export class MeetingController extends Controller {
   }>(403)
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
-    @Request() req: JwtModel,
-    @Body() body: CreateMeetingGuestRequest | CreateMeetingApplicantOrEmployerRequest,
+    @Request() req: ExpressRequest & JwtModel,
+    @Body() body: CreateMeetingGuestRequest | CreateMeetingRequestByApplicantOrEmployer,
   ): Promise<BasicMeeting> {
     const { _requester, ...bodyData } = body;
 
@@ -157,9 +156,17 @@ export class MeetingController extends Controller {
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role }
     );
+
     await this.meetingService.sendMeetingCreatedToEmail(
+      req.log,
       user!.email,
-      { name: bodyData.name, link: roomUrl, dateTime: slot.dateTime },
+      { link: roomUrl, dateTime: slot.dateTime },
+    );
+
+    await this.meetingService.scheduleMeetingReminderToEmail(
+      req.log,
+      user!.email,
+      { link: roomUrl, dateTime: slot.dateTime },
     );
 
     return meeting;
@@ -267,7 +274,6 @@ export class MeetingController extends Controller {
   @Put("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -282,11 +288,9 @@ export class MeetingController extends Controller {
 
     const meeting = await prisma.meeting.findUnique({
       where: { id },
-      include: {slot: true},
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
-    if (req.user.id !== meeting?.slot.managerId) throw new HttpError(403, "Not enough rights to edit another applicant");
 
     await this.artifactService.validateFileAttributes(file, AVAILABLE_PASSPORT_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
     const oldPassportFileName = await this.artifactService.getFullFileName(passportDirectory, "passport");
@@ -299,20 +303,24 @@ export class MeetingController extends Controller {
   }
 
   @Get("{id}/video")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 30, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getVideo(
     @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
   ): Promise<Readable | any> {
+    const meeting = await prisma.meeting.findUnique( {
+      where: {
+        id,
+      },
+    });
+
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video");
     const filePath = `meeting/${id}/${fileName}`;
 
     if(fileName == null) throw new HttpError(404, "File not found");
-    const meeting = await prisma.meeting.findUnique({where: { id }});
-
-    if (!meeting) throw new HttpError(404, "Meeting not found");
 
     const response = req.res;
     if (response) {
@@ -327,7 +335,7 @@ export class MeetingController extends Controller {
           stream.destroy();
         }
         catch (e) {
-          console.log("Error:", e);
+          req.log.error(e, "Stream response error");
         }
       });
       return stream;
@@ -337,7 +345,6 @@ export class MeetingController extends Controller {
   @Put("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -348,11 +355,9 @@ export class MeetingController extends Controller {
   ): Promise<void> {
     const meeting = await prisma.meeting.findUnique({
       where: { id },
-      include: {slot: true},
     });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
-    if (req.user.id !== meeting?.slot.managerId) throw new HttpError(403, "Not enough rights to edit another applicant");
 
     const videoExtension = path.extname(file.originalname);
     const videoDirectory = `meeting/${id}/`;
@@ -366,22 +371,78 @@ export class MeetingController extends Controller {
     await this.artifactService.saveVideoFile(file, videoPath);
   }
 
-  @Delete("{id}")
+  @Patch("{id}")
   @Security("jwt", [UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Not enough rights to delete another meeting"}>(403)
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
-  public async deleteById(
-    @Path() id: string,
+  public async patchById(
     @Request() req: JwtModel,
-  ): Promise<void> {
-    const meeting = await prisma.meeting.findUnique({ where: { id }, include: { slot: true } });
-    if(!meeting) throw new HttpError(404, "Meeting not found");
+    @Body() body: Partial<PutMeetingRequestByManager>,
+    @Path() id: string,
+  ): Promise<BasicMeeting> {
+    const where = { id };
 
-    if (req.user.id !== meeting?.slot.managerId)
-      throw new HttpError(403, "Not enough rights to delete another meeting");
+    const meeting = await prisma.meeting.findUnique({
+      where,
+    });
+
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+
+    return await prisma.meeting.update({
+      where,
+      data: body,
+    });
+  }
+
+  @Delete("{id}")
+  @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT, UserRole.EMPLOYER])
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Applicant and employer unable to delete finished meeting"}>(409)
+  public async deleteById(
+    @Request() req: ExpressRequest & JwtModel,
+    @Path() id: string,
+  ): Promise<void> {
+    const meeting = await prisma.meeting.findUnique({
+      where: {
+        id,
+        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
+        ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
+      },
+      include: {
+        slot: true,
+        applicant: true,
+        employer: true,
+      },
+    });
+
+    if(!meeting) throw new HttpError(404, "Meeting not found");
+    switch(req.user.role) {
+      case UserRole.APPLICANT:
+      case UserRole.EMPLOYER:
+        if(meeting.status !== MeetingStatus.PLANNED) {
+          throw new HttpError(409, "Applicant and employer unable to delete finished meeting");
+        }
+
+        break;
+    }
 
     await prisma.meeting.archive(id);
+
+    const userEmail = meeting.applicant?.email || meeting.employer?.email || meeting.guestEmail;
+    const userFirstName = meeting.applicant?.firstName || meeting.employer?.firstName || meeting.guestEmail;
+
+    let role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE;
+
+    if (meeting.applicant) role = UserRole.APPLICANT
+    else if (meeting.employer) role = UserRole.EMPLOYER
+    else role = GUEST_ROLE
+
+    await this.meetingService.sendMeetingCancelledToEmail(
+      req.log,
+      userEmail!,
+      role,
+      { name: userFirstName!, dateTime: meeting.slot.dateTime }
+    );
   }
 
   @Get("{id}")
