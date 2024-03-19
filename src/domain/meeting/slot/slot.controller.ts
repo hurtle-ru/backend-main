@@ -131,9 +131,14 @@ export class MeetingSlotController extends Controller {
         where,
         skip: (page - 1) * size,
         take: size,
+        ...(req.user.role === UserRole.MANAGER && {
+          include: {
+            meeting: true,
+          },
+        }),
       }),
       prisma.meetingSlot.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(meetingSlots, page, size, meetingSlotsCount)
   }
