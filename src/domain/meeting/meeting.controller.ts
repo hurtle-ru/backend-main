@@ -254,7 +254,7 @@ export class MeetingController extends Controller {
   /**
    * @param {string} secret Токен для доступа к методу
    * @param {string} date Дата в формате "YYYY-MM-DD"
-   * @param {string} timezone Часовой пояс в формате "Europe/Moscow"
+   * @param {string} timezone Часовой пояс по стандарту ISO 8601. Пример: "Europe/Moscow"
    */
   @Get("/export")
   public async exportAll(
