@@ -68,10 +68,11 @@ export type ExportAllRequest = {
 
 // Данные для экспорта: {Имя, Способ связи, Рекрутер}
 export type ExportAllResponse = {
+  status: MeetingStatus,
   managerName: string
+  roomUrl: string,
   applicantName?: string,
   employerName?: string,
   contact?: string
-  status: MeetingStatus,
-  roomUrl: string,
+  email?: string,
 }[];
