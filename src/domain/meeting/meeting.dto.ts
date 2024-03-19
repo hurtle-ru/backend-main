@@ -1,4 +1,4 @@
-import { Meeting, MeetingType } from "@prisma/client";
+import { Meeting, MeetingSlot, MeetingStatus, MeetingType } from "@prisma/client";
 import { UserRole } from "../auth/auth.dto";
 import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicEmployer } from "../employer/employer.dto";
@@ -60,3 +60,18 @@ export type PutMeetingRequestByApplicantOrEmployer = Pick<
 
 // export type PatchMeetingRequestByManager = Partial<PutMeetingRequestByManager> & RequesterManager;
 // export type PatchMeetingRequestByApplicantOrEmployer = Partial<PutMeetingRequestByApplicantOrEmployer> & (RequesterApplicant | RequesterEmployer);
+
+export type ExportAllRequest = {
+  dateTime: Date,
+  secret: string,
+}
+
+// Данные для экспорта: {Имя, Способ связи, Рекрутер}
+export type ExportAllResponse = {
+  managerName: string
+  applicantName?: string,
+  employerName?: string,
+  contact?: string
+  status: MeetingStatus,
+  roomUrl: string,
+}[];
