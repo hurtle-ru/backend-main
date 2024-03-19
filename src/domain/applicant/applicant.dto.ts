@@ -22,7 +22,7 @@ export type GetApplicantResponse = BasicApplicant & {
   aiChats?: ApplicantAiChat[],
 };
 
-const BasicYupApplicant = {
+const BasicApplicantSchema = {
   email: yup.string().email().min(3).max(255),
   login: yup.string().email().min(3).max(255),
   contact: yup.string().trim().min(1).max(36),
@@ -43,19 +43,19 @@ const BasicYupApplicant = {
 
 export class PutMeRequestByApplicant {
   static schema = yup.object({
-    contact: BasicYupApplicant["contact"],
-    firstName: BasicYupApplicant["firstName"],
-    middleName: BasicYupApplicant["middleName"],
-    lastName: BasicYupApplicant["lastName"],
-    phone: BasicYupApplicant["phone"],
-    birthDate: BasicYupApplicant["birthDate"],
-    gender: BasicYupApplicant["gender"],
-    city: BasicYupApplicant["city"],
-    country: BasicYupApplicant["country"],
-    aboutMe: BasicYupApplicant["aboutMe"],
-    nickname: BasicYupApplicant["nickname"],
-    isReadyToRelocate: BasicYupApplicant["isReadyToRelocate"],
-    isVisibleToEmployers: BasicYupApplicant["isVisibleToEmployers"],
+    contact: BasicApplicantSchema["contact"],
+    firstName: BasicApplicantSchema["firstName"],
+    middleName: BasicApplicantSchema["middleName"],
+    lastName: BasicApplicantSchema["lastName"],
+    phone: BasicApplicantSchema["phone"],
+    birthDate: BasicApplicantSchema["birthDate"],
+    gender: BasicApplicantSchema["gender"],
+    city: BasicApplicantSchema["city"],
+    country: BasicApplicantSchema["country"],
+    aboutMe: BasicApplicantSchema["aboutMe"],
+    nickname: BasicApplicantSchema["nickname"],
+    isReadyToRelocate: BasicApplicantSchema["isReadyToRelocate"],
+    isVisibleToEmployers: BasicApplicantSchema["isVisibleToEmployers"],
   });
 
   constructor(
@@ -77,22 +77,22 @@ export class PutMeRequestByApplicant {
 
 export class PutByIdRequestByApplicant {
   static schema = yup.object({
-    email: BasicYupApplicant["email"],
-    login: BasicYupApplicant["login"],
-    contact: BasicYupApplicant["contact"],
-    firstName: BasicYupApplicant["firstName"],
-    middleName: BasicYupApplicant["middleName"],
-    lastName: BasicYupApplicant["lastName"],
-    phone: BasicYupApplicant["phone"],
-    birthDate: BasicYupApplicant["birthDate"],
-    gender: BasicYupApplicant["gender"],
-    city: BasicYupApplicant["city"],
-    country: BasicYupApplicant["country"],
-    aboutMe: BasicYupApplicant["aboutMe"],
-    nickname: BasicYupApplicant["nickname"],
-    isReadyToRelocate: BasicYupApplicant["isReadyToRelocate"],
-    isVisibleToEmployers: BasicYupApplicant["isVisibleToEmployers"],
-    isConfirmedByManager: BasicYupApplicant["isConfirmedByManager"],
+    email: BasicApplicantSchema["email"],
+    login: BasicApplicantSchema["login"],
+    contact: BasicApplicantSchema["contact"],
+    firstName: BasicApplicantSchema["firstName"],
+    middleName: BasicApplicantSchema["middleName"],
+    lastName: BasicApplicantSchema["lastName"],
+    phone: BasicApplicantSchema["phone"],
+    birthDate: BasicApplicantSchema["birthDate"],
+    gender: BasicApplicantSchema["gender"],
+    city: BasicApplicantSchema["city"],
+    country: BasicApplicantSchema["country"],
+    aboutMe: BasicApplicantSchema["aboutMe"],
+    nickname: BasicApplicantSchema["nickname"],
+    isReadyToRelocate: BasicApplicantSchema["isReadyToRelocate"],
+    isVisibleToEmployers: BasicApplicantSchema["isVisibleToEmployers"],
+    isConfirmedByManager: BasicApplicantSchema["isConfirmedByManager"],
   })
 
   constructor(
