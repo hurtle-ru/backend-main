@@ -292,12 +292,14 @@ export class MeetingController extends Controller {
       managerName: meeting.slot.manager.name,
       roomUrl: meeting.roomUrl,
       ...(meeting.applicant && {
-        applicantName: meeting.applicant.firstName + meeting.applicant.lastName,
-        contact: meeting.applicant.contact + " " + meeting.applicant.email,
+        applicantName: meeting.applicant.firstName + " " + meeting.applicant.lastName,
+        contact: meeting.applicant.contact,
+        email: meeting.applicant.email,
       }),
       ...(meeting.employer && {
-        employerName: meeting.employer.firstName + meeting.employer.lastName,
-        contact: meeting.employer.contact + " " + meeting.employer.email,
+        employerName: meeting.employer.firstName + " " + meeting.employer.lastName,
+        contact: meeting.employer.contact,
+        email: meeting.employer.email,
       }),
     }));
   }
