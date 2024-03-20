@@ -23,6 +23,7 @@ import {
   CreateResumeRequest,
   GetResumeResponse,
   PutResumeRequest,
+  PutResumeResponse,
 } from "./resume.dto";
 
 @injectable()
@@ -40,6 +41,8 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
+    CreateResumeRequest.schema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
     })
@@ -134,7 +137,8 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: Partial<PutResumeRequest>,
-  ): Promise<PutResumeRequest> {
+  ): Promise<PutResumeResponse> {
+    PutResumeRequest.schema.optional().validateSync(body)
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
@@ -156,7 +160,8 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PutResumeRequest,
-  ): Promise<PutResumeRequest> {
+  ): Promise<PutResumeResponse> {
+    PutResumeRequest.schema.validateSync(body)
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),

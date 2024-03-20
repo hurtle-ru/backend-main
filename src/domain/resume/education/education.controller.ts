@@ -8,13 +8,10 @@ import {
   Post,
   Put,
   Request,
-  Res,
   Response,
   Route,
   Security,
-  SuccessResponse,
   Tags,
-  TsoaResponse,
 } from "tsoa";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
@@ -32,6 +29,8 @@ export class ResumeEducationController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeEducationRequest,
   ): Promise<BasicResumeEducation> {
+    CreateResumeEducationRequest.schema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
@@ -53,6 +52,8 @@ export class ResumeEducationController extends Controller {
     @Path() id: string,
     @Body() body: PutResumeEducationRequest
   ): Promise<void> {
+    PutResumeEducationRequest.schema.validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
@@ -75,6 +76,8 @@ export class ResumeEducationController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeEducationRequest>,
   ): Promise<void> {
+    PutResumeEducationRequest.schema.optional().validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),

@@ -1,4 +1,6 @@
-import { ResumeContact } from "@prisma/client";
+import * as yup from 'yup'
+import { ResumeContact, ContactType } from "@prisma/client";
+import { yupEnum } from '../../../infrastructure/validation/requests/enum.yup';
 
 
 export type BasicResumeContact = Omit<
@@ -6,19 +8,48 @@ export type BasicResumeContact = Omit<
   | "resume"
 >;
 
-export type CreateResumeContactRequest = Pick<
-  ResumeContact,
-  | "name"
-  | "type"
-  | "value"
-  | "preferred"
-  | "resumeId"
->;
 
-export type PutResumeContactRequest = Pick<
-  ResumeContact,
-  | "name"
-  | "type"
-  | "value"
-  | "preferred"
->;
+
+const BasicResumeContactScheme = yup.object({
+  name: yup.string().trim().min(3).max(50).optional(),
+  type: yupEnum(ContactType),
+  value: yup.string().trim().min(3).max(255),
+  preferred: yup.boolean().default(false),
+  resumeId: yup.string().length(36),
+})
+
+export class CreateResumeContactRequest {
+  static schema = BasicResumeContactScheme.pick([
+    "name",
+    "type",
+    "value",
+    "preferred",
+    "resumeId",
+  ])
+
+  constructor (
+    public name: string,
+    public type: keyof typeof ContactType,
+    public value: string,
+    public preferred: boolean,
+    public resumeId: string,
+  ) {}
+}
+
+export class PutResumeContactRequest {
+  static schema = BasicResumeContactScheme.pick([
+    "name",
+    "type",
+    "value",
+    "preferred",
+    "resumeId",
+  ])
+
+  constructor (
+    public name: string,
+    public type: keyof typeof ContactType,
+    public value: string,
+    public preferred: boolean,
+    public resumeId: string,
+  ) {}
+}

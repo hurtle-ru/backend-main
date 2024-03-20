@@ -32,6 +32,8 @@ export class ResumeContactController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeContactRequest,
   ): Promise<BasicResumeContact> {
+    CreateResumeContactRequest.schema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
@@ -53,6 +55,8 @@ export class ResumeContactController extends Controller {
     @Path() id: string,
     @Body() body: PutResumeContactRequest
   ): Promise<void> {
+    PutResumeContactRequest.schema.validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
@@ -75,6 +79,8 @@ export class ResumeContactController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeContactRequest>,
   ): Promise<void> {
+    CreateResumeContactRequest.schema.optional().validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),

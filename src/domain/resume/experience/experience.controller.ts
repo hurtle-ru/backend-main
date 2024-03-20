@@ -32,6 +32,8 @@ export class ResumeExperienceController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeExperienceRequest,
   ): Promise<BasicResumeExperience> {
+    CreateResumeExperienceRequest.schema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
@@ -53,6 +55,8 @@ export class ResumeExperienceController extends Controller {
     @Path() id: string,
     @Body() body: PutResumeExperienceRequest
   ): Promise<void> {
+    PutResumeExperienceRequest.schema.validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
@@ -75,6 +79,8 @@ export class ResumeExperienceController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeExperienceRequest>,
   ): Promise<void> {
+    CreateResumeExperienceRequest.schema.optional().validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),

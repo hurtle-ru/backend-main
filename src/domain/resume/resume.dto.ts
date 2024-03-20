@@ -1,10 +1,15 @@
-import { Resume } from "@prisma/client";
+import * as yup from "yup";
+
+import { Resume, Currency } from "@prisma/client";
 import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicResumeCertificate } from "./certificate/certificate.dto";
 import { BasicResumeContact } from "./contact/contact.dto";
 import { BasicResumeLanguage } from "./language/language.dto";
 import { BasicResumeExperience } from "./experience/experience.dto";
 import { BasicResumeEducation } from "./education/education.dto";
+
+import { uint32 } from "../../infrastructure/validation/requests/int32.yup"
+import { yupEnum } from "../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicResume = Omit<
@@ -17,12 +22,47 @@ export type BasicResume = Omit<
   | "languages"
 >;
 
-export type CreateResumeRequest = Pick<
-  Resume,
-  | "title"
->;
+const BasicResumeSchema = yup.object({
+  title: yup.string().trim().min(3).max(50),
+  summary: yup.string().trim().min(30).max(3000).optional(),
+  city: yup.string().trim().min(3).max(255).optional(),
+  skills: yup.array().of(yup.string().trim().min(3).max(50)).max(30),
+  isVisibleToEmployers: yup.boolean().default(true),
+  desiredSalary: uint32().optional(),
+  desiredSalaryCurrency: yupEnum(Currency).optional(),
+})
 
-export type PutResumeRequest = Pick<
+export class CreateResumeRequest {
+  static schema = BasicResumeSchema.pick( [ "title" ] )
+
+  constructor(
+    public title: string,
+  ) {}
+}
+
+export class PutResumeRequest {
+  static schema = BasicResumeSchema.pick([
+    "title",
+    "summary",
+    "city",
+    "skills",
+    "isVisibleToEmployers",
+    "desiredSalary",
+    "desiredSalaryCurrency",
+  ])
+
+  constructor(
+    public title: string,
+    public summary: string,
+    public city: string,
+    public skills: string[],
+    public isVisibleToEmployers: boolean,
+    public desiredSalary: number,
+    public desiredSalaryCurrency: keyof typeof Currency,
+  ) {}
+}
+
+export type PutResumeResponse = Pick<
   Resume,
   | "title"
   | "summary"
