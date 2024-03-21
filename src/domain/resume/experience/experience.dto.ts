@@ -16,7 +16,7 @@ const BasicResumeExperienceScheme = yup.object({
   endMonth: yup.number().min(0).max(12).optional(),
   endYear: yup.number().min(1970).max(new Date().getFullYear()),
   startYear: yup.number().min(1970).max(new Date().getFullYear())
-  .test({name: 'datesTest', 'test': function (item) {
+  .test({name: "datesTest", message: "The start date must be earlier than the end date", test: function (item) {
     const startDate = new Date(this.parent.startYear, this.parent.startMonth)
     const endDate = new Date(this.parent.endYear, this.parent.endMonth)
 
