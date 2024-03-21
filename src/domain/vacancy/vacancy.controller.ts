@@ -71,10 +71,10 @@ export class VacancyController extends Controller {
       },
       include: {
         employer: true,
-      }
+      },
     });
 
-    this.vacancyService.sendVacancyCreatedToAdminGroup(vacancy, vacancy.employer);
+    await this.vacancyService.sendVacancyCreatedToAdminGroup(vacancy, vacancy.employer);
 
     return vacancy;
   }
