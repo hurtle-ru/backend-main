@@ -41,13 +41,16 @@ import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
+import { VacancyService } from "./vacancy.service";
 
 
 @injectable()
 @Route("api/v1/vacancies")
 @Tags("Vacancy")
 export class VacancyController extends Controller {
-  constructor() {
+  constructor(
+    private readonly vacancyService: VacancyService,
+  ) {
     super();
   }
 
@@ -57,7 +60,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    return prisma.vacancy.create({
+    const vacancy = await prisma.vacancy.create({
       data: {
         ...body,
         employer: {
@@ -66,7 +69,14 @@ export class VacancyController extends Controller {
           },
         },
       },
+      include: {
+        employer: true,
+      }
     });
+
+    this.vacancyService.sendVacancyCreatedToAdminGroup(vacancy, vacancy.employer);
+
+    return vacancy;
   }
 
   @Get("")
