@@ -13,9 +13,9 @@ import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { application, Request as ExpressRequest } from "express";
-import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "./oauth/oauth.dto";
-import { OauthService } from "./oauth/oauth.service";
-import { oauthConfig } from "./oauth/oauth.config";
+import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../external/oauth/oauth.dto";
+import { OauthService } from "../../external/oauth/oauth.service";
+import { oauthConfig } from "../../external/oauth/oauth.config";
 
 
 @injectable()

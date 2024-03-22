@@ -2,7 +2,7 @@ import { injectable, singleton } from "tsyringe";
 import { oauthConfig } from "./oauth.config";
 import { googleOauthClient } from "./oauth.provider";
 import { TokenPayload } from "google-auth-library/build/src/auth/loginticket";
-import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { prisma } from "../../infrastructure/database/prisma.provider";
 
 
 @injectable()
