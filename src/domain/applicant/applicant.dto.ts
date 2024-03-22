@@ -39,8 +39,8 @@ const BasicApplicantSchema = yup.object({
   aboutMe: yup.string().trim().min(2).max(3000).optional(),
   nickname: yup.string().trim().min(2).max(50).optional(),
   isReadyToRelocate: yup.boolean().optional(),
-  isVisibleToEmployers: yup.boolean().default(true),
-  isConfirmedByManager: yup.boolean().default(false),
+  isVisibleToEmployers: yup.boolean(),
+  isConfirmedByManager: yup.boolean(),
 })
 
 export class PutMeRequestByApplicant {

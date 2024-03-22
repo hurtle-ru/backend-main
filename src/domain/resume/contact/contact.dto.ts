@@ -14,7 +14,7 @@ const BasicResumeContactScheme = yup.object({
   name: yup.string().trim().min(3).max(50).optional(),
   type: yupEnum(ContactType),
   value: yup.string().trim().min(3).max(255),
-  preferred: yup.boolean().default(false),
+  preferred: yup.boolean(),
   resumeId: yup.string().length(36),
 })
 

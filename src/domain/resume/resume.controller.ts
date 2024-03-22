@@ -25,6 +25,7 @@ import {
   PutResumeRequest,
   PutResumeResponse,
 } from "./resume.dto";
+import { makeSchemaWithAllOptionalFields } from "../../infrastructure/validation/requests/optionalScheme";
 
 @injectable()
 @Route("api/v1/resumes")
@@ -138,7 +139,8 @@ export class ResumeController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeRequest>,
   ): Promise<PutResumeResponse> {
-    PutResumeRequest.schema.optional().validateSync(body)
+    makeSchemaWithAllOptionalFields(PutResumeRequest.schema).validateSync(body);
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),

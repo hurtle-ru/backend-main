@@ -17,6 +17,7 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeLanguage, CreateResumeLanguageRequest, PutResumeLanguageRequest } from "./language.dto";
+import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
 
 
 @Route("api/v1/resumeLanguages")
@@ -76,7 +77,7 @@ export class ResumeLanguageController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeLanguageRequest>,
   ): Promise<void> {
-    PutResumeLanguageRequest.schema.optional().validateSync(body)
+    makeSchemaWithAllOptionalFields(PutResumeLanguageRequest.schema).validateSync(body);
 
     const where = {
       id,

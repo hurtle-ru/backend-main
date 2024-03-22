@@ -34,6 +34,7 @@ import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { makeSchemaWithAllOptionalFields } from "../../infrastructure/validation/requests/optionalScheme";
 
 
 @injectable()
@@ -132,7 +133,8 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Body() body: Partial<PutMeRequestByApplicant>
   ): Promise<BasicApplicant> {
-    PutMeRequestByApplicant.schema.optional().validateSync(body);
+    makeSchemaWithAllOptionalFields(PutMeRequestByApplicant.schema).validateSync(body);
+
     return prisma.applicant.update({
       where: { id: req.user.id },
       data: body,
@@ -287,7 +289,7 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutByIdRequestByApplicant>
   ): Promise<BasicApplicant> {
-    PutByIdRequestByApplicant.schema.optional().validateSync(body);
+    makeSchemaWithAllOptionalFields(PutByIdRequestByApplicant.schema).validateSync(body);
 
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

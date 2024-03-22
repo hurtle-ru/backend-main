@@ -27,7 +27,7 @@ const BasicResumeSchema = yup.object({
   summary: yup.string().trim().min(30).max(3000).optional(),
   city: yup.string().trim().min(3).max(255).optional(),
   skills: yup.array().of(yup.string().trim().min(3).max(50)).max(30),
-  isVisibleToEmployers: yup.boolean().default(true),
+  isVisibleToEmployers: yup.boolean(),
   desiredSalary: uint32().optional(),
   desiredSalaryCurrency: yupEnum(Currency).optional(),
 })

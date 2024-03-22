@@ -20,6 +20,7 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeContact, CreateResumeContactRequest, PutResumeContactRequest } from "./contact.dto";
+import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
 
 
 @Route("api/v1/resumeContacts")
@@ -79,7 +80,7 @@ export class ResumeContactController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeContactRequest>,
   ): Promise<void> {
-    CreateResumeContactRequest.schema.optional().validateSync(body)
+    makeSchemaWithAllOptionalFields(CreateResumeContactRequest.schema).validateSync(body);
 
     const where = {
       id,
