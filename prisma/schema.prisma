@@ -31,9 +31,11 @@ model Applicant {
   resume               Resume?
   meetings             Meeting[]
   vacancyResponses     VacancyResponse[]
-  hhToken              HhToken?
   password             Password?
   aiChats              ApplicantAiChat[]
+  hhToken              HhToken?
+  hhTokenSub           String?           @unique
+  googleTokenSub       String?           @unique
 }
 
 model Employer {

@@ -81,3 +81,23 @@ export class RegisterEmployerRequest {
     public middleName?: string,
   ) {}
 }
+
+export class RegisterApplicantWithGoogleRequest {
+  static schema = yup.object({
+    googleToken: yup.string(),
+    contact: yup.string().trim().min(1),
+    birthDate: yup.date(),
+    firstName: yup.string().trim().min(1),
+    lastName: yup.string().trim().min(1),
+    middleName: yup.string().trim().min(1).optional(),
+  });
+
+  constructor(
+    public googleToken: string,
+    public contact: string,
+    public birthDate: DateWithoutTime,
+    public lastName: string,
+    public firstName: string,
+    public middleName?: string,
+  ) {}
+}
