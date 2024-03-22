@@ -20,7 +20,7 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeExperience, CreateResumeExperienceRequest, PutResumeExperienceRequest } from "./experience.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
+import { makeSchemeWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
 
 
 @Route("api/v1/resumeExperience")
@@ -80,7 +80,7 @@ export class ResumeExperienceController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeExperienceRequest>,
   ): Promise<void> {
-    makeSchemaWithAllOptionalFields(CreateResumeExperienceRequest.schema).validateSync(body);
+    makeSchemeWithAllOptionalFields(CreateResumeExperienceRequest.schema).validateSync(body);
 
     const where = {
       id,

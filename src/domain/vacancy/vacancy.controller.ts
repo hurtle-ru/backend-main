@@ -41,6 +41,7 @@ import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
+import { validateSyncByAtLeastOneScheme } from "../../infrastructure/validation/requests/validateAtLeastOne";
 
 
 @injectable()
@@ -57,6 +58,8 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
+    CreateVacancyRequest.scheme.validateSync(body)
+
     return prisma.vacancy.create({
       data: {
         ...body,
@@ -298,6 +301,14 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PutVacancyRequestFromEmployer | PutVacancyRequestFromManager,
   ): Promise<void> {
+    validateSyncByAtLeastOneScheme(
+      [
+        PutVacancyRequestFromEmployer.scheme,
+        PutVacancyRequestFromManager.scheme
+      ],
+      body
+    )
+
     await this.patchById(req, id, body);
   }
 
@@ -310,6 +321,14 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
+    validateSyncByAtLeastOneScheme(
+      [
+        PatchVacancyRequestFromEmployer.scheme,
+        PatchVacancyRequestFromManager.scheme,
+      ],
+      body
+    )
+
     const { _requester, ...bodyData } = body;
     if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
     if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");

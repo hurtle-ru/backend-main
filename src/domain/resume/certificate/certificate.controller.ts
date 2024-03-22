@@ -20,7 +20,7 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeCertificate, CreateResumeCertificateRequest, PutResumeCertificateRequest } from "./certificate.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
+import { makeSchemeWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
 
 
 @Route("api/v1/resumeCertificates")
@@ -79,7 +79,7 @@ export class ResumeCertificateController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeCertificateRequest>,
   ): Promise<void> {
-    makeSchemaWithAllOptionalFields(PutResumeCertificateRequest.schema).validateSync(body);
+    makeSchemeWithAllOptionalFields(PutResumeCertificateRequest.schema).validateSync(body);
 
     const where = {
       id,

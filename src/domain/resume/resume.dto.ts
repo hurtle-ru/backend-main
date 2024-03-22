@@ -22,7 +22,7 @@ export type BasicResume = Omit<
   | "languages"
 >;
 
-const BasicResumeSchema = yup.object({
+const BasicResumeScheme = yup.object({
   title: yup.string().trim().min(3).max(50),
   summary: yup.string().trim().min(30).max(3000).optional(),
   city: yup.string().trim().min(3).max(255).optional(),
@@ -33,7 +33,7 @@ const BasicResumeSchema = yup.object({
 })
 
 export class CreateResumeRequest {
-  static schema = BasicResumeSchema.pick( [ "title" ] )
+  static scheme = BasicResumeScheme.pick( [ "title" ] )
 
   constructor(
     public title: string,
@@ -41,7 +41,7 @@ export class CreateResumeRequest {
 }
 
 export class PutResumeRequest {
-  static schema = BasicResumeSchema.pick([
+  static scheme = BasicResumeScheme.pick([
     "title",
     "summary",
     "city",

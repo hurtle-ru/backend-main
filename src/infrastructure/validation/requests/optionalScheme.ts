@@ -1,7 +1,7 @@
 import * as yup from 'yup'
 
 
-export function makeSchemaWithAllOptionalFields<T extends yup.AnyObjectSchema>(schema: T): T {
+export function makeSchemeWithAllOptionalFields<T extends yup.AnyObjectSchema>(schema: T): T {
   const schemaFields = schema.fields;
   const optionalFields: Record<string, yup.AnySchema> = {};
 

@@ -30,6 +30,8 @@ import { Prisma, VacancyResponseStatus } from "@prisma/client";
 import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
+import { validateSyncByAtLeastOneScheme } from "../../../infrastructure/validation/requests/validateAtLeastOne";
+import { makeSchemeWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
 
 
 @injectable()
@@ -52,6 +54,14 @@ export class VacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyResponseRequestFromApplicant | CreateVacancyResponseRequestFromManager,
   ): Promise<BasicVacancyResponse> {
+    validateSyncByAtLeastOneScheme(
+      [
+        CreateVacancyResponseRequestFromApplicant.scheme,
+        CreateVacancyResponseRequestFromManager.scheme,
+      ],
+      body
+    )
+
     const { _requester, ...bodyData } = body;
     if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
     if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
@@ -236,6 +246,8 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutVacancyResponseRequest>,
   ): Promise<BasicVacancyResponse> {
+    makeSchemeWithAllOptionalFields(PutVacancyResponseRequest.scheme).validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),

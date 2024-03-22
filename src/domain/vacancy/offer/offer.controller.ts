@@ -22,6 +22,8 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { OfferStatus, VacancyResponseStatus } from "@prisma/client";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
+import { makeSchemeWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
+
 
 @injectable()
 @Route("api/v1/offers")
@@ -39,6 +41,8 @@ export class OfferController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateOfferRequest,
   ): Promise<BasicOffer> {
+    CreateOfferRequest.scheme.validateSync(body)
+
     const where = { id: body.vacancyResponseId, vacancy: { employerId: req.user.id } };
 
     const vacancyResponse = await prisma.vacancyResponse.findUnique({
@@ -168,6 +172,8 @@ export class OfferController extends Controller {
     @Path() id: string,
     @Body() body: PutOfferRequest,
   ): Promise<BasicOffer> {
+    PutOfferRequest.scheme.validateSync(body)
+
     let where = null;
     if (req.user.role === UserRole.MANAGER) where = { id };
     else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
@@ -192,6 +198,8 @@ export class OfferController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutOfferRequest>,
   ): Promise<BasicOffer> {
+    makeSchemeWithAllOptionalFields(PutOfferRequest.scheme).validateSync(body)
+
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id} } };
