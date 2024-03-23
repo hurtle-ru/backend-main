@@ -60,20 +60,6 @@ export class ManagerController extends Controller {
     await prisma.manager.archive(id);
   }
 
-  @Put("me")
-  @Security("jwt", [UserRole.MANAGER])
-  public async putMe(
-    @Request() req: JwtModel,
-    @Body() body: PutMeRequestByManager
-  ): Promise<BasicManager> {
-    const manager = await prisma.manager.update({
-      where: { id: req.user.id },
-      data: body,
-    });
-
-    return manager;
-  }
-
   @Patch("me")
   @Security("jwt", [UserRole.MANAGER])
   public async patchMe(

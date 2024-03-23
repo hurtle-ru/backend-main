@@ -48,30 +48,6 @@ export class ResumeContactController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "ResumeContact not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeContactRequest
-  ): Promise<void> {
-    PutResumeContactRequest.schema.validateSync(body)
-
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
-
-    const contact = await prisma.resumeContact.findUnique({ where });
-    if (!contact) throw new HttpError(404, "ResumeContact not found");
-
-    await prisma.resumeContact.update({
-      where,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "ResumeContact not found")

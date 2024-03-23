@@ -164,32 +164,6 @@ export class OfferController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Offer not found"}>(404)
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutOfferRequest,
-  ): Promise<BasicOffer> {
-    PutOfferRequest.scheme.validateSync(body)
-
-    let where = null;
-    if (req.user.role === UserRole.MANAGER) where = { id };
-    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
-
-    const offer = await prisma.offer.findUnique({
-      where: where!,
-    });
-
-    if (!offer) throw new HttpError(404, "Offer not found");
-
-    return prisma.offer.update({
-      where: where!,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Offer not found"}>(404)

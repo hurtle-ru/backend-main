@@ -154,27 +154,4 @@ export class ResumeController extends Controller {
       data: body,
     });
   }
-
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "Resume not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeRequest,
-  ): Promise<PutResumeResponse> {
-    PutResumeRequest.scheme.validateSync(body)
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
-    }
-
-    const resume = await prisma.resume.findUnique({ where });
-    if(!resume) throw new HttpError(404, "Resume not found");
-
-    return prisma.resume.update({
-      where,
-      data: body,
-    });
-  }
 }

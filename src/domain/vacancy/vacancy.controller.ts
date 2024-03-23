@@ -292,26 +292,6 @@ export class VacancyController extends Controller {
     };
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Invalid body request for employer" | "Invalid body request for manager"}>(403)
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutVacancyRequestFromEmployer | PutVacancyRequestFromManager,
-  ): Promise<void> {
-    validateSyncByAtLeastOneScheme(
-      [
-        PutVacancyRequestFromEmployer.scheme,
-        PutVacancyRequestFromManager.scheme
-      ],
-      body
-    )
-
-    await this.patchById(req, id, body);
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)

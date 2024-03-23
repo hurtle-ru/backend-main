@@ -48,29 +48,6 @@ export class ResumeCertificateController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "ResumeCertificate not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeCertificateRequest
-  ): Promise<void> {
-    PutResumeCertificateRequest.schema.validateSync(body)
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
-
-    const certificate = await prisma.resumeCertificate.findUnique({ where });
-    if (!certificate) throw new HttpError(404, "ResumeCertificate not found");
-
-    await prisma.resumeCertificate.update({
-      where,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "ResumeCertificate not found")

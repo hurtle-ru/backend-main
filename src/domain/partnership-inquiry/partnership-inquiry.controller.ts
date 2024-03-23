@@ -1,4 +1,18 @@
-import { Body, Controller, Get, Middlewares, Path, Post, Put, Query, Response, Route, Security, Tags } from "tsoa";
+import {
+  Body,
+  Controller,
+  Get,
+  Middlewares,
+  Patch,
+  Path,
+  Post,
+  Put,
+  Query,
+  Response,
+  Route,
+  Security,
+  Tags,
+} from "tsoa";
 import {
   BasicPartnershipInquiry,
   CreatePartnershipInquiryRequest,
@@ -55,12 +69,12 @@ export class PartnershipInquiryController extends Controller {
     return new PageResponse(partnershipInquiries, page, size, partnershipInquiriesCount);
   }
 
-  @Put("{id}/status")
+  @Patch("{id}/status")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
-  public async putStatus(
+  public async patchStatusById(
     @Path() id: string,
-    @Body() body: PutByIdPartnershipInquiryStatus,
+    @Body() body: Partial<PutByIdPartnershipInquiryStatus>,
   ): Promise<BasicPartnershipInquiry> {
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
       where: { id },

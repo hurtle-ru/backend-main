@@ -48,30 +48,6 @@ export class ResumeExperienceController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "ResumeExperience not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeExperienceRequest
-  ): Promise<void> {
-    PutResumeExperienceRequest.schema.validateSync(body)
-
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
-
-    const experience = await prisma.resumeExperience.findUnique({ where });
-    if (!experience) throw new HttpError(404, "ResumeExperience not found");
-
-    await prisma.resumeExperience.update({
-      where,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "ResumeExperience not found")

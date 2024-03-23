@@ -114,19 +114,6 @@ export class ApplicantController extends Controller {
     await prisma.applicant.archive(req.user.id);
   }
 
-  @Put("me")
-  @Security("jwt", [UserRole.APPLICANT])
-  public async putMe(
-    @Request() req: JwtModel,
-    @Body() body: PutMeRequestByApplicant
-  ): Promise<BasicApplicant> {
-    PutMeRequestByApplicant.schema.validateSync(body);
-    return prisma.applicant.update({
-      where: { id: req.user.id },
-      data: body,
-    });
-  }
-
   @Patch("me")
   @Security("jwt", [UserRole.APPLICANT])
   public async patchMe(
@@ -290,24 +277,6 @@ export class ApplicantController extends Controller {
     @Body() body: Partial<PutByIdRequestByApplicant>
   ): Promise<BasicApplicant> {
     makeSchemeWithAllOptionalFields(PutByIdRequestByApplicant.schema).validateSync(body);
-
-    const where = { id };
-    if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
-
-    return prisma.applicant.update({
-      where,
-      data: body,
-    });
-  }
-
-  @Put("{id}")
-  @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async putById(
-    @Path() id: string,
-    @Body() body: PutByIdRequestByApplicant
-  ): Promise<BasicApplicant> {
-    PutByIdRequestByApplicant.schema.validateSync(body);
 
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
