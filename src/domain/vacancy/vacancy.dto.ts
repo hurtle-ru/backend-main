@@ -36,6 +36,7 @@ export type CreateVacancyRequest = Pick<
   | "workingHours"
   | "workplaceModel"
   | "keySkills"
+  | "isHidden"
 >;
 
 export type PutVacancyRequestFromEmployer = CreateVacancyRequest & RequesterEmployer

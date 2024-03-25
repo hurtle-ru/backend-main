@@ -26,7 +26,7 @@ import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
-import { Prisma, VacancyResponseStatus } from "@prisma/client";
+import { Prisma, VacancyResponseStatus, VacancyStatus } from "@prisma/client";
 import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
@@ -50,6 +50,7 @@ export class VacancyResponseController extends Controller {
   @Response<HttpErrorBody & {"error":
       | "This applicant already has response on this vacancy"
       | "Applicant resume is unfilled or does not exist"
+      | "Vacancy did not published or was hidden"
   }>(409)
   public async create(
     @Request() req: JwtModel,
@@ -63,8 +64,13 @@ export class VacancyResponseController extends Controller {
       ? req.user.id
       : (bodyData as CreateVacancyResponseRequestFromManager).candidateId;
 
-    if(!await prisma.vacancy.exists({ id: bodyData.vacancyId }))
+    const vacancy = await prisma.vacancy.findUnique({ where: { id: bodyData.vacancyId }})
+    if(!vacancy)
       throw new HttpError(404, "Vacancy does not exist");
+
+    if ( vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden === true ) {
+      throw new HttpError(409, "Vacancy did not published or was hidden");
+    }
 
     if(await prisma.vacancyResponse.exists({ candidateId, vacancyId: bodyData.vacancyId }))
       throw new HttpError(409, "This applicant already has response on this vacancy");

@@ -100,6 +100,7 @@ export class VacancyController extends Controller {
     @Query() workplaceModel?: VacancyWorkplaceModel[],
     @Query() status?: VacancyStatus,
     @Query() employer_isStartup?: boolean,
+    @Query() isHidden?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const salary = parseIntFilterQueryParam(salaryFilter);
 
@@ -111,6 +112,7 @@ export class VacancyController extends Controller {
         case UserRole.APPLICANT:
           if(includeResponses) includeResponses = includeResponses = { where: { candidateId: req.user.id } };
           status = VacancyStatus.PUBLISHED;
+          isHidden = false
           break;
       }
     } else {
@@ -136,6 +138,7 @@ export class VacancyController extends Controller {
         { name: { contains: nameOrEmployerName, mode: "insensitive" } },
         { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } } },
       ] : undefined,
+      isHidden,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -240,6 +243,7 @@ export class VacancyController extends Controller {
   @Response<HttpErrorBody & {"error":
       | "Applicant already viewed this vacancy"
       | "Anonymous with this ip already viewed this vacancy"
+      | "Vacancy did not published or was hidden"
   }>(409)
   public async addViewed(
     @Path() id: string,
@@ -250,7 +254,8 @@ export class VacancyController extends Controller {
       where: { id },
     });
 
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+    if(!vacancy ) throw new HttpError(404, "Vacancy not found");
+    if(vacancy.status != VacancyStatus.PUBLISHED || vacancy.isHidden) throw new HttpError(409, "Vacancy did not published or was hidden");
 
     if (req.user && req.user.role === UserRole.APPLICANT) {
       if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
