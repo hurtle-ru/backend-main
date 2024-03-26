@@ -20,9 +20,8 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error"
 import {
   BasicApplicant,
   GetApplicantResponse,
-  GetApplicantStatusResponse,
-  PutByIdRequestByApplicant,
-  PutMeRequestByApplicant,
+  GetApplicantStatusResponse, PatchMeRequestByApplicant, PatchMeRequestByApplicantSchema,
+  PatchByIdRequestByApplicant, PatchByIdRequestByApplicantSchema,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -34,7 +33,6 @@ import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
-import { makeSchemeWithAllOptionalFields } from "../../infrastructure/validation/requests/optionalScheme";
 
 
 @injectable()
@@ -118,9 +116,9 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeRequestByApplicant>
+    @Body() body: PatchMeRequestByApplicant
   ): Promise<BasicApplicant> {
-    makeSchemeWithAllOptionalFields(PutMeRequestByApplicant.schema).validateSync(body);
+    PatchMeRequestByApplicantSchema.validateSync(body);
 
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -274,9 +272,9 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: Partial<PutByIdRequestByApplicant>
+    @Body() body: PatchByIdRequestByApplicant
   ): Promise<BasicApplicant> {
-    makeSchemeWithAllOptionalFields(PutByIdRequestByApplicant.schema).validateSync(body);
+    PatchByIdRequestByApplicantSchema.validateSync(body);
 
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

@@ -1,21 +1,61 @@
 import * as yup from "yup";
-import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 import { Applicant, ApplicantAiChat, Gender } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancyResponse } from "../vacancy/response/response.dto";
 import { BasicResume } from "../resume/resume.dto";
+import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 
-import { yupEnum } from "../../infrastructure/validation/requests/enum.yup"
 
-
-export type BasicApplicant = Omit<
+export type BasicApplicant = Pick<
   Applicant,
-  | "password"
-  | "resume"
-  | "meetings"
-  | "vacancyResponses"
-  | "aiChats"
+  | "id"
+  | "createdAt"
+  | "updatedAt"
+  | "email"
+  | "login"
+  | "contact"
+  | "firstName"
+  | "middleName"
+  | "lastName"
+  | "phone"
+  | "birthDate"
+  | "gender"
+  | "city"
+  | "country"
+  | "aboutMe"
+  | "nickname"
+  | "isReadyToRelocate"
+  | "isVisibleToEmployers"
+  | "isConfirmedByManager"
+  | "isEmailConfirmed"
+  | "hhTokenSub"
+  | "googleTokenSub"
 >;
+
+const BasicApplicantSchema: yup.ObjectSchema<BasicApplicant> = yup.object({
+  id: yup.string().defined(),
+  createdAt: yup.date().defined(),
+  updatedAt: yup.date().defined(),
+  email: yup.string().defined().email().min(3).max(255),
+  login: yup.string().defined().trim().min(3).max(255),
+  contact: yup.string().defined().trim().min(1).max(36),
+  firstName: yup.string().defined().trim().min(2).max(50),
+  middleName: yup.string().defined().trim().min(1).max(50).nullable(),
+  lastName: yup.string().defined().trim().min(2).max(50),
+  phone: yup.string().defined().trim().min(2).max(15).nullable(),
+  birthDate: yup.date().defined().min(2000).max(new Date().getFullYear() - 13).nullable(),
+  gender: yupOneOfEnum(Gender).defined().nullable(),
+  city: yup.string().defined().trim().min(3).max(255).nullable(),
+  country: yup.string().defined().trim().min(3).max(62).nullable(),
+  aboutMe: yup.string().defined().trim().min(2).max(3000).nullable(),
+  nickname: yup.string().defined().trim().min(2).max(50).nullable(),
+  isReadyToRelocate: yup.boolean().defined().nullable(),
+  isVisibleToEmployers: yup.boolean().defined(),
+  isConfirmedByManager: yup.boolean().defined(),
+  isEmailConfirmed: yup.boolean().defined(),
+  hhTokenSub: yup.string().defined().nullable(),
+  googleTokenSub: yup.string().defined().nullable(),
+});
 
 export type GetApplicantResponse = BasicApplicant & {
   resume?: BasicResume | null,
@@ -24,102 +64,82 @@ export type GetApplicantResponse = BasicApplicant & {
   aiChats?: ApplicantAiChat[],
 };
 
-const BasicApplicantSchema = yup.object({
-  email: yup.string().email().min(3).max(255),
-  login: yup.string().trim().min(3).max(255),
-  contact: yup.string().trim().min(1).max(36),
-  firstName: yup.string().trim().min(2).max(50),
-  middleName: yup.string().trim().min(1).max(50).optional(),
-  lastName: yup.string().trim().min(2).max(50),
-  phone: yup.string().trim().min(2).max(15).optional(),
-  birthDate: yup.date().min(2000).max(new Date().getFullYear() - 13).optional(),
-  gender: yupEnum(Gender).optional(),
-  city: yup.string().trim().min(3).max(255).optional(),
-  country: yup.string().trim().min(3).max(62).optional(),
-  aboutMe: yup.string().trim().min(2).max(3000).optional(),
-  nickname: yup.string().trim().min(2).max(50).optional(),
-  isReadyToRelocate: yup.boolean().optional(),
-  isVisibleToEmployers: yup.boolean(),
-  isConfirmedByManager: yup.boolean(),
-})
-
-export class PutMeRequestByApplicant {
-  static schema = BasicApplicantSchema.pick(
-    [
-      "contact",
-      "firstName",
-      "middleName",
-      "lastName",
-      "phone",
-      "birthDate",
-      "gender",
-      "city",
-      "country",
-      "aboutMe",
-      "nickname",
-      "isReadyToRelocate",
-      "isVisibleToEmployers",
-    ])
-
-  constructor(
-    public contact: string,
-    public firstName: string,
-    public middleName: string,
-    public lastName: string,
-    public phone: string,
-    public birthDate: DateWithoutTime,
-    public gender: keyof typeof Gender,
-    public city: string,
-    public country: string,
-    public aboutMe: string,
-    public nickname: string,
-    public isReadyToRelocate: boolean,
-    public isVisibleToEmployers: boolean,
-  ) {}
-}
-
-export class PutByIdRequestByApplicant {
-  static schema = BasicApplicantSchema.pick([
-      "email",
-      "login",
-      "contact",
-      "firstName",
-      "middleName",
-      "lastName",
-      "phone",
-      "birthDate",
-      "gender",
-      "city",
-      "country",
-      "aboutMe",
-      "nickname",
-      "isReadyToRelocate",
-      "isVisibleToEmployers",
-      "isConfirmedByManager",
-    ])
-
-  constructor(
-    public email: string,
-    public login: string,
-    public contact: string,
-    public firstName: string,
-    public middleName: string,
-    public lastName: string,
-    public phone: string,
-    public birthDate: DateWithoutTime,
-    public gender: keyof typeof Gender,
-    public city: string,
-    public country: string,
-    public aboutMe: string,
-    public nickname: string,
-    public isReadyToRelocate: boolean,
-    public isVisibleToEmployers: boolean,
-    public isConfirmedByManager: boolean,
-  ) {}
-}
-
 export type GetApplicantStatusResponse = {
   isEmailConfirmed: boolean,
   hasResume: boolean,
   hasMeeting: boolean,
 }
+
+export type PatchMeRequestByApplicant = Partial<
+  Pick<BasicApplicant,
+    | "contact"
+    | "firstName"
+    | "middleName"
+    | "lastName"
+    | "phone"
+    | "birthDate"
+    | "gender"
+    | "city"
+    | "country"
+    | "aboutMe"
+    | "nickname"
+    | "isReadyToRelocate"
+    | "isVisibleToEmployers"
+  >
+>;
+
+export const PatchMeRequestByApplicantSchema: yup.ObjectSchema<PatchMeRequestByApplicant> = BasicApplicantSchema.pick([
+  "contact",
+  "firstName",
+  "middleName",
+  "lastName",
+  "phone",
+  "birthDate",
+  "gender",
+  "city",
+  "country",
+  "aboutMe",
+  "nickname",
+  "isReadyToRelocate",
+  "isVisibleToEmployers",
+]).partial();
+
+export type PatchByIdRequestByApplicant = Partial<
+  Pick<BasicApplicant,
+    | "email"
+    | "login"
+    | "contact"
+    | "firstName"
+    | "middleName"
+    | "lastName"
+    | "phone"
+    | "birthDate"
+    | "gender"
+    | "city"
+    | "country"
+    | "aboutMe"
+    | "nickname"
+    | "isReadyToRelocate"
+    | "isVisibleToEmployers"
+    | "isConfirmedByManager"
+  >
+>;
+
+export const PatchByIdRequestByApplicantSchema: yup.ObjectSchema<PatchByIdRequestByApplicant> = BasicApplicantSchema.pick([
+  "email",
+  "login",
+  "contact",
+  "firstName",
+  "middleName",
+  "lastName",
+  "phone",
+  "birthDate",
+  "gender",
+  "city",
+  "country",
+  "aboutMe",
+  "nickname",
+  "isReadyToRelocate",
+  "isVisibleToEmployers",
+  "isConfirmedByManager",
+]).partial();
