@@ -8,8 +8,8 @@ import { BasicResumeLanguage } from "./language/language.dto";
 import { BasicResumeExperience } from "./experience/experience.dto";
 import { BasicResumeEducation } from "./education/education.dto";
 
-import { uint32 } from "../../infrastructure/validation/requests/int32.yup"
-import { yupEnum } from "../../infrastructure/validation/requests/enum.yup";
+import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup"
+import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicResume = Omit<
@@ -22,18 +22,18 @@ export type BasicResume = Omit<
   | "languages"
 >;
 
-const BasicResumeScheme = yup.object({
+const BasicResumeSchema = yup.object({
   title: yup.string().trim().min(3).max(50),
   summary: yup.string().trim().min(30).max(3000).optional(),
   city: yup.string().trim().min(3).max(255).optional(),
   skills: yup.array().of(yup.string().trim().min(3).max(50)).max(30),
   isVisibleToEmployers: yup.boolean(),
-  desiredSalary: uint32().optional(),
-  desiredSalaryCurrency: yupEnum(Currency).optional(),
+  desiredSalary: yupUint32().optional(),
+  desiredSalaryCurrency: yupOneOfEnum(Currency).optional(),
 })
 
 export class CreateResumeRequest {
-  static scheme = BasicResumeScheme.pick( [ "title" ] )
+  static schema = BasicResumeSchema.pick( [ "title" ] )
 
   constructor(
     public title: string,
@@ -41,7 +41,7 @@ export class CreateResumeRequest {
 }
 
 export class PutResumeRequest {
-  static scheme = BasicResumeScheme.pick([
+  static schema = BasicResumeSchema.pick([
     "title",
     "summary",
     "city",

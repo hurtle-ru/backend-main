@@ -3,9 +3,9 @@ import { Currency, Vacancy, VacancyEmploymentType, VacancyExperience, VacancyRep
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicVacancyResponse } from "./response/response.dto"
 import { RequesterEmployer, RequesterManager, APPLICANT, MANAGER, EMPLOYER } from "../../infrastructure/controller/requester/requester.dto";
-import { yupEnum } from "../../infrastructure/validation/requests/enum.yup";
-import { uint32 } from "../../infrastructure/validation/requests/int32.yup";
-import { makeSchemeWithAllOptionalFields } from "../../infrastructure/validation/requests/optionalScheme";
+import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
+import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";
+import { makeSchemaWithAllOptionalFields } from "../../infrastructure/validation/requests/utils.yup";
 
 
 export type BasicVacancy = Omit<
@@ -16,23 +16,23 @@ export type BasicVacancy = Omit<
   | "uniqueViewerIps"
 >;
 
-const BasicVacancyScheme = yup.object({
+const BasicVacancySchema = yup.object({
   name: yup.string().trim().min(3).max(50),
-  teamRole: yupEnum(VacancyTeamRole),
+  teamRole: yupOneOfEnum(VacancyTeamRole),
   description: yup.string().trim().min(30).max(3000),
   shortDescription: yup.string().trim().min(10).max(255).optional(),
-  salary: uint32().max(100_000_000),
-  salaryCurrency: yupEnum(Currency),
-  experience: yupEnum(VacancyExperience),
-  employmentType: yupEnum(VacancyEmploymentType),
-  price: uint32().optional(),
+  salary: yupUint32().max(100_000_000),
+  salaryCurrency: yupOneOfEnum(Currency),
+  experience: yupOneOfEnum(VacancyExperience),
+  employmentType: yupOneOfEnum(VacancyEmploymentType),
+  price: yupUint32().optional(),
   city: yup.string().trim().min(3).max(255),
-  reportingForm: yupEnum(VacancyReportingForm),
-  workingHours: yupEnum(VacancyWorkingHours),
-  workplaceModel: yupEnum(VacancyWorkplaceModel),
-  status: yupEnum(VacancyStatus),
+  reportingForm: yupOneOfEnum(VacancyReportingForm),
+  workingHours: yupOneOfEnum(VacancyWorkingHours),
+  workplaceModel: yupOneOfEnum(VacancyWorkplaceModel),
+  status: yupOneOfEnum(VacancyStatus),
   keySkills: yup.array().of(yup.string().trim().min(3).max(50)).max(30),
-  employerId: yup.string().length(36)
+  employerId: yup.string().length(36),
 })
 
 
@@ -46,7 +46,7 @@ export type GetAllVacancyCitiesResponse = { cities: string[], total: number };
 
 
 export class CreateVacancyRequest {
-  static scheme = BasicVacancyScheme.pick([
+  static schema = BasicVacancySchema.pick([
     "name",
     "teamRole",
     "description",
@@ -80,7 +80,7 @@ export class CreateVacancyRequest {
 }
 
 export class PutVacancyRequestFromEmployer {
-  static scheme = CreateVacancyRequest.scheme.concat(
+  static schema = CreateVacancyRequest.schema.concat(
     yup.object({
       _requester: yup.string(),
     })
@@ -105,8 +105,8 @@ export class PutVacancyRequestFromEmployer {
 }
 
 export class PutVacancyRequestFromManager {
-  static scheme = CreateVacancyRequest.scheme.concat(
-    BasicVacancyScheme.pick([
+  static schema = CreateVacancyRequest.schema.concat(
+    BasicVacancySchema.pick([
       "price",
       "status",
     ])
@@ -137,7 +137,7 @@ export class PutVacancyRequestFromManager {
 }
 
 export class PatchVacancyRequestFromEmployer {
-  static scheme = makeSchemeWithAllOptionalFields(PutVacancyRequestFromEmployer.scheme).concat(
+  static schema = makeSchemaWithAllOptionalFields(PutVacancyRequestFromEmployer.schema).concat(
     yup.object({
       _requester: yup.string(),
     })
@@ -162,7 +162,7 @@ export class PatchVacancyRequestFromEmployer {
 }
 
 export class PatchVacancyRequestFromManager {
-  static scheme = makeSchemeWithAllOptionalFields(PutVacancyRequestFromManager.scheme).concat(
+  static schema = makeSchemaWithAllOptionalFields(PutVacancyRequestFromManager.schema).concat(
     yup.object({
       _requester: yup.string(),
     })

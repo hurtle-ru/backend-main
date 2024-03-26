@@ -1,6 +1,6 @@
 import * as yup from 'yup'
 import { ResumeContact, ContactType } from "@prisma/client";
-import { yupEnum } from '../../../infrastructure/validation/requests/enum.yup';
+import { yupOneOfEnum } from '../../../infrastructure/validation/requests/enum.yup';
 
 
 export type BasicResumeContact = Omit<
@@ -10,16 +10,16 @@ export type BasicResumeContact = Omit<
 
 
 
-const BasicResumeContactScheme = yup.object({
+const BasicResumeContactSchema = yup.object({
   name: yup.string().trim().min(3).max(50).optional(),
-  type: yupEnum(ContactType),
+  type: yupOneOfEnum(ContactType),
   value: yup.string().trim().min(3).max(255),
   preferred: yup.boolean(),
   resumeId: yup.string().length(36),
 })
 
 export class CreateResumeContactRequest {
-  static schema = BasicResumeContactScheme.pick([
+  static schema = BasicResumeContactSchema.pick([
     "name",
     "type",
     "value",
@@ -37,7 +37,7 @@ export class CreateResumeContactRequest {
 }
 
 export class PutResumeContactRequest {
-  static schema = BasicResumeContactScheme.pick([
+  static schema = BasicResumeContactSchema.pick([
     "name",
     "type",
     "value",

@@ -9,7 +9,7 @@ export type BasicResumeExperience = Omit<
 >;
 
 
-const BasicResumeExperienceScheme = yup.object({
+const BasicResumeExperienceSchema = yup.object({
   company: yup.string().trim().min(3).max(256).optional(),
   position: yup.string().trim().max(100),
   startMonth: yup.number().min(0).max(12),
@@ -27,7 +27,7 @@ const BasicResumeExperienceScheme = yup.object({
 })
 
 export class CreateResumeExperienceRequest {
-  static schema = BasicResumeExperienceScheme.pick([
+  static schema = BasicResumeExperienceSchema.pick([
     "company",
     "position",
     "startMonth",
@@ -51,7 +51,7 @@ export class CreateResumeExperienceRequest {
 }
 
 export class PutResumeExperienceRequest {
-  static schema = BasicResumeExperienceScheme.pick([
+  static schema = BasicResumeExperienceSchema.pick([
     "company",
     "position",
     "startMonth",

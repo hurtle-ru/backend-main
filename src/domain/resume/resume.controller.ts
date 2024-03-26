@@ -25,7 +25,7 @@ import {
   PutResumeRequest,
   PutResumeResponse,
 } from "./resume.dto";
-import { makeSchemeWithAllOptionalFields } from "../../infrastructure/validation/requests/optionalScheme";
+import { makeSchemaWithAllOptionalFields } from "../../infrastructure/validation/requests/utils.yup";
 
 @injectable()
 @Route("api/v1/resumes")
@@ -42,7 +42,7 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
-    CreateResumeRequest.scheme.validateSync(body)
+    CreateResumeRequest.schema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
@@ -139,7 +139,7 @@ export class ResumeController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeRequest>,
   ): Promise<PutResumeResponse> {
-    makeSchemeWithAllOptionalFields(PutResumeRequest.scheme).validateSync(body);
+    makeSchemaWithAllOptionalFields(PutResumeRequest.schema).validateSync(body);
 
     const where = {
       id,

@@ -17,7 +17,7 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { BasicResumeEducation, CreateResumeEducationRequest, PutResumeEducationRequest } from "./education.dto";
-import { makeSchemeWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
+import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/utils.yup";
 
 
 @Route("api/v1/resumeEducation")
@@ -53,7 +53,7 @@ export class ResumeEducationController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutResumeEducationRequest>,
   ): Promise<void> {
-    makeSchemeWithAllOptionalFields(PutResumeEducationRequest.schema).validateSync(body);
+    makeSchemaWithAllOptionalFields(PutResumeEducationRequest.schema).validateSync(body);
 
     const where = {
       id,

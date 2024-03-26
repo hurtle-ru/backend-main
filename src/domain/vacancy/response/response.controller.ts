@@ -30,8 +30,10 @@ import { Prisma, VacancyResponseStatus } from "@prisma/client";
 import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
-import { validateSyncByAtLeastOneScheme } from "../../../infrastructure/validation/requests/validateAtLeastOne";
-import { makeSchemeWithAllOptionalFields } from "../../../infrastructure/validation/requests/optionalScheme";
+import {
+  makeSchemaWithAllOptionalFields,
+  validateSyncByAtLeastOneSchema,
+} from "../../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -54,10 +56,10 @@ export class VacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyResponseRequestFromApplicant | CreateVacancyResponseRequestFromManager,
   ): Promise<BasicVacancyResponse> {
-    validateSyncByAtLeastOneScheme(
+    validateSyncByAtLeastOneSchema(
       [
-        CreateVacancyResponseRequestFromApplicant.scheme,
-        CreateVacancyResponseRequestFromManager.scheme,
+        CreateVacancyResponseRequestFromApplicant.schema,
+        CreateVacancyResponseRequestFromManager.schema,
       ],
       body
     )
@@ -246,7 +248,7 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Body() body: Partial<PutVacancyResponseRequest>,
   ): Promise<BasicVacancyResponse> {
-    makeSchemeWithAllOptionalFields(PutVacancyResponseRequest.scheme).validateSync(body)
+    makeSchemaWithAllOptionalFields(PutVacancyResponseRequest.schema).validateSync(body)
 
     const where = {
       id,

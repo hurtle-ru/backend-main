@@ -8,14 +8,14 @@ export type BasicResumeLanguage = Omit<
 >;
 
 
-const BasicResumeLanguageScheme = yup.object({
+const BasicResumeLanguageSchema = yup.object({
   name: yup.string().trim().min(3).max(20).optional(),
   level: yup.string().trim().min(3).max(20).optional(),
   resumeId: yup.string().length(36),
 })
 
 export class CreateResumeLanguageRequest {
-  static schema = BasicResumeLanguageScheme.pick([
+  static schema = BasicResumeLanguageSchema.pick([
     "name",
     "level",
     "resumeId",
@@ -29,7 +29,7 @@ export class CreateResumeLanguageRequest {
 }
 
 export class PutResumeLanguageRequest {
-  static schema = BasicResumeLanguageScheme.pick([
+  static schema = BasicResumeLanguageSchema.pick([
     "name",
     "level",
   ])

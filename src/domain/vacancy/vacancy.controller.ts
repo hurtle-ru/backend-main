@@ -41,7 +41,8 @@ import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
-import { validateSyncByAtLeastOneScheme } from "../../infrastructure/validation/requests/validateAtLeastOne";
+
+import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -58,7 +59,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    CreateVacancyRequest.scheme.validateSync(body)
+    CreateVacancyRequest.schema.validateSync(body)
 
     return prisma.vacancy.create({
       data: {
@@ -301,10 +302,10 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
-    validateSyncByAtLeastOneScheme(
+    validateSyncByAtLeastOneSchema(
       [
-        PatchVacancyRequestFromEmployer.scheme,
-        PatchVacancyRequestFromManager.scheme,
+        PatchVacancyRequestFromEmployer.schema,
+        PatchVacancyRequestFromManager.schema,
       ],
       body
     )

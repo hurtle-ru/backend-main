@@ -5,7 +5,7 @@ import { BasicApplicant } from "../../applicant/applicant.dto";
 import { BasicVacancy } from "../vacancy.dto";
 import { BasicManager } from "../../manager/manager.dto";
 import { APPLICANT, MANAGER, RequesterApplicant, RequesterManager } from "../../../infrastructure/controller/requester/requester.dto";
-import { yupEnum } from "../../../infrastructure/validation/requests/enum.yup";
+import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicVacancyResponse = Omit<
@@ -15,8 +15,8 @@ export type BasicVacancyResponse = Omit<
   | "suggestedBy"
   >;
 
-const BasicVacancyResponseScheme = yup.object({
-  status: yupEnum(VacancyResponseStatus),
+const BasicVacancyResponseSchema = yup.object({
+  status: yupOneOfEnum(VacancyResponseStatus),
   isViewedByEmployer: yup.boolean(),
   candidateId: yup.string().length(36),
   vacancyId: yup.string().length(36),
@@ -29,7 +29,7 @@ export type GetVacancyResponseResponse = BasicVacancyResponse & {
 };
 
 export class CreateVacancyResponseRequestFromApplicant {
-  static scheme = BasicVacancyResponseScheme.pick([
+  static schema = BasicVacancyResponseSchema.pick([
     "vacancyId",
   ]).concat(
     yup.object({
@@ -44,7 +44,7 @@ export class CreateVacancyResponseRequestFromApplicant {
 }
 
 export class CreateVacancyResponseRequestFromManager {
-  static scheme = BasicVacancyResponseScheme.pick([
+  static schema = BasicVacancyResponseSchema.pick([
     "vacancyId",
     "candidateId",
   ]).concat(
@@ -61,7 +61,7 @@ export class CreateVacancyResponseRequestFromManager {
 }
 
 export class PutVacancyResponseRequest {
-  static scheme = BasicVacancyResponseScheme.pick([
+  static schema = BasicVacancyResponseSchema.pick([
     "status",
     "isViewedByEmployer",
   ])

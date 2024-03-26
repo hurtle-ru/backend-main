@@ -7,7 +7,7 @@ export type BasicResumeCertificate = Omit<
   | "resume"
 >;
 
-const BasicResumeCertificateScheme = yup.object({
+const BasicResumeCertificateSchema = yup.object({
   name: yup.string().trim().min(3).max(100),
   description: yup.string().trim().min(3).max(255).optional(),
   year: yup.number().min(1970).max(new Date().getFullYear()).optional(),
@@ -16,7 +16,7 @@ const BasicResumeCertificateScheme = yup.object({
 
 
 export class CreateResumeCertificateRequest {
-  static schema = BasicResumeCertificateScheme.pick([
+  static schema = BasicResumeCertificateSchema.pick([
     "name",
     "description",
     "year",
@@ -32,7 +32,7 @@ export class CreateResumeCertificateRequest {
 }
 
 export class PutResumeCertificateRequest {
-  static schema = BasicResumeCertificateScheme.pick([
+  static schema = BasicResumeCertificateSchema.pick([
     "name",
     "description",
     "year",

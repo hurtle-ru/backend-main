@@ -7,7 +7,7 @@ export type BasicResumeEducation = Omit<
   | "resume"
 >;
 
-const BasicResumeEducationScheme = yup.object({
+const BasicResumeEducationSchema = yup.object({
   name: yup.string().trim().min(3).max(50),
   description: yup.string().trim().min(3).max(255).optional(),
   degree: yup.string().trim().min(3).max(50),
@@ -25,7 +25,7 @@ const BasicResumeEducationScheme = yup.object({
 })
 
 export class CreateResumeEducationRequest {
-  static schema = BasicResumeEducationScheme.pick([
+  static schema = BasicResumeEducationSchema.pick([
     "name",
     "description",
     "degree",
@@ -45,7 +45,7 @@ export class CreateResumeEducationRequest {
 }
 
 export class PutResumeEducationRequest {
-  static schema = BasicResumeEducationScheme.pick([
+  static schema = BasicResumeEducationSchema.pick([
     "name",
     "description",
     "degree",

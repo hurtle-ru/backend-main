@@ -3,8 +3,8 @@ import * as yup from "yup"
 import { Currency, Offer } from "@prisma/client";
 import { BasicVacancy } from "../vacancy.dto";
 import { BasicVacancyResponse } from "../response/response.dto"
-import { uint32 } from '../../../infrastructure/validation/requests/int32.yup';
-import { yupEnum } from '../../../infrastructure/validation/requests/enum.yup';
+import { yupUint32 } from '../../../infrastructure/validation/requests/int32.yup';
+import { yupOneOfEnum } from '../../../infrastructure/validation/requests/enum.yup';
 
 
 export type BasicOffer = Omit<
@@ -18,15 +18,15 @@ export type GetOfferResponse = BasicOffer & {
   vacancyResponse?: BasicVacancyResponse;
 }
 
-const BasicOfferScheme = yup.object({
+const BasicOfferSchema = yup.object({
   message: yup.string().trim().min(10).max(500),
-  salary: uint32().max(100_000_000),
-  salaryCurrency: yupEnum(Currency),
+  salary: yupUint32().max(100_000_000),
+  salaryCurrency: yupOneOfEnum(Currency),
   vacancyResponseId: yup.string().length(36),
 })
 
 export class CreateOfferRequest {
-  static scheme = BasicOfferScheme.pick([
+  static schema = BasicOfferSchema.pick([
     "message",
     "salary",
     "salaryCurrency",
@@ -42,7 +42,7 @@ export class CreateOfferRequest {
 }
 
 export class PutOfferRequest {
-  static scheme = BasicOfferScheme.pick([
+  static schema = BasicOfferSchema.pick([
     "message",
     "salary",
     "salaryCurrency",
