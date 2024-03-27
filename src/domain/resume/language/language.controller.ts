@@ -16,8 +16,7 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeLanguage, CreateResumeLanguageRequest, PutResumeLanguageRequest } from "./language.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/utils.yup";
+import { BasicResumeLanguage, CreateResumeLanguageRequest, CreateResumeLanguageRequestSchema, PatchResumeLanguageRequest, PatchResumeLanguageRequestSchema } from "./language.dto";
 
 
 @Route("api/v1/resumeLanguages")
@@ -30,7 +29,7 @@ export class ResumeLanguageController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeLanguageRequest,
   ): Promise<BasicResumeLanguage> {
-    CreateResumeLanguageRequest.schema.validateSync(body)
+    CreateResumeLanguageRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
@@ -51,9 +50,9 @@ export class ResumeLanguageController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeLanguageRequest>,
+    @Body() body: PatchResumeLanguageRequest,
   ): Promise<void> {
-    makeSchemaWithAllOptionalFields(PutResumeLanguageRequest.schema).validateSync(body);
+    PatchResumeLanguageRequestSchema.validateSync(body);
 
     const where = {
       id,

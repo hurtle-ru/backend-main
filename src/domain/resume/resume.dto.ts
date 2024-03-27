@@ -59,7 +59,7 @@ export const CreateResumeRequestSchema: yup.ObjectSchema<CreateResumeRequest> = 
   "title",
 ]);
 
-export type PatchByIdResumeRequest = Pick<
+export type PatchByIdResumeRequest = Partial<Pick<
   Resume,
   | "title"
   | "summary"
@@ -68,7 +68,7 @@ export type PatchByIdResumeRequest = Pick<
   | "isVisibleToEmployers"
   | "desiredSalary"
   | "desiredSalaryCurrency"
->;
+>>
 
 export const PatchByIdResumeRequestSchema: yup.ObjectSchema<PatchByIdResumeRequest> = BasicResumeSchema.pick([
   "title",
@@ -78,7 +78,7 @@ export const PatchByIdResumeRequestSchema: yup.ObjectSchema<PatchByIdResumeReque
   "isVisibleToEmployers",
   "desiredSalary",
   "desiredSalaryCurrency",
-]);
+]).partial();
 
 export type PatchResumeResponse = Pick<
   Resume,

@@ -19,8 +19,7 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeCertificate, CreateResumeCertificateRequest, PutResumeCertificateRequest } from "./certificate.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/utils.yup";
+import { BasicResumeCertificate, CreateResumeCertificateRequest, CreateResumeCertificateRequestSchema, PatchResumeCertificateRequest, PatchResumeCertificateRequestSchema } from "./certificate.dto";
 
 
 @Route("api/v1/resumeCertificates")
@@ -33,7 +32,7 @@ export class ResumeCertificateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeCertificateRequest,
   ): Promise<BasicResumeCertificate> {
-    CreateResumeCertificateRequest.schema.validateSync(body)
+    CreateResumeCertificateRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
@@ -54,9 +53,9 @@ export class ResumeCertificateController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeCertificateRequest>,
+    @Body() body: PatchResumeCertificateRequest,
   ): Promise<void> {
-    makeSchemaWithAllOptionalFields(PutResumeCertificateRequest.schema).validateSync(body);
+    PatchResumeCertificateRequestSchema.validateSync(body);
 
     const where = {
       id,

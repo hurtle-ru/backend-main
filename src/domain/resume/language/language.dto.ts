@@ -8,34 +8,33 @@ export type BasicResumeLanguage = Omit<
 >;
 
 
-const BasicResumeLanguageSchema = yup.object({
-  name: yup.string().trim().min(3).max(20).optional(),
-  level: yup.string().trim().min(3).max(20).optional(),
-  resumeId: yup.string().length(36),
+const BasicResumeLanguageSchema: yup.ObjectSchema<BasicResumeLanguage> = yup.object({
+  id: yup.string().defined().length(36),
+  name: yup.string().defined().trim().min(3).max(20),
+  level: yup.string().defined().trim().min(3).max(20).nullable(),
+  resumeId: yup.string().defined().length(36),
 })
 
-export class CreateResumeLanguageRequest {
-  static schema = BasicResumeLanguageSchema.pick([
-    "name",
-    "level",
-    "resumeId",
-  ])
+export type CreateResumeLanguageRequest = Pick<BasicResumeLanguage,
+  | "name"
+  | "level"
+  | "resumeId"
+>
 
-  constructor(
-    public name: string,
-    public level: string,
-    public resumeId: string,
-  ) {}
-}
+export const CreateResumeLanguageRequestSchema: yup.ObjectSchema<CreateResumeLanguageRequest> = BasicResumeLanguageSchema.pick([
+  "name",
+  "level",
+  "resumeId",
+])
 
-export class PutResumeLanguageRequest {
-  static schema = BasicResumeLanguageSchema.pick([
-    "name",
-    "level",
-  ])
+export type PatchResumeLanguageRequest = Partial<Pick<BasicResumeLanguage,
+  | "name"
+  | "level"
+  | "resumeId"
+>>
 
-  constructor(
-    public name: string,
-    public level: string,
-  ) {}
-}
+export const PatchResumeLanguageRequestSchema: yup.ObjectSchema<PatchResumeLanguageRequest> = BasicResumeLanguageSchema.pick([
+  "name",
+  "level",
+  "resumeId",
+]).partial()

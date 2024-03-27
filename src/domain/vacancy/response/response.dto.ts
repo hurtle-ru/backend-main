@@ -15,11 +15,15 @@ export type BasicVacancyResponse = Omit<
   | "suggestedBy"
   >;
 
-const BasicVacancyResponseSchema = yup.object({
-  status: yupOneOfEnum(VacancyResponseStatus),
-  isViewedByEmployer: yup.boolean(),
-  candidateId: yup.string().length(36),
-  vacancyId: yup.string().length(36),
+const BasicVacancyResponseSchema: yup.ObjectSchema<BasicVacancyResponse> = yup.object({
+  id: yup.string().length(36).defined(),
+  createdAt: yup.date().defined(),
+  updatedAt: yup.date().defined(),
+  candidateRecommendedByManagerId: yup.string().length(36).defined(),
+  status: yupOneOfEnum(VacancyResponseStatus).defined(),
+  isViewedByEmployer: yup.boolean().defined(),
+  candidateId: yup.string().defined().length(36),
+  vacancyId: yup.string().defined().length(36),
 })
 
 export type GetVacancyResponseResponse = BasicVacancyResponse & {
@@ -28,46 +32,32 @@ export type GetVacancyResponseResponse = BasicVacancyResponse & {
   candidateRecommendedBy?: BasicManager | null,
 };
 
-export class CreateVacancyResponseRequestFromApplicant {
-  static schema = BasicVacancyResponseSchema.pick([
-    "vacancyId",
-  ]).concat(
-    yup.object({
-      _requester: yup.string(),
-    })
-  )
+export type CreateVacancyResponseRequestFromApplicant = Pick<BasicVacancyResponse,
+  | "vacancyId"
+> & {_requester: APPLICANT}
 
-  constructor(
-    public vacancyId: string,
-    public _requester: APPLICANT
-  ) {}
-}
+export const CreateVacancyResponseRequestFromApplicantSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromApplicant> = BasicVacancyResponseSchema.pick(
+  ["vacancyId"]
+).shape({
+  _requester: yup.string().defined().oneOf([APPLICANT] as const),
+})
 
-export class CreateVacancyResponseRequestFromManager {
-  static schema = BasicVacancyResponseSchema.pick([
-    "vacancyId",
-    "candidateId",
-  ]).concat(
-    yup.object({
-      _requester: yup.string(),
-    })
-  )
+export type CreateVacancyResponseRequestFromManager = Pick<BasicVacancyResponse,
+  | "vacancyId"
+  | "candidateId"
+> & {_requester: MANAGER}
 
-  constructor(
-    public vacancyId: string,
-    public candidateId: string,
-    public _requester: MANAGER
-  ) {}
-}
+export const CreateVacancyResponseRequestFromManagerSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromManager> = BasicVacancyResponseSchema.pick(
+  ["vacancyId", "candidateId"]
+).shape({
+  _requester: yup.string().defined().oneOf([MANAGER] as const),
+})
 
-export class PutVacancyResponseRequest {
-  static schema = BasicVacancyResponseSchema.pick([
-    "status",
-    "isViewedByEmployer",
-  ])
+export type PatchVacancyResponseRequest = Partial<Pick<BasicVacancyResponse,
+  | "status"
+  | "isViewedByEmployer"
+>>
 
-  constructor(
-    public status: keyof typeof VacancyResponseStatus,
-    public isViewedByEmployer: boolean,
-  ) {}
-}
+export const PatchVacancyResponseRequestSchema: yup.ObjectSchema<PatchVacancyResponseRequest> = BasicVacancyResponseSchema.pick(
+  ["status", "isViewedByEmployer"]
+).partial()

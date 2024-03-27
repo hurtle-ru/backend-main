@@ -19,8 +19,7 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeExperience, CreateResumeExperienceRequest, PutResumeExperienceRequest } from "./experience.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/utils.yup";
+import { BasicResumeExperience, CreateResumeExperienceRequest, CreateResumeExperienceRequestSchema, PatchResumeExperienceRequest, PatchResumeExperienceRequestSchema } from "./experience.dto";
 
 
 @Route("api/v1/resumeExperience")
@@ -33,7 +32,7 @@ export class ResumeExperienceController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeExperienceRequest,
   ): Promise<BasicResumeExperience> {
-    CreateResumeExperienceRequest.schema.validateSync(body)
+    CreateResumeExperienceRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
@@ -54,9 +53,9 @@ export class ResumeExperienceController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeExperienceRequest>,
+    @Body() body: PatchResumeExperienceRequest,
   ): Promise<void> {
-    makeSchemaWithAllOptionalFields(CreateResumeExperienceRequest.schema).validateSync(body);
+    PatchResumeExperienceRequestSchema.validateSync(body);
 
     const where = {
       id,

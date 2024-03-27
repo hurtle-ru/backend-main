@@ -19,8 +19,7 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeContact, CreateResumeContactRequest, PutResumeContactRequest } from "./contact.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/utils.yup";
+import { BasicResumeContact, CreateResumeContactRequest, CreateResumeContactRequestSchema, PatchResumeContactRequest, PatchResumeContactRequestSchema } from "./contact.dto";
 
 
 @Route("api/v1/resumeContacts")
@@ -33,7 +32,7 @@ export class ResumeContactController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeContactRequest,
   ): Promise<BasicResumeContact> {
-    CreateResumeContactRequest.schema.validateSync(body)
+    CreateResumeContactRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
@@ -54,9 +53,9 @@ export class ResumeContactController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeContactRequest>,
+    @Body() body: PatchResumeContactRequest,
   ): Promise<void> {
-    makeSchemaWithAllOptionalFields(CreateResumeContactRequest.schema).validateSync(body);
+    PatchResumeContactRequestSchema.validateSync(body);
 
     const where = {
       id,

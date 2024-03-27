@@ -7,40 +7,36 @@ export type BasicResumeCertificate = Omit<
   | "resume"
 >;
 
-const BasicResumeCertificateSchema = yup.object({
-  name: yup.string().trim().min(3).max(100),
-  description: yup.string().trim().min(3).max(255).optional(),
-  year: yup.number().min(1970).max(new Date().getFullYear()).optional(),
-  resumeId: yup.string().length(36),
+const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertificate> = yup.object({
+  id: yup.string().defined().length(36),
+  name: yup.string().defined().trim().min(3).max(100),
+  description: yup.string().defined().trim().min(3).max(255).nullable(),
+  year: yup.number().defined().min(1970).max(new Date().getFullYear()).nullable(),
+  resumeId: yup.string().defined().length(36),
 })
 
+export type CreateResumeCertificateRequest = Pick<BasicResumeCertificate,
+  | "name"
+  | "description"
+  | "year"
+  | "resumeId"
+>
 
-export class CreateResumeCertificateRequest {
-  static schema = BasicResumeCertificateSchema.pick([
-    "name",
-    "description",
-    "year",
-    "resumeId",
-  ])
+export const CreateResumeCertificateRequestSchema: yup.ObjectSchema<CreateResumeCertificateRequest> = BasicResumeCertificateSchema.pick([
+  "name",
+  "description",
+  "year",
+  "resumeId",
+])
 
-  constructor (
-    public name: string,
-    public description: string,
-    public year: number,
-    public resumeId: string,
-  ) {}
-}
+export type PatchResumeCertificateRequest = Partial<Pick<BasicResumeCertificate,
+  | "name"
+  | "description"
+  | "year"
+>>
 
-export class PutResumeCertificateRequest {
-  static schema = BasicResumeCertificateSchema.pick([
-    "name",
-    "description",
-    "year",
-  ])
-
-  constructor (
-    public name: string,
-    public description: string,
-    public year: number,
-  ) {}
-}
+export const PatchResumeCertificateRequestSchema: yup.ObjectSchema<PatchResumeCertificateRequest> = BasicResumeCertificateSchema.pick([
+  "name",
+  "description",
+  "year",
+]).partial()

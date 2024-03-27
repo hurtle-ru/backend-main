@@ -17,12 +17,11 @@ import {
 } from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
-import { BasicOffer, CreateOfferRequest, GetOfferResponse, PutOfferRequest } from "./offer.dto";
+import { BasicOffer, CreateOfferRequest, CreateOfferRequestSchema, GetOfferResponse, PatchOfferRequest, PatchOfferRequestSchema } from "./offer.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { OfferStatus, VacancyResponseStatus } from "@prisma/client";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
-import { makeSchemaWithAllOptionalFields } from "../../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -41,7 +40,7 @@ export class OfferController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateOfferRequest,
   ): Promise<BasicOffer> {
-    CreateOfferRequest.schema.validateSync(body)
+    CreateOfferRequestSchema.validateSync(body)
 
     const where = { id: body.vacancyResponseId, vacancy: { employerId: req.user.id } };
 
@@ -170,9 +169,9 @@ export class OfferController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutOfferRequest>,
+    @Body() body: PatchOfferRequest,
   ): Promise<BasicOffer> {
-    makeSchemaWithAllOptionalFields(PutOfferRequest.schema).validateSync(body)
+    PatchOfferRequestSchema.validateSync(body)
 
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };

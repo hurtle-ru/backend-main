@@ -17,9 +17,12 @@ import {
 import {
   BasicVacancyResponse,
   CreateVacancyResponseRequestFromApplicant,
+  CreateVacancyResponseRequestFromApplicantSchema,
   CreateVacancyResponseRequestFromManager,
+  CreateVacancyResponseRequestFromManagerSchema,
   GetVacancyResponseResponse,
-  PutVacancyResponseRequest,
+  PatchVacancyResponseRequest,
+  PatchVacancyResponseRequestSchema,
 } from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
@@ -31,7 +34,6 @@ import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cach
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 import {
-  makeSchemaWithAllOptionalFields,
   validateSyncByAtLeastOneSchema,
 } from "../../../infrastructure/validation/requests/utils.yup";
 
@@ -58,8 +60,8 @@ export class VacancyResponseController extends Controller {
   ): Promise<BasicVacancyResponse> {
     validateSyncByAtLeastOneSchema(
       [
-        CreateVacancyResponseRequestFromApplicant.schema,
-        CreateVacancyResponseRequestFromManager.schema,
+        CreateVacancyResponseRequestFromApplicantSchema,
+        CreateVacancyResponseRequestFromManagerSchema,
       ],
       body
     )
@@ -246,9 +248,9 @@ export class VacancyResponseController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutVacancyResponseRequest>,
+    @Body() body: PatchVacancyResponseRequest,
   ): Promise<BasicVacancyResponse> {
-    makeSchemaWithAllOptionalFields(PutVacancyResponseRequest.schema).validateSync(body)
+    PatchVacancyResponseRequestSchema.validateSync(body)
 
     const where = {
       id,
@@ -273,7 +275,6 @@ export class VacancyResponseController extends Controller {
       data: body,
     });
   }
-
 
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "VacancyResponse not found"}>(404)

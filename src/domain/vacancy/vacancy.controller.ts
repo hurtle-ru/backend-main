@@ -17,12 +17,12 @@ import {
 } from "tsoa";
 import {
   BasicVacancy,
-  CreateVacancyRequest, GetAllVacancyCitiesResponse,
+  CreateVacancyRequest, CreateVacancyRequestSchema, GetAllVacancyCitiesResponse,
   GetVacancyResponse,
   PatchVacancyRequestFromEmployer,
+  PatchVacancyRequestFromEmployerSchema,
   PatchVacancyRequestFromManager,
-  PutVacancyRequestFromEmployer,
-  PutVacancyRequestFromManager,
+  PatchVacancyRequestFromManagerSchema,
 } from "./vacancy.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
@@ -59,7 +59,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    CreateVacancyRequest.schema.validateSync(body)
+    CreateVacancyRequestSchema.validateSync(body)
 
     return prisma.vacancy.create({
       data: {
@@ -304,8 +304,8 @@ export class VacancyController extends Controller {
   ): Promise<void> {
     validateSyncByAtLeastOneSchema(
       [
-        PatchVacancyRequestFromEmployer.schema,
-        PatchVacancyRequestFromManager.schema,
+        PatchVacancyRequestFromManagerSchema,
+        PatchVacancyRequestFromEmployerSchema,
       ],
       body
     )
