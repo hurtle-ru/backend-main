@@ -17,12 +17,12 @@ import {
 } from "tsoa";
 import {
   BasicVacancy,
-  CreateVacancyRequest, GetAllVacancyCitiesResponse,
+  CreateVacancyRequest, CreateVacancyRequestSchema, GetAllVacancyCitiesResponse,
   GetVacancyResponse,
   PatchVacancyRequestFromEmployer,
+  PatchVacancyRequestFromEmployerSchema,
   PatchVacancyRequestFromManager,
-  PutVacancyRequestFromEmployer,
-  PutVacancyRequestFromManager,
+  PatchVacancyRequestFromManagerSchema,
 } from "./vacancy.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
@@ -43,6 +43,8 @@ import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
 import { VacancyService } from "./vacancy.service";
 
+import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+
 
 @injectable()
 @Route("api/v1/vacancies")
@@ -60,7 +62,9 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    const vacancy = await prisma.vacancy.create({
+    CreateVacancyRequestSchema.validateSync(body)
+
+    return prisma.vacancy.create({
       data: {
         ...body,
         employer: {
@@ -299,18 +303,6 @@ export class VacancyController extends Controller {
     };
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Invalid body request for employer" | "Invalid body request for manager"}>(403)
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutVacancyRequestFromEmployer | PutVacancyRequestFromManager,
-  ): Promise<void> {
-    await this.patchById(req, id, body);
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
@@ -320,6 +312,14 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
+    validateSyncByAtLeastOneSchema(
+      [
+        PatchVacancyRequestFromManagerSchema,
+        PatchVacancyRequestFromEmployerSchema,
+      ],
+      body
+    )
+
     const { _requester, ...bodyData } = body;
     if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
     if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");

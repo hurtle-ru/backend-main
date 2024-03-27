@@ -17,11 +17,12 @@ import {
 } from "tsoa";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
-import { BasicOffer, CreateOfferRequest, GetOfferResponse, PutOfferRequest } from "./offer.dto";
+import { BasicOffer, CreateOfferRequest, CreateOfferRequestSchema, GetOfferResponse, PatchOfferRequest, PatchOfferRequestSchema } from "./offer.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { OfferStatus, VacancyResponseStatus } from "@prisma/client";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
+
 
 @injectable()
 @Route("api/v1/offers")
@@ -39,6 +40,8 @@ export class OfferController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateOfferRequest,
   ): Promise<BasicOffer> {
+    CreateOfferRequestSchema.validateSync(body)
+
     const where = { id: body.vacancyResponseId, vacancy: { employerId: req.user.id } };
 
     const vacancyResponse = await prisma.vacancyResponse.findUnique({
@@ -160,38 +163,16 @@ export class OfferController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Offer not found"}>(404)
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutOfferRequest,
-  ): Promise<BasicOffer> {
-    let where = null;
-    if (req.user.role === UserRole.MANAGER) where = { id };
-    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
-
-    const offer = await prisma.offer.findUnique({
-      where: where!,
-    });
-
-    if (!offer) throw new HttpError(404, "Offer not found");
-
-    return prisma.offer.update({
-      where: where!,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Offer not found"}>(404)
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutOfferRequest>,
+    @Body() body: PatchOfferRequest,
   ): Promise<BasicOffer> {
+    PatchOfferRequestSchema.validateSync(body)
+
     let where = null;
     if(req.user.role === UserRole.MANAGER) where = { id };
     else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id} } };

@@ -1,5 +1,20 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Delete, Get, Path, Post, Put, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Path,
+  Post,
+  Put,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  Tags,
+} from "tsoa";
 import { MeetingScriptTemplateService } from "./template.service";
 import { JwtModel, UserRole } from "../../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.error";
@@ -11,7 +26,6 @@ import {
 } from "./template.dto";
 import { PageNumber, PageSizeNumber } from "../../../../infrastructure/controller/pagination/page.dto";
 import { PageResponse } from "../../../../infrastructure/controller/pagination/page.response";
-import { GetMeetingScriptProtocolResponse } from "../protocol/protocol.dto";
 
 
 @injectable()
@@ -59,13 +73,13 @@ export class MeetingScriptTemplateController extends Controller {
     return new PageResponse(templates, page, size, templatesCount);
   }
 
-  @Put("{id}")
+  @Patch("{id}")
   @Security("jwt", [UserRole.MANAGER])
   @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404)
-  public async putById(
+  public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: PutMeetingScriptTemplateRequest,
+    @Body() body: Partial<PutMeetingScriptTemplateRequest>,
   ): Promise<void> {
     const template = await prisma.meetingScriptTemplate.findUnique({
       where: { id },
