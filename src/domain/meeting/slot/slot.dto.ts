@@ -5,7 +5,6 @@ import { BasicManager } from "../../manager/manager.dto";
 
 export type BasicMeetingSlot = Omit<
   MeetingSlot,
-  | "meeting"
   | "manager"
 >;
 

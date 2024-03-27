@@ -68,6 +68,7 @@ export type GetApplicantStatusResponse = {
   isEmailConfirmed: boolean,
   hasResume: boolean,
   hasMeeting: boolean,
+  isResumeFilled: boolean,
 }
 
 export type PatchMeApplicantRequest = Partial<

@@ -53,7 +53,10 @@ export class VacancyResponseController extends Controller {
       | "Invalid body request for manager"
   }>(403)
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
-  @Response<HttpErrorBody & {"error": "This applicant already has response on this vacancy"}>(409)
+  @Response<HttpErrorBody & {"error":
+      | "This applicant already has response on this vacancy"
+      | "Applicant resume is unfilled or does not exist"
+  }>(409)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateVacancyResponseRequestFromApplicant | CreateVacancyResponseRequestFromManager,
@@ -79,6 +82,16 @@ export class VacancyResponseController extends Controller {
 
     if(await prisma.vacancyResponse.exists({ candidateId, vacancyId: bodyData.vacancyId }))
       throw new HttpError(409, "This applicant already has response on this vacancy");
+
+    const candidateResume = await prisma.resume.findUnique({
+      where: { applicantId: candidateId },
+      include: {
+        contacts: true,
+      },
+    })
+
+    if(!candidateResume || !prisma.resume.isFilled(candidateResume))
+      throw new HttpError(409, "Applicant resume is unfilled or does not exist");
 
     return prisma.vacancyResponse.create({
       data: {

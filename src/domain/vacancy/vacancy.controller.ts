@@ -41,6 +41,7 @@ import { IntFilterString, parseIntFilterQueryParam } from "../../infrastructure/
 import { publicCacheMiddleware } from "../../infrastructure/cache/public-cache.middleware";
 import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
+import { VacancyService } from "./vacancy.service";
 
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
@@ -49,7 +50,9 @@ import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/
 @Route("api/v1/vacancies")
 @Tags("Vacancy")
 export class VacancyController extends Controller {
-  constructor() {
+  constructor(
+    private readonly vacancyService: VacancyService,
+  ) {
     super();
   }
 
@@ -70,7 +73,14 @@ export class VacancyController extends Controller {
           },
         },
       },
+      include: {
+        employer: true,
+      },
     });
+
+    await this.vacancyService.sendVacancyCreatedToAdminGroup(vacancy, vacancy.employer);
+
+    return vacancy;
   }
 
   @Get("")

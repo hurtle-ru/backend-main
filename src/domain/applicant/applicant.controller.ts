@@ -140,7 +140,11 @@ export class ApplicantController extends Controller {
       where: { id },
       select: {
         isEmailConfirmed: true,
-        resume: true,
+        resume: {
+          include: {
+            certificates: true,
+          },
+        },
         meetings: true,
       },
     });
@@ -151,6 +155,7 @@ export class ApplicantController extends Controller {
       "isEmailConfirmed": applicant.isEmailConfirmed,
       "hasResume": !!applicant.resume,
       "hasMeeting": applicant.meetings.length > 0,
+      "isResumeFilled": applicant.resume ? prisma.resume.isFilled(applicant.resume) : false,
     };
   }
 

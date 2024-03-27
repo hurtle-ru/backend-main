@@ -31,9 +31,11 @@ model Applicant {
   resume               Resume?
   meetings             Meeting[]
   vacancyResponses     VacancyResponse[]
-  hhToken              HhToken?
   password             Password?
   aiChats              ApplicantAiChat[]
+  hhToken              HhToken?
+  hhTokenSub           String?           @unique
+  googleTokenSub       String?           @unique
 }
 
 model Employer {
@@ -130,7 +132,7 @@ model Vacancy {
   name                     String                @db.VarChar(50)
   teamRole                 VacancyTeamRole
   description              String                @db.VarChar(3000)
-  shortDescription         String?               @db.VarChar(255)
+  shortDescription         String?               @db.VarChar(500)
   uniqueViewerApplicantIds String[]
   uniqueViewerIps          String[]
   salary                   Int

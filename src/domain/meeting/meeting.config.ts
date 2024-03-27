@@ -1,7 +1,12 @@
 import {AVAILABLE_IMAGE_FILE_MIME_TYPES} from "../../external/artifact/artifact.config";
 import { MeetingType } from "@prisma/client";
 import { GUEST_ROLE, UserRole } from "../auth/auth.dto";
+import { bool, cleanEnv, port, str } from "envalid";
 
+
+export const meetingConfig = cleanEnv(process.env, {
+  MEETING_EXPORT_SECRET: str(),
+});
 
 export const AVAILABLE_PASSPORT_FILE_MIME_TYPES = [
   ...AVAILABLE_IMAGE_FILE_MIME_TYPES,

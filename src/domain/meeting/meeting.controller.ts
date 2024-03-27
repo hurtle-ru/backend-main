@@ -1,4 +1,5 @@
 import { injectable } from "tsyringe";
+import * as moment from 'moment-timezone';
 import {
   Body,
   Controller,
@@ -21,7 +22,7 @@ import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
   CreateMeetingRequestByApplicantOrEmployer, CreateMeetingGuestRequest,
-  GetMeetingResponse, PutMeetingRequestByManager,
+  GetMeetingResponse, PutMeetingRequestByManager, ExportAllResponse,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -33,7 +34,7 @@ import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
-import { AVAILABLE_PASSPORT_FILE_MIME_TYPES } from "./meeting.config";
+import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus } from "@prisma/client";
 
@@ -248,6 +249,59 @@ export class MeetingController extends Controller {
     ])
 
     return new PageResponse(meetings, page, size, meetingsCount);
+  }
+
+  /**
+   * @param {string} secret Токен для доступа к методу
+   * @param {string} date Дата в формате "YYYY-MM-DD"
+   * @param {string} timezone Часовой пояс по стандарту ISO 8601. Пример: "Europe/Moscow"
+   */
+  @Get("/export")
+  public async exportAll(
+    @Query() secret: string,
+    @Query() date: string,
+    @Query() timezone: string = "Europe/Moscow",
+  ): Promise<ExportAllResponse> {
+    if(secret !== meetingConfig.MEETING_EXPORT_SECRET) throw new HttpError(401, "Invalid secret");
+
+    const startDateTime = moment.tz(date, timezone).startOf("day");
+    const endDateTime = startDateTime.clone().endOf("day");
+
+    const meetings = await prisma.meeting.findMany({
+      where: {
+        slot: {
+          dateTime: {
+            gte: startDateTime.toISOString(),
+            lte: endDateTime.toISOString(),
+          },
+        },
+      },
+      include: {
+        applicant: true,
+        employer: true,
+        slot: {
+          include: {
+            manager: true,
+          },
+        },
+      },
+    });
+
+    return meetings.map(meeting => ({
+      status: meeting.status,
+      managerName: meeting.slot.manager.name,
+      roomUrl: meeting.roomUrl,
+      ...(meeting.applicant && {
+        applicantName: meeting.applicant.firstName + " " + meeting.applicant.lastName,
+        contact: meeting.applicant.contact,
+        email: meeting.applicant.email,
+      }),
+      ...(meeting.employer && {
+        employerName: meeting.employer.firstName + " " + meeting.employer.lastName,
+        contact: meeting.employer.contact,
+        email: meeting.employer.email,
+      }),
+    }));
   }
 
   @Get("{id}/passport")
