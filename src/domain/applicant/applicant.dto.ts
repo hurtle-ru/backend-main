@@ -70,7 +70,7 @@ export type GetApplicantStatusResponse = {
   hasMeeting: boolean,
 }
 
-export type PatchMeRequestByApplicant = Partial<
+export type PatchMeApplicantRequest = Partial<
   Pick<BasicApplicant,
     | "contact"
     | "firstName"
@@ -88,7 +88,7 @@ export type PatchMeRequestByApplicant = Partial<
   >
 >;
 
-export const PatchMeRequestByApplicantSchema: yup.ObjectSchema<PatchMeRequestByApplicant> = BasicApplicantSchema.pick([
+export const PatchMeApplicantRequestSchema: yup.ObjectSchema<PatchMeApplicantRequest> = BasicApplicantSchema.pick([
   "contact",
   "firstName",
   "middleName",
@@ -104,7 +104,7 @@ export const PatchMeRequestByApplicantSchema: yup.ObjectSchema<PatchMeRequestByA
   "isVisibleToEmployers",
 ]).partial();
 
-export type PatchByIdRequestByApplicant = Partial<
+export type PatchByIdApplicantRequest = Partial<
   Pick<BasicApplicant,
     | "email"
     | "login"
@@ -125,7 +125,7 @@ export type PatchByIdRequestByApplicant = Partial<
   >
 >;
 
-export const PatchByIdRequestByApplicantSchema: yup.ObjectSchema<PatchByIdRequestByApplicant> = BasicApplicantSchema.pick([
+export const PatchByIdApplicantRequestSchema: yup.ObjectSchema<PatchByIdApplicantRequest> = BasicApplicantSchema.pick([
   "email",
   "login",
   "contact",

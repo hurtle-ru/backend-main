@@ -20,8 +20,8 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error"
 import {
   BasicApplicant,
   GetApplicantResponse,
-  GetApplicantStatusResponse, PatchMeRequestByApplicant, PatchMeRequestByApplicantSchema,
-  PatchByIdRequestByApplicant, PatchByIdRequestByApplicantSchema,
+  GetApplicantStatusResponse, PatchMeApplicantRequest, PatchMeApplicantRequestSchema,
+  PatchByIdApplicantRequest, PatchByIdApplicantRequestSchema,
 } from "./applicant.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -116,9 +116,9 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: PatchMeRequestByApplicant
+    @Body() body: PatchMeApplicantRequest
   ): Promise<BasicApplicant> {
-    PatchMeRequestByApplicantSchema.validateSync(body);
+    PatchMeApplicantRequestSchema.validateSync(body);
 
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -272,9 +272,9 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: PatchByIdRequestByApplicant
+    @Body() body: PatchByIdApplicantRequest
   ): Promise<BasicApplicant> {
-    PatchByIdRequestByApplicantSchema.validateSync(body);
+    PatchByIdApplicantRequestSchema.validateSync(body);
 
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

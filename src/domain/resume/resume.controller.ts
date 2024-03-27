@@ -20,12 +20,10 @@ import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import {
   BasicResume,
-  CreateResumeRequest,
-  GetResumeResponse,
-  PutResumeRequest,
-  PutResumeResponse,
+  CreateResumeRequest, CreateResumeRequestSchema,
+  GetResumeResponse, PatchByIdResumeRequest, PatchByIdResumeRequestSchema, PatchResumeResponse,
 } from "./resume.dto";
-import { makeSchemaWithAllOptionalFields } from "../../infrastructure/validation/requests/utils.yup";
+
 
 @injectable()
 @Route("api/v1/resumes")
@@ -42,7 +40,7 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
-    CreateResumeRequest.schema.validateSync(body)
+    CreateResumeRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
@@ -137,9 +135,9 @@ export class ResumeController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeRequest>,
-  ): Promise<PutResumeResponse> {
-    makeSchemaWithAllOptionalFields(PutResumeRequest.schema).validateSync(body);
+    @Body() body: PatchByIdResumeRequest,
+  ): Promise<PatchResumeResponse> {
+    PatchByIdResumeRequestSchema.validateSync(body);
 
     const where = {
       id,
