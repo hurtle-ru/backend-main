@@ -34,7 +34,6 @@ model Applicant {
   password             Password?
   aiChats              ApplicantAiChat[]
   hhToken              HhToken?
-  hhTokenSub           String?           @unique
   googleTokenSub       String?           @unique
 }
 

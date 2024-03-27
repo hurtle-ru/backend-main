@@ -12,10 +12,11 @@ import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
 import { DadataService } from "../../external/dadata/dadata.service"
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
-import { application, Request as ExpressRequest } from "express";
-import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../external/oauth/oauth.dto";
-import { OauthService } from "../../external/oauth/oauth.service";
-import { oauthConfig } from "../../external/oauth/oauth.config";
+import { Request as ExpressRequest } from "express";
+import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../external/google/auth/auth.dto";
+import { GoogleAuthService } from "../../external/google/auth/auth.service";
+import { HhAuthService } from "../../external/hh/auth/auth.service";
+import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
 
 
 @injectable()
@@ -24,7 +25,9 @@ import { oauthConfig } from "../../external/oauth/oauth.config";
 export class AuthController extends Controller {
   constructor(
     private readonly authService: AuthService,
-    private readonly oauthService: OauthService,
+    private readonly googleAuthService: GoogleAuthService,
+    private readonly hhAuthService: HhAuthService,
+    private readonly hhApplicantService: HhApplicantService,
     private readonly dadataService: DadataService
   ) {
     super();
@@ -116,7 +119,7 @@ export class AuthController extends Controller {
   ): Promise<AuthWithGoogleUserResponse> {
     let googleToken;
     try {
-      googleToken = await this.oauthService.verifyGoogleToken(body.googleToken);
+      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken);
     } catch(e) {
       throw new HttpError(401, "Invalid Google token");
     }
@@ -133,7 +136,7 @@ export class AuthController extends Controller {
 
     const applicantByGoogleEmail = await prisma.applicant.findUnique({ where: { email: googleToken.email } });
     if(applicantByGoogleEmail) {
-      await this.oauthService.linkAccountToGoogle(googleToken);
+      await this.googleAuthService.linkAccountToGoogle(googleToken);
 
       const accessToken = this.authService.createToken({
         id: applicantByGoogleEmail.id,
@@ -170,7 +173,7 @@ export class AuthController extends Controller {
 
     let googleToken;
     try {
-      googleToken = await this.oauthService.verifyGoogleToken(body.googleToken);
+      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken);
     } catch(e) {
       throw new HttpError(401, "Invalid Google token");
     }
@@ -190,4 +193,57 @@ export class AuthController extends Controller {
 
     return { token: accessToken };
   }
+  //
+  // @Post("withHh")
+  // @Middlewares(rateLimit({limit: 10, interval: 60}))
+  // @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
+  // @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
+  // public async authWithHh(
+  //   @Request() req: ExpressRequest & JwtModel,
+  //   @Body() body: AuthWithHhRequest,
+  // ): Promise<AuthWithHhUserResponse> {
+  //   const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
+  //   const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+  //
+  //   const applicantByHhToken = await prisma.applicant.findUnique({
+  //     where: {
+  //       hhToken: {
+  //         hhApplicantId: hhApplicant.id,
+  //       },
+  //     },
+  //   });
+  //
+  //   if(applicantByGoogleToken) {
+  //     const accessToken = this.authService.createToken({
+  //       id: applicantByGoogleToken.id,
+  //       role: UserRole.APPLICANT,
+  //     });
+  //
+  //     return { token: accessToken };
+  //   }
+  //
+  //   const applicantByGoogleEmail = await prisma.applicant.findUnique({ where: { email: googleToken.email } });
+  //   if(applicantByGoogleEmail) {
+  //     await this.googleAuthService.linkAccountToGoogle(googleToken);
+  //
+  //     const accessToken = this.authService.createToken({
+  //       id: applicantByGoogleEmail.id,
+  //       role: UserRole.APPLICANT,
+  //     });
+  //
+  //     return { token: accessToken };
+  //   }
+  //
+  //   return {
+  //     message: "Google token is valid, but registration is required",
+  //     googleAccount: {
+  //       isEmailVerified: googleToken.email_verified,
+  //       email: googleToken.email!,
+  //       name: googleToken.name,
+  //       givenName: googleToken.given_name,
+  //       familyName: googleToken.family_name,
+  //       avatarUrl: googleToken.picture,
+  //     },
+  //   };
+  // }
 }

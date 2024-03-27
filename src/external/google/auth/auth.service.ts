@@ -1,19 +1,19 @@
 import { injectable, singleton } from "tsyringe";
-import { oauthConfig } from "./oauth.config";
-import { googleOauthClient } from "./oauth.provider";
+import { googleAuthConfig } from "./auth.config";
+import { googleAuthClient } from "./auth.provider";
 import { TokenPayload } from "google-auth-library/build/src/auth/loginticket";
-import { prisma } from "../../infrastructure/database/prisma.provider";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
 
 
 @injectable()
 @singleton()
-export class OauthService {
+export class GoogleAuthService {
   constructor() {}
 
   async verifyGoogleToken(token: string): Promise<TokenPayload> {
-    const ticket = await googleOauthClient.verifyIdToken({
+    const ticket = await googleAuthClient.verifyIdToken({
       idToken: token,
-      audience: oauthConfig.OAUTH_GOOGLE_CLIENT_ID,
+      audience: googleAuthConfig.GOOGLE_OAUTH_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
