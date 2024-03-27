@@ -81,9 +81,9 @@ export const CreateVacancyRequestSchema: yup.ObjectSchema<CreateVacancyRequest> 
 ])
 
 
-export type PatchVacancyRequestFromEmployer = Partial<CreateVacancyRequest & {
+export type PatchVacancyRequestFromEmployer = Partial<CreateVacancyRequest> & {
   _requester: EMPLOYER
-}>
+}
 
 export const PatchVacancyRequestFromEmployerSchema: yup.ObjectSchema<PatchVacancyRequestFromEmployer> = CreateVacancyRequestSchema.partial().shape({
   _requester: yup.string().defined().oneOf([EMPLOYER] as const),
