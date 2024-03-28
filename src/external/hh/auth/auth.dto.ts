@@ -6,3 +6,7 @@ export type BasicHhToken = Pick<
   | "refreshToken"
   | "expiresIn"
 >;
+
+export type HHAuthorizationCodeRequest = {
+  authorizationCode: string,
+}

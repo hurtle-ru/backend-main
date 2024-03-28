@@ -99,9 +99,9 @@ model HhToken {
   applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applicantId String    @unique
 
-  hhApplicantId String
-  accessToken   String @db.VarChar(255)
-  refreshToken  String @db.VarChar(255)
+  hhApplicantId String  @unique
+  accessToken   String  @db.VarChar(255)
+  refreshToken  String  @db.VarChar(255)
   expiresIn     Int
 }
 
@@ -144,6 +144,7 @@ model Vacancy {
   workingHours             VacancyWorkingHours
   workplaceModel           VacancyWorkplaceModel
   status                   VacancyStatus         @default(UNDER_REVIEW)
+  isHidden                 Boolean               @default(false)
   keySkills                String[]              @db.VarChar(50)
   responses                VacancyResponse[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
@@ -502,7 +503,6 @@ enum VacancyStatus {
   UNDER_REVIEW
   FAILED_TO_PASS_REVIEW
   PUBLISHED
-  HIDDEN
 }
 
 enum VacancyResponseStatus {

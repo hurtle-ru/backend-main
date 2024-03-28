@@ -1,4 +1,4 @@
-import { Body, Controller, Request, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE, JwtModel,
@@ -17,6 +17,7 @@ import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../externa
 import { GoogleAuthService } from "../../external/google/auth/auth.service";
 import { HhAuthService } from "../../external/hh/auth/auth.service";
 import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
+import { HHAuthorizationCodeRequest } from "../../external/hh/auth/auth.dto";
 
 
 @injectable()
@@ -193,6 +194,27 @@ export class AuthController extends Controller {
 
     return { token: accessToken };
   }
+
+
+
+
+  @Get("HHAuthorizeUrl")
+  @Example<string>("https://hh.ru/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI")
+  async getAuthorizeUrl(): Promise<string> {
+    return this.hhAuthService.getAuthorizeUrl();
+  }
+
+  @Post("withHH/applicant")
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
+  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
+  public async registerApplicantWithРР(
+    @Body() body: HHAuthorizationCodeRequest,
+  ): Promise<void> {
+    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+
+    applicantWithSameHH = await prisma.applicant.findUnique( { where: { hhToken: { hhApplicantId: hhApplicant.id } } } )
+}
   //
   // @Post("withHh")
   // @Middlewares(rateLimit({limit: 10, interval: 60}))
