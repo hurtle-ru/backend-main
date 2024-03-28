@@ -16,7 +16,7 @@ import {
   Tags,
 } from "tsoa";
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
-import { HHAuthorizationCodeRequest } from "../../../external/hh/auth/auth.dto";
+import { HhAuthorizationCodeRequest } from "../../../external/hh/auth/auth.dto";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
@@ -46,7 +46,7 @@ export class HhAuthController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async putMeHhAuthorizationCode(
     @Request() req: JwtModel,
-    @Body() body: HHAuthorizationCodeRequest,
+    @Body() body: HhAuthorizationCodeRequest,
   ): Promise<void> {
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);

@@ -94,15 +94,15 @@ model Password {
 }
 
 model HhToken {
-  createdAt DateTime @default(now())
+  createdAt          DateTime  @default(now())
 
-  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  applicantId String    @unique
+  applicant          Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId        String    @unique
 
-  hhApplicantId String  @unique
-  accessToken   String  @db.VarChar(255)
-  refreshToken  String  @db.VarChar(255)
-  expiresIn     Int
+  hhApplicantId      String    @unique
+  accessToken        String    @db.VarChar(255)
+  refreshToken       String    @db.VarChar(255)
+  expiresIn          Int
 }
 
 model EmailVerification {
