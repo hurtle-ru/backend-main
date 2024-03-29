@@ -118,6 +118,7 @@ export class VacancyController extends Controller {
     } else {
       if(includeResponses) throw new HttpError(401, "User must be authorized to see vacancy responses")
       status = VacancyStatus.PUBLISHED;
+      isHidden = false;
     }
 
     where = {
@@ -199,7 +200,11 @@ export class VacancyController extends Controller {
         };
       }
     } else if(req.user.role === UserRole.APPLICANT) {
-      where = { responses: { some: { candidateId: req.user.id } } };
+      where = {
+        responses: { some: { candidateId: req.user.id } },
+        status: VacancyStatus.PUBLISHED,
+        isHidden: false,
+      };
 
       if(includeResponses) {
         includeResponses = {
@@ -243,7 +248,7 @@ export class VacancyController extends Controller {
   @Response<HttpErrorBody & {"error":
       | "Applicant already viewed this vacancy"
       | "Anonymous with this ip already viewed this vacancy"
-      | "Vacancy did not published or was hidden"
+      | "Vacancy is unpublished or hidden"
   }>(409)
   public async addViewed(
     @Path() id: string,
@@ -254,8 +259,8 @@ export class VacancyController extends Controller {
       where: { id },
     });
 
-    if(!vacancy ) throw new HttpError(404, "Vacancy not found");
-    if(vacancy.status != VacancyStatus.PUBLISHED || vacancy.isHidden) throw new HttpError(409, "Vacancy did not published or was hidden");
+    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+    if(vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) throw new HttpError(409, "Vacancy is unpublished or hidden");
 
     if (req.user && req.user.role === UserRole.APPLICANT) {
       if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
@@ -353,15 +358,20 @@ export class VacancyController extends Controller {
     @Query() include?: ("employer" | "responses" | "responses.candidate")[]
   ): Promise<GetVacancyResponse> {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
-    const where = { id };
+    let where: Prisma.VacancyWhereUniqueInput = { id };
 
     if(req.user) {
       switch (req.user.role) {
-        case UserRole.EMPLOYER:
-          if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
-          break;
         case UserRole.APPLICANT:
           if (includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+          where = {
+            ...where,
+            status: VacancyStatus.PUBLISHED,
+            isHidden: false,
+          }
+          break;
+        case UserRole.EMPLOYER:
+          if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
           break;
         case UserRole.MANAGER:
           if (include?.includes("responses.candidate")) includeResponses = { include: { candidate: true } };
