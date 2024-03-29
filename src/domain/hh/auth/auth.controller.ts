@@ -18,7 +18,7 @@ import {
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
 import { HhAuthorizationCodeRequest } from "../../../external/hh/auth/auth.dto";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { HttpErrorBody } from "../../../infrastructure/error/http.error";
+import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 
@@ -27,22 +27,17 @@ import { prisma } from "../../../infrastructure/database/prisma.provider";
 @Route("api/v1/hh/auth")
 @Tags("hh.ru Auth")
 export class HhAuthController extends Controller {
-  constructor(private readonly hhAuthService: HhAuthService,
-              private readonly hhApplicantService: HhApplicantService,
-              ) {
+  constructor(
+    private readonly hhAuthService: HhAuthService,
+    private readonly hhApplicantService: HhApplicantService,
+  ) {
     super();
-  }
-
-  @Get("authorizeUrl")
-  @Example<string>("https://hh.ru/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI")
-  @Security("jwt", [UserRole.APPLICANT])
-  async getAuthorizeUrl(): Promise<string> {
-    return this.hhAuthService.getAuthorizeUrl();
   }
 
   @Put("me/authorizationCode")
   @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
+  @Response<HttpErrorBody & {"error": "Another user with this HH account already exists"}>(409)
   @Security("jwt", [UserRole.APPLICANT])
   public async putMeHhAuthorizationCode(
     @Request() req: JwtModel,
@@ -50,6 +45,17 @@ export class HhAuthController extends Controller {
   ): Promise<void> {
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+
+    const SameHhToken = await prisma.hhToken.findUnique({ where: {hhApplicantId: hhApplicant.id } })
+
+    if (SameHhToken?.applicantId != req.user.id) {
+      throw new HttpError(409, "Another user with this HH account already exists")
+    }
+
+    const applicant = await prisma.applicant.findUnique({ where: {id: req.user.id }, select: { hhToken: true } })
+    if (applicant?.hhToken && SameHhToken?.applicantId != applicant?.hhToken.hhApplicantId) {
+      throw new HttpError(409, "Can not change hh account.")
+    }
 
     await prisma.hhToken.upsert({
       where: {
