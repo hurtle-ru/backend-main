@@ -62,7 +62,8 @@ export type CreateVacancyRequest = Pick<BasicVacancy,
   | "workingHours"
   | "workplaceModel"
   | "keySkills"
->
+  | "isHidden"
+>;
 
 export const CreateVacancyRequestSchema: yup.ObjectSchema<CreateVacancyRequest> = BasicVacancySchema.pick([
   "name",

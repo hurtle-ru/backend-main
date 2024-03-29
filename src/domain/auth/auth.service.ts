@@ -3,14 +3,15 @@ import {
   JwtModel,
   RegisterApplicantRequest,
   RegisterApplicantWithGoogleRequest,
+  RegisterApplicantWithHhRequest,
   RegisterEmployerRequest,
+  registerApplicantHhToken,
 } from "./auth.dto";
 import { authConfig } from "./auth.config";
 import * as bcrypt from "bcryptjs";
 import { singleton } from "tsyringe";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { TokenPayload } from "google-auth-library/build/src/auth/loginticket";
-
 
 @singleton()
 export class AuthService {
@@ -80,5 +81,28 @@ export class AuthService {
         googleTokenSub: googleToken.sub,
       },
     });
+  }
+
+  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: registerApplicantHhToken) {
+    const applicant = await prisma.applicant.create({
+      data: {
+        login: body.email,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        middleName: body.middleName,
+        contact: body.contact,
+        email: body.email,
+        birthDate: body.birthDate,
+      },
+    });
+
+    await prisma.hhToken.create({
+      data: {
+        ...hhToken,
+        applicant: { connect: { id: applicant.id } },
+      }
+    })
+
+    return applicant
   }
 }

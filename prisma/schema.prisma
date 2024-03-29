@@ -34,7 +34,6 @@ model Applicant {
   password             Password?
   aiChats              ApplicantAiChat[]
   hhToken              HhToken?
-  hhTokenSub           String?           @unique
   googleTokenSub       String?           @unique
 }
 
@@ -95,15 +94,15 @@ model Password {
 }
 
 model HhToken {
-  createdAt DateTime @default(now())
+  createdAt          DateTime  @default(now())
 
-  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  applicantId String    @unique
+  applicant          Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId        String    @unique
 
-  hhApplicantId String
-  accessToken   String @db.VarChar(255)
-  refreshToken  String @db.VarChar(255)
-  expiresIn     Int
+  hhApplicantId      String    @unique
+  accessToken        String    @db.VarChar(255)
+  refreshToken       String    @db.VarChar(255)
+  expiresIn          Int
 }
 
 model EmailVerification {
@@ -145,6 +144,7 @@ model Vacancy {
   workingHours             VacancyWorkingHours
   workplaceModel           VacancyWorkplaceModel
   status                   VacancyStatus         @default(UNDER_REVIEW)
+  isHidden                 Boolean               @default(false)
   keySkills                String[]              @db.VarChar(50)
   responses                VacancyResponse[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
@@ -504,7 +504,6 @@ enum VacancyStatus {
   UNDER_REVIEW
   FAILED_TO_PASS_REVIEW
   PUBLISHED
-  HIDDEN
 }
 
 enum VacancyResponseStatus {

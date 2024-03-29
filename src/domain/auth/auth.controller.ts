@@ -1,21 +1,26 @@
-import { Body, Controller, Request, Middlewares, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE, JwtModel,
   RegisterApplicantRequest, RegisterApplicantWithGoogleRequest,
   RegisterEmployerRequest,
   UserRole,
+  RegisterApplicantWithHhRequest,
+  RegisterApplicantWithHhRequestSchema,
+  AuthWithHhRequest,
+  AuthWithHhRequestSchema,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { AuthService } from "./auth.service";
 import { injectable } from "tsyringe";
-import { DadataService } from "../../external/dadata/dadata.service"
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
-import { application, Request as ExpressRequest } from "express";
-import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../external/oauth/oauth.dto";
-import { OauthService } from "../../external/oauth/oauth.service";
-import { oauthConfig } from "../../external/oauth/oauth.config";
+import { Request as ExpressRequest } from "express";
+import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../external/google/auth/auth.dto";
+import { GoogleAuthService } from "../../external/google/auth/auth.service";
+import { HhAuthService } from "../../external/hh/auth/auth.service";
+import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
+import { HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 
 
 @injectable()
@@ -24,8 +29,9 @@ import { oauthConfig } from "../../external/oauth/oauth.config";
 export class AuthController extends Controller {
   constructor(
     private readonly authService: AuthService,
-    private readonly oauthService: OauthService,
-    private readonly dadataService: DadataService
+    private readonly googleAuthService: GoogleAuthService,
+    private readonly hhAuthService: HhAuthService,
+    private readonly hhApplicantService: HhApplicantService,
   ) {
     super();
   }
@@ -116,7 +122,7 @@ export class AuthController extends Controller {
   ): Promise<AuthWithGoogleUserResponse> {
     let googleToken;
     try {
-      googleToken = await this.oauthService.verifyGoogleToken(body.googleToken);
+      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken);
     } catch(e) {
       throw new HttpError(401, "Invalid Google token");
     }
@@ -133,7 +139,7 @@ export class AuthController extends Controller {
 
     const applicantByGoogleEmail = await prisma.applicant.findUnique({ where: { email: googleToken.email } });
     if(applicantByGoogleEmail) {
-      await this.oauthService.linkAccountToGoogle(googleToken);
+      await this.googleAuthService.linkAccountToGoogle(googleToken);
 
       const accessToken = this.authService.createToken({
         id: applicantByGoogleEmail.id,
@@ -170,7 +176,7 @@ export class AuthController extends Controller {
 
     let googleToken;
     try {
-      googleToken = await this.oauthService.verifyGoogleToken(body.googleToken);
+      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken);
     } catch(e) {
       throw new HttpError(401, "Invalid Google token");
     }
@@ -185,6 +191,63 @@ export class AuthController extends Controller {
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
+      role: UserRole.APPLICANT,
+    });
+
+    return { token: accessToken };
+  }
+
+  @Get("HhAuthorizeUrl")
+  @Example<string>("https://hh.ru/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI")
+  async getAuthorizeUrl(): Promise<string> {
+    return this.hhAuthService.getAuthorizeUrl();
+  }
+
+  @Post("withHh/applicant")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
+  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
+  @Response<HttpErrorBody & {"error": "User with this Hh account already exists"}>(409)
+  public async registerApplicantWithHh(
+    @Body() body: RegisterApplicantWithHhRequest,
+  ): Promise<CreateAccessTokenResponse> {
+    RegisterApplicantWithHhRequestSchema.validateSync(body)
+
+    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+
+    if (await prisma.hhToken.exists({ hhApplicantId: hhApplicant.id })) {
+      throw new HttpError(409, "User with this Hh account already exists")
+    }
+
+    const applicant = await this.authService.registerApplicantWithHh(body, {...hhToken, hhApplicantId: hhApplicant.id });
+
+    const accessToken = this.authService.createToken({
+      id: applicant.id,
+      role: UserRole.APPLICANT,
+    });
+
+    return { token: accessToken };
+  }
+
+  @Post("withHh")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Response<HttpErrorBody & {"error": "Invalid auth token"}>(401)
+  public async authWithHH(
+    @Request() req: ExpressRequest & JwtModel,
+    @Body() body: HhAuthorizationCodeRequest,
+  ): Promise<CreateAccessTokenResponse> {
+    HhAuthorizationCodeRequestSchema.validateSync(body)
+
+    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+
+    const applicantHhToken = await prisma.hhToken.findUnique({ where: { hhApplicantId: hhApplicant.id } });
+
+    if(!applicantHhToken) throw new HttpError(401, "Invalid auth token")
+
+    const accessToken = this.authService.createToken({
+      id: applicantHhToken.applicantId,
       role: UserRole.APPLICANT,
     });
 

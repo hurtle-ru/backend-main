@@ -16,9 +16,9 @@ import {
   Tags,
 } from "tsoa";
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
+import { HhAuthorizationCodeRequest } from "../../../external/hh/auth/auth.dto";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { PutMeHhAuthorizationCodeRequest } from "./auth.dto";
 import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 
@@ -46,7 +46,7 @@ export class HhAuthController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async putMeHhAuthorizationCode(
     @Request() req: JwtModel,
-    @Body() body: PutMeHhAuthorizationCodeRequest,
+    @Body() body: HhAuthorizationCodeRequest,
   ): Promise<void> {
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);

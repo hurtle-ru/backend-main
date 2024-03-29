@@ -1,4 +1,4 @@
-import { CreateAccessTokenResponse } from "../../domain/auth/auth.dto";
+import { CreateAccessTokenResponse } from "../../../domain/auth/auth.dto";
 
 
 export type AuthWithGoogleRequest = {

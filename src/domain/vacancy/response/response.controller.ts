@@ -29,7 +29,7 @@ import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
-import { Prisma, VacancyResponseStatus } from "@prisma/client";
+import { Prisma, VacancyResponseStatus, VacancyStatus } from "@prisma/client";
 import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
@@ -56,6 +56,7 @@ export class VacancyResponseController extends Controller {
   @Response<HttpErrorBody & {"error":
       | "This applicant already has response on this vacancy"
       | "Applicant resume is unfilled or does not exist"
+      | "Vacancy is unpublished or hidden"
   }>(409)
   public async create(
     @Request() req: JwtModel,
@@ -77,8 +78,13 @@ export class VacancyResponseController extends Controller {
       ? req.user.id
       : (bodyData as CreateVacancyResponseRequestFromManager).candidateId;
 
-    if(!await prisma.vacancy.exists({ id: bodyData.vacancyId }))
+    const vacancy = await prisma.vacancy.findUnique({ where: { id: bodyData.vacancyId }})
+    if(!vacancy)
       throw new HttpError(404, "Vacancy does not exist");
+
+    if (vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) {
+      throw new HttpError(409, "Vacancy is unpublished or hidden");
+    }
 
     if(await prisma.vacancyResponse.exists({ candidateId, vacancyId: bodyData.vacancyId }))
       throw new HttpError(409, "This applicant already has response on this vacancy");
@@ -197,7 +203,14 @@ export class VacancyResponseController extends Controller {
 
     switch (req.user.role) {
       case UserRole.APPLICANT:
-        where = { ...where, candidateId: req.user.id };
+        where = {
+          ...where,
+          candidateId: req.user.id,
+          vacancy:{
+            isHidden: false,
+            status: { equals: VacancyStatus.PUBLISHED },
+          },
+        };
         break;
       case UserRole.EMPLOYER:
         where = { ...where, vacancy: { employerId: req.user.id } };
@@ -237,9 +250,24 @@ export class VacancyResponseController extends Controller {
   ): Promise<GetVacancyResponseResponse> {
     let where = null;
 
-    if(req.user.role === UserRole.APPLICANT) where = { id, candidateId: req.user.id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancy: { employerId: req.user.id } };
-    else if(req.user.role === UserRole.MANAGER) where = { id };
+    switch (req.user.role) {
+      case UserRole.APPLICANT:
+        where = {
+          id,
+          candidateId: req.user.id,
+          vacancy:{
+            isHidden: false,
+            status: { equals: VacancyStatus.PUBLISHED },
+          },
+        };
+        break;
+      case UserRole.EMPLOYER:
+        where = { id, vacancy: { employerId: req.user.id } };
+        break;
+      case UserRole.MANAGER:
+        where = { id };
+        break;
+    }
 
     const vacancyResponse = await prisma.vacancyResponse.findUnique({
       where: where!,
