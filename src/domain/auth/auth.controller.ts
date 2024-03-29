@@ -207,7 +207,7 @@ export class AuthController extends Controller {
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
-  @Response<HttpErrorBody & {"error": "User with this Hh account already exists"}>(409)
+  @Response<HttpErrorBody & {"error": "User with this hh account already exists"}>(409)
   public async registerApplicantWithHh(
     @Body() body: RegisterApplicantWithHhRequest,
   ): Promise<CreateAccessTokenResponse> {
@@ -217,7 +217,7 @@ export class AuthController extends Controller {
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
 
     if (await prisma.hhToken.exists({ hhApplicantId: hhApplicant.id })) {
-      throw new HttpError(409, "User with this Hh account already exists")
+      throw new HttpError(409, "User with this hh account already exists")
     }
 
     const applicant = await this.authService.registerApplicantWithHh(body, {...hhToken, hhApplicantId: hhApplicant.id });

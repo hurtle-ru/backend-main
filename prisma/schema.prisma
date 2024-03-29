@@ -149,7 +149,6 @@ model Vacancy {
   responses                VacancyResponse[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
   employerId               String
-  isHidden                 Boolean               @default(true)
 }
 
 model Offer {
