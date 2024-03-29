@@ -37,7 +37,7 @@ export class HhAuthController extends Controller {
   @Put("me/authorizationCode")
   @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
-  @Response<HttpErrorBody & {"error": "Another user with this HH account already exists"}>(409)
+  @Response<HttpErrorBody & {"error": "Another user with this HH account already exists" | "Can not change hh account."}>(409)
   @Security("jwt", [UserRole.APPLICANT])
   public async putMeHhAuthorizationCode(
     @Request() req: JwtModel,
