@@ -14,5 +14,5 @@ export type HhAuthorizationCodeRequest = {
 }
 
 export const HhAuthorizationCodeRequestSchema: yup.ObjectSchema<HhAuthorizationCodeRequest> = yup.object({
-  authorizationCode: yup.string().defined().length(24)
+  authorizationCode: yup.string().defined().length(64)
 })

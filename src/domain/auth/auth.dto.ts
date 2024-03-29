@@ -3,6 +3,7 @@ import * as yup from "yup";
 import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicHhToken, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 import { HhToken } from "@prisma/client";
+import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
 
 
 export interface JwtModel {
@@ -131,9 +132,9 @@ export type RegisterApplicantWithHhRequest = _RegisterApplicantRequest & HhAutho
 export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhRequest> = _RegisterApplicantRequestSchema.concat(HhAuthorizationCodeRequestSchema)
 
 export type AuthWithHhRequest = {
-  role: "APPLICANT"; // todo will be imported const after 'validation' task
+  role: APPLICANT;
 } & HhAuthorizationCodeRequest
 
 export const AuthWithHhRequestSchema: yup.ObjectSchema<AuthWithHhRequest> = HhAuthorizationCodeRequestSchema.shape({
-  role: yup.string().defined().oneOf(["APPLICANT"] as const) // todo will be imported const after 'validation' task
+  role: yup.string().defined().oneOf([APPLICANT] as const)
 })

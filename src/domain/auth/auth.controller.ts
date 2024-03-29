@@ -199,7 +199,7 @@ export class AuthController extends Controller {
 
   @Get("HhAuthorizeUrl")
   @Example<string>("https://hh.ru/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI")
-  async getAuthorizeUrl(): Promise<string> {
+  public async getHHAuthorizeUrl(): Promise<string> {
     return this.hhAuthService.getAuthorizeUrl();
   }
 
