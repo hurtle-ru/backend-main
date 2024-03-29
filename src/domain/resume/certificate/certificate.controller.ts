@@ -19,7 +19,7 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeCertificate, CreateResumeCertificateRequest, PutResumeCertificateRequest } from "./certificate.dto";
+import { BasicResumeCertificate, CreateResumeCertificateRequest, CreateResumeCertificateRequestSchema, PatchResumeCertificateRequest, PatchResumeCertificateRequestSchema } from "./certificate.dto";
 
 
 @Route("api/v1/resumeCertificates")
@@ -32,6 +32,8 @@ export class ResumeCertificateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeCertificateRequest,
   ): Promise<BasicResumeCertificate> {
+    CreateResumeCertificateRequestSchema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
@@ -45,36 +47,16 @@ export class ResumeCertificateController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "ResumeCertificate not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeCertificateRequest
-  ): Promise<void> {
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
-
-    const certificate = await prisma.resumeCertificate.findUnique({ where });
-    if (!certificate) throw new HttpError(404, "ResumeCertificate not found");
-
-    await prisma.resumeCertificate.update({
-      where,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "ResumeCertificate not found")
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeCertificateRequest>,
+    @Body() body: PatchResumeCertificateRequest,
   ): Promise<void> {
+    PatchResumeCertificateRequestSchema.validateSync(body);
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),

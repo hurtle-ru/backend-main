@@ -1,4 +1,12 @@
 
+export type APPLICANT = "APPLICANT"
+export const APPLICANT = "APPLICANT"
+export type EMPLOYER = "EMPLOYER"
+export const EMPLOYER = "EMPLOYER"
+export type MANAGER = "MANAGER"
+export const MANAGER = "MANAGER"
+export type GUEST = "GUEST"
+export const GUEST = "GUEST"
 
 export type RequesterApplicant = { "_requester": "APPLICANT" };
 export type RequesterEmployer = { "_requester": "EMPLOYER" };

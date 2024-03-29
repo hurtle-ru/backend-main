@@ -17,12 +17,12 @@ import {
 } from "tsoa";
 import {
   BasicVacancy,
-  CreateVacancyRequest, GetAllVacancyCitiesResponse,
+  CreateVacancyRequest, CreateVacancyRequestSchema, GetAllVacancyCitiesResponse,
   GetVacancyResponse,
   PatchVacancyRequestFromEmployer,
+  PatchVacancyRequestFromEmployerSchema,
   PatchVacancyRequestFromManager,
-  PutVacancyRequestFromEmployer,
-  PutVacancyRequestFromManager,
+  PatchVacancyRequestFromManagerSchema,
 } from "./vacancy.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
@@ -43,6 +43,8 @@ import { Request as ExpressRequest } from "express";
 import { getIp } from "../../infrastructure/controller/express-request/express-request.utils";
 import { VacancyService } from "./vacancy.service";
 
+import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+
 
 @injectable()
 @Route("api/v1/vacancies")
@@ -60,7 +62,9 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    const vacancy = await prisma.vacancy.create({
+    CreateVacancyRequestSchema.validateSync(body)
+
+    return prisma.vacancy.create({
       data: {
         ...body,
         employer: {
@@ -100,6 +104,7 @@ export class VacancyController extends Controller {
     @Query() workplaceModel?: VacancyWorkplaceModel[],
     @Query() status?: VacancyStatus,
     @Query() employer_isStartup?: boolean,
+    @Query() isHidden?: boolean,
   ): Promise<PageResponse<GetVacancyResponse>> {
     const salary = parseIntFilterQueryParam(salaryFilter);
 
@@ -111,11 +116,13 @@ export class VacancyController extends Controller {
         case UserRole.APPLICANT:
           if(includeResponses) includeResponses = includeResponses = { where: { candidateId: req.user.id } };
           status = VacancyStatus.PUBLISHED;
+          isHidden = false
           break;
       }
     } else {
       if(includeResponses) throw new HttpError(401, "User must be authorized to see vacancy responses")
       status = VacancyStatus.PUBLISHED;
+      isHidden = false;
     }
 
     where = {
@@ -136,6 +143,7 @@ export class VacancyController extends Controller {
         { name: { contains: nameOrEmployerName, mode: "insensitive" } },
         { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } } },
       ] : undefined,
+      isHidden,
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -196,7 +204,11 @@ export class VacancyController extends Controller {
         };
       }
     } else if(req.user.role === UserRole.APPLICANT) {
-      where = { responses: { some: { candidateId: req.user.id } } };
+      where = {
+        responses: { some: { candidateId: req.user.id } },
+        status: VacancyStatus.PUBLISHED,
+        isHidden: false,
+      };
 
       if(includeResponses) {
         includeResponses = {
@@ -240,6 +252,7 @@ export class VacancyController extends Controller {
   @Response<HttpErrorBody & {"error":
       | "Applicant already viewed this vacancy"
       | "Anonymous with this ip already viewed this vacancy"
+      | "Vacancy is unpublished or hidden"
   }>(409)
   public async addViewed(
     @Path() id: string,
@@ -251,6 +264,7 @@ export class VacancyController extends Controller {
     });
 
     if(!vacancy) throw new HttpError(404, "Vacancy not found");
+    if(vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) throw new HttpError(409, "Vacancy is unpublished or hidden");
 
     if (req.user && req.user.role === UserRole.APPLICANT) {
       if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
@@ -299,18 +313,6 @@ export class VacancyController extends Controller {
     };
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Invalid body request for employer" | "Invalid body request for manager"}>(403)
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutVacancyRequestFromEmployer | PutVacancyRequestFromManager,
-  ): Promise<void> {
-    await this.patchById(req, id, body);
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Vacancy not found"}>(404)
@@ -320,6 +322,14 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
+    validateSyncByAtLeastOneSchema(
+      [
+        PatchVacancyRequestFromManagerSchema,
+        PatchVacancyRequestFromEmployerSchema,
+      ],
+      body
+    )
+
     const { _requester, ...bodyData } = body;
     if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
     if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
@@ -348,15 +358,20 @@ export class VacancyController extends Controller {
     @Query() include?: ("employer" | "responses" | "responses.candidate")[]
   ): Promise<GetVacancyResponse> {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
-    const where = { id };
+    let where: Prisma.VacancyWhereUniqueInput = { id };
 
     if(req.user) {
       switch (req.user.role) {
-        case UserRole.EMPLOYER:
-          if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
-          break;
         case UserRole.APPLICANT:
           if (includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+          where = {
+            ...where,
+            status: VacancyStatus.PUBLISHED,
+            isHidden: false,
+          }
+          break;
+        case UserRole.EMPLOYER:
+          if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
           break;
         case UserRole.MANAGER:
           if (include?.includes("responses.candidate")) includeResponses = { include: { candidate: true } };

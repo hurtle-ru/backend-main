@@ -20,10 +20,10 @@ import { JwtModel, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import {
   BasicResume,
-  CreateResumeRequest,
-  GetResumeResponse,
-  PutResumeRequest,
+  CreateResumeRequest, CreateResumeRequestSchema,
+  GetResumeResponse, PatchByIdResumeRequest, PatchByIdResumeRequestSchema, PatchResumeResponse,
 } from "./resume.dto";
+
 
 @injectable()
 @Route("api/v1/resumes")
@@ -40,6 +40,8 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
+    CreateResumeRequestSchema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
     })
@@ -133,30 +135,10 @@ export class ResumeController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeRequest>,
-  ): Promise<PutResumeRequest> {
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
-    }
+    @Body() body: PatchByIdResumeRequest,
+  ): Promise<PatchResumeResponse> {
+    PatchByIdResumeRequestSchema.validateSync(body);
 
-    const resume = await prisma.resume.findUnique({ where });
-    if(!resume) throw new HttpError(404, "Resume not found");
-
-    return prisma.resume.update({
-      where,
-      data: body,
-    });
-  }
-
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "Resume not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeRequest,
-  ): Promise<PutResumeRequest> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
