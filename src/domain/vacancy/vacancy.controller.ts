@@ -64,7 +64,7 @@ export class VacancyController extends Controller {
   ): Promise<BasicVacancy> {
     CreateVacancyRequestSchema.validateSync(body)
 
-    return prisma.vacancy.create({
+    const vacancy = await prisma.vacancy.create({
       data: {
         ...body,
         employer: {

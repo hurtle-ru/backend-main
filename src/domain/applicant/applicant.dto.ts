@@ -28,7 +28,6 @@ export type BasicApplicant = Pick<
   | "isVisibleToEmployers"
   | "isConfirmedByManager"
   | "isEmailConfirmed"
-  | "hhTokenSub"
   | "googleTokenSub"
 >;
 
@@ -53,7 +52,6 @@ const BasicApplicantSchema: yup.ObjectSchema<BasicApplicant> = yup.object({
   isVisibleToEmployers: yup.boolean().defined(),
   isConfirmedByManager: yup.boolean().defined(),
   isEmailConfirmed: yup.boolean().defined(),
-  hhTokenSub: yup.string().defined().nullable(),
   googleTokenSub: yup.string().defined().nullable(),
 });
 
