@@ -75,20 +75,6 @@ export class EmployerController extends Controller {
     await prisma.employer.archive(req.user.id);
   }
 
-  @Put("me")
-  @Security("jwt", [UserRole.EMPLOYER])
-  public async putMe(
-    @Request() req: JwtModel,
-    @Body() body: PutMeRequestByEmployer
-  ): Promise<BasicEmployer> {
-    const employer = await prisma.employer.update({
-      where: { id: req.user.id },
-      data: body,
-    });
-
-    return employer;
-  }
-
   @Patch("me")
   @Security("jwt", [UserRole.EMPLOYER])
   public async patchMe(
@@ -181,22 +167,6 @@ export class EmployerController extends Controller {
     if (req.user.id !== id && req.user.role !== UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another employer");
 
     await prisma.employer.archive(id);
-  }
-
-  @Put("{id}")
-  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
-  @Security("jwt", [UserRole.MANAGER])
-  public async putById(
-    @Path() id: string,
-    @Body() body: PutByIdRequestByEmployer
-  ): Promise<BasicEmployer> {
-    const where = { id };
-    if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
-
-    return prisma.employer.update({
-      where,
-      data: body,
-    });
   }
 
   @Patch("{id}")

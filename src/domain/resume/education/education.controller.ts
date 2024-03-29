@@ -8,18 +8,15 @@ import {
   Post,
   Put,
   Request,
-  Res,
   Response,
   Route,
   Security,
-  SuccessResponse,
   Tags,
-  TsoaResponse,
 } from "tsoa";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeEducation, CreateResumeEducationRequest, PutResumeEducationRequest } from "./education.dto";
+import { BasicResumeEducation, CreateResumeEducationRequest, CreateResumeEducationRequestSchema, PatchResumeEducationRequest, PatchResumeEducationRequestSchema } from "./education.dto";
 
 
 @Route("api/v1/resumeEducation")
@@ -32,6 +29,8 @@ export class ResumeEducationController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeEducationRequest,
   ): Promise<BasicResumeEducation> {
+    CreateResumeEducationRequestSchema.validateSync(body)
+
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
@@ -45,36 +44,16 @@ export class ResumeEducationController extends Controller {
     });
   }
 
-  @Put("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Response<HttpErrorBody>(404, "ResumeEducation not found")
-  public async putById(
-    @Request() req: JwtModel,
-    @Path() id: string,
-    @Body() body: PutResumeEducationRequest
-  ): Promise<void> {
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
-
-    const education = await prisma.resumeEducation.findUnique({ where });
-    if (!education) throw new HttpError(404, "ResumeEducation not found");
-
-    await prisma.resumeEducation.update({
-      where,
-      data: body,
-    });
-  }
-
   @Patch("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "ResumeEducation not found")
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutResumeEducationRequest>,
+    @Body() body: PatchResumeEducationRequest,
   ): Promise<void> {
+    PatchResumeEducationRequestSchema.validateSync(body);
+
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),

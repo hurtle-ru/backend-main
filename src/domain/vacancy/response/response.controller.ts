@@ -17,9 +17,12 @@ import {
 import {
   BasicVacancyResponse,
   CreateVacancyResponseRequestFromApplicant,
+  CreateVacancyResponseRequestFromApplicantSchema,
   CreateVacancyResponseRequestFromManager,
+  CreateVacancyResponseRequestFromManagerSchema,
   GetVacancyResponseResponse,
-  PutVacancyResponseRequest,
+  PatchVacancyResponseRequest,
+  PatchVacancyResponseRequestSchema,
 } from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
@@ -30,6 +33,9 @@ import { Prisma, VacancyResponseStatus, VacancyStatus } from "@prisma/client";
 import { publicCacheMiddleware } from "../../../infrastructure/cache/public-cache.middleware";
 import { GetAllVacancyCitiesResponse } from "../vacancy.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
+import {
+  validateSyncByAtLeastOneSchema,
+} from "../../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -56,6 +62,14 @@ export class VacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyResponseRequestFromApplicant | CreateVacancyResponseRequestFromManager,
   ): Promise<BasicVacancyResponse> {
+    validateSyncByAtLeastOneSchema(
+      [
+        CreateVacancyResponseRequestFromApplicantSchema,
+        CreateVacancyResponseRequestFromManagerSchema,
+      ],
+      body
+    )
+
     const { _requester, ...bodyData } = body;
     if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
     if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
@@ -275,8 +289,10 @@ export class VacancyResponseController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutVacancyResponseRequest>,
+    @Body() body: PatchVacancyResponseRequest,
   ): Promise<BasicVacancyResponse> {
+    PatchVacancyResponseRequestSchema.validateSync(body)
+
     const where = {
       id,
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
@@ -300,7 +316,6 @@ export class VacancyResponseController extends Controller {
       data: body,
     });
   }
-
 
   @Delete("{id}")
   @Response<HttpErrorBody & {"error": "VacancyResponse not found"}>(404)
