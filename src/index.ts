@@ -29,7 +29,7 @@ startServer().catch(error => {
 });
 
 async function startServer() {
-  await validateConfig();
+  if (appConfig.NODE_ENV === "production") await validateConfig();
 
   app.enable("trust proxy");
 
