@@ -9,6 +9,7 @@ import {
   RegisterApplicantWithHhRequestSchema,
   AuthWithHhRequest,
   AuthWithHhRequestSchema,
+  AuthWithHhUserResponse,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -232,11 +233,12 @@ export class AuthController extends Controller {
 
   @Post("withHh")
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Invalid auth token"}>(401)
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
+  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
   public async authWithHH(
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: HhAuthorizationCodeRequest,
-  ): Promise<CreateAccessTokenResponse> {
+  ): Promise<AuthWithHhUserResponse> {
     HhAuthorizationCodeRequestSchema.validateSync(body)
 
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
@@ -244,13 +246,25 @@ export class AuthController extends Controller {
 
     const applicantHhToken = await prisma.hhToken.findUnique({ where: { hhApplicantId: hhApplicant.id } });
 
-    if(!applicantHhToken) throw new HttpError(401, "Invalid auth token")
+    if ( applicantHhToken ) {
+      const accessToken = this.authService.createToken({
+        id: applicantHhToken.applicantId,
+        role: UserRole.APPLICANT,
+      });
 
-    const accessToken = this.authService.createToken({
-      id: applicantHhToken.applicantId,
-      role: UserRole.APPLICANT,
-    });
+      return { token: accessToken };
+    }
 
-    return { token: accessToken };
+    return {
+      message: "Hh token is valid, but registration is required",
+      HhAccount: {
+        firstName: hhApplicant.firstName,
+        lastName: hhApplicant.lastName,
+        middleName: hhApplicant.middleName,
+        email: hhApplicant.email,
+        phone: hhApplicant.phone,
+      },
+    };
+
   }
 }

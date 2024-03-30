@@ -42,6 +42,17 @@ export interface CreateAccessTokenResponse {
   token: string;
 }
 
+export type AuthWithHhUserResponse = CreateAccessTokenResponse | {
+  message: "Hh token is valid, but registration is required",
+  HhAccount: {
+    firstName: string;
+    lastName: string;
+    middleName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  }
+}
+
 export class RegisterApplicantRequest {
   static schema = yup.object({
     email: yup.string().email().min(3),
