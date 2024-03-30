@@ -5,6 +5,8 @@ export type BasicApplicant = {
   firstName: string;
   lastName: string;
   middleName?: string | null;
+  email: string | null;
+  phone?: string | null;
   isApplicant: boolean;
 }
 
