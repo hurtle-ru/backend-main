@@ -41,3 +41,10 @@ export type GetMeetingSlotResponse = BasicMeetingSlot & {
   meeting?: BasicMeeting | null;
   manager?: BasicManager;
 };
+
+/**
+ * @isInt Should be integer
+ * @minimum 1
+ * @maximum 2000
+ */
+export type SlotPageSizeNumber = number;
