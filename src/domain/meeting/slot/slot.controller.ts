@@ -19,7 +19,7 @@ import {
   BasicMeetingSlot,
   CreateMeetingSlotRequest, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
   GetMeetingSlotResponse,
-  PutMeetingSlotRequest,
+  PutMeetingSlotRequest, SlotPageSizeNumber,
 } from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -150,14 +150,19 @@ export class MeetingSlotController extends Controller {
   public async getMy(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
-    @Query() size: PageSizeNumber = 60,
+    @Query() size: SlotPageSizeNumber = 60,
     @Query() types?: MeetingType[],
     @Query() afterDateTime?: Date,
     @Query() beforeDateTime?: Date,
+    @Query() available: boolean = false,
   ): Promise<PageResponse<BasicMeetingSlot>> {
+    if(req.user.role !== UserRole.MANAGER && available)
+      throw new HttpError(403, "Only managers have access to see available slots with this method");
+
+    const currentDate = new Date();
     const where = {
       managerId: req.user.role === UserRole.MANAGER ? req.user.id : undefined,
-      meeting: {
+      meeting: available ? null : {
         employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
       },
@@ -165,6 +170,7 @@ export class MeetingSlotController extends Controller {
       dateTime: {
         ...(afterDateTime && { gte: afterDateTime }),
         ...(beforeDateTime && { lte: beforeDateTime }),
+        ...(available && (!afterDateTime || afterDateTime < currentDate) && { gte: currentDate }),
       },
     };
 
