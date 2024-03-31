@@ -31,3 +31,5 @@ export const ReminderMinutesBeforeMeeting = [
   60,
   24 * 60,
 ];
+
+export const CreateSlotsWithinRangeMaximum = 1440;
