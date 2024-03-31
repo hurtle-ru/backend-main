@@ -14,6 +14,23 @@ export type CreateMeetingSlotRequest = Pick<
   | "types"
 >;
 
+export type CreateMeetingSlotsWithinRangeRequest = Pick<
+  MeetingSlot,
+  | "types"
+> & {
+  /**
+   * Интервал между слотами (в минутах)
+   * @example 40
+   */
+  interval: number;
+  startDate: Date;
+  endDate: Date;
+};
+
+export type CreateMeetingSlotsWithinRangeResponse = {
+  count: number,
+}
+
 export type PutMeetingSlotRequest = Pick<
   MeetingSlot,
   | "dateTime"

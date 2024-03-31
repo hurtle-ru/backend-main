@@ -15,14 +15,19 @@ import {
   Tags,
 } from "tsoa";
 import { GUEST_ROLE, JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicMeetingSlot, CreateMeetingSlotRequest, GetMeetingSlotResponse, PutMeetingSlotRequest } from "./slot.dto";
+import {
+  BasicMeetingSlot,
+  CreateMeetingSlotRequest, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
+  GetMeetingSlotResponse,
+  PutMeetingSlotRequest,
+} from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
-import { MeetingPaymentStatus, MeetingSlot, MeetingType } from "@prisma/client";
+import { MeetingPaymentStatus, MeetingSlot, MeetingType, Prisma } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
-import { MeetingPaymentController } from "../payment/payment.controller";
+import { CreateSlotsWithinRangeMaximum } from "../meeting.config";
 
 
 @injectable()
@@ -44,6 +49,43 @@ export class MeetingSlotController extends Controller {
         ...body,
         managerId: req.user.id,
       },
+    });
+  }
+
+  @Post("withinRange")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error":
+      | "startDate must be less than endDate"
+      | "Interval must be greater than 0"
+      | "Given range goes beyond the limit of the maximum number of slots possible to create in a single request"
+  }>(422)
+  public async createWithinRange(
+    @Request() req: JwtModel,
+    @Body() body: CreateMeetingSlotsWithinRangeRequest,
+  ): Promise<CreateMeetingSlotsWithinRangeResponse> {
+    if(body.startDate >= body.endDate) throw new HttpError(422, "startDate must be less than endDate");
+
+    const startMinutes = body.startDate.getTime();
+    const endMinutes = body.endDate.getTime();
+
+    const intervalMilliseconds = body.interval * 60 * 1000;
+    if (intervalMilliseconds <= 0) throw new HttpError(422, "Interval must be greater than 0");
+
+    const slotsToCreate: Prisma.MeetingSlotCreateManyInput[] = [];
+    for(let slotDateTime = startMinutes; slotDateTime <= endMinutes; slotDateTime += intervalMilliseconds) {
+      slotsToCreate.push({
+        managerId: req.user.id,
+        types: body.types,
+        dateTime: new Date(slotDateTime),
+      });
+
+      if(slotsToCreate.length >= CreateSlotsWithinRangeMaximum) {
+        throw new HttpError(422, "Given range goes beyond the limit of the maximum number of slots possible to create in a single request");
+      }
+    }
+
+    return prisma.meetingSlot.createMany({
+      data: slotsToCreate,
     });
   }
 
