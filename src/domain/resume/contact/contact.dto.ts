@@ -11,9 +11,9 @@ export type BasicResumeContact = Omit<
 
 const BasicResumeContactSchema: yup.ObjectSchema<BasicResumeContact> = yup.object({
   id: yup.string().defined().length(36),
-  name: yup.string().defined().trim().min(3).max(50).nullable(),
+  name: yup.string().defined().trim().min(0).max(50).nullable(),
   type: yupOneOfEnum(ContactType).defined(),
-  value: yup.string().defined().trim().min(3).max(255),
+  value: yup.string().defined().trim().min(0).max(255),
   preferred: yup.boolean().defined(),
   resumeId: yup.string().defined().length(36),
 })
