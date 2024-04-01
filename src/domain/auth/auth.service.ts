@@ -3,9 +3,9 @@ import {
   JwtModel,
   RegisterApplicantRequest,
   RegisterApplicantWithGoogleRequest,
-  RegisterApplicantWithHhRequest,
   RegisterEmployerRequest,
-  registerApplicantHhToken,
+  RegisterApplicantHhToken,
+  RegisterApplicantWithHhRequest,
 } from "./auth.dto";
 import { authConfig } from "./auth.config";
 import * as bcrypt from "bcryptjs";
@@ -83,7 +83,7 @@ export class AuthService {
     });
   }
 
-  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: registerApplicantHhToken) {
+  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: RegisterApplicantHhToken) {
     const applicant = await prisma.applicant.create({
       data: {
         login: body.email,

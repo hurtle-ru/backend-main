@@ -5,12 +5,15 @@ import {
   RegisterApplicantRequest, RegisterApplicantWithGoogleRequest,
   RegisterEmployerRequest,
   UserRole,
-  RegisterApplicantWithHhRequest,
+  RegisterApplicantWithHhByAuthCodeRequest,
+  RegisterApplicantWithHhByHhTokenRequest,
   RegisterApplicantWithHhByAuthCodeRequestSchema,
   RegisterApplicantWithHhByHhTokenRequestSchema,
   AuthWithHhRequest,
   AuthWithHhRequestSchema,
   AuthWithHhUserResponse,
+  HH_AUTHORIZATION_CODE,
+  HH_TOKEN,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -22,7 +25,7 @@ import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../externa
 import { GoogleAuthService } from "../../external/google/auth/auth.service";
 import { HhAuthService } from "../../external/hh/auth/auth.service";
 import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
-import { HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
+import { BasicHhToken, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
 
@@ -212,26 +215,32 @@ export class AuthController extends Controller {
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
   @Response<HttpErrorBody & {"error": "User with this hh account already exists"}>(409)
   public async registerApplicantWithHh(
-    @Body() body: RegisterApplicantWithHhRequest,
+    @Body() body: RegisterApplicantWithHhByHhTokenRequest | RegisterApplicantWithHhByAuthCodeRequest,
   ): Promise<CreateAccessTokenResponse> {
+    let hhToken: BasicHhToken;
+
+    const { _authBy, ...bodyWithOutAuthBy } = body;
+
     validateSyncByAtLeastOneSchema(
       [
-        RegisterApplicantWithHhByAuthCodeRequestSchema,
-        RegisterApplicantWithHhByHhTokenRequestSchema
+        RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy"]),
+        RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy"])
       ],
-      body
+      bodyWithOutAuthBy,
     )
 
-    if (body.authorizationCode) {}
+    if (body._authBy === HH_AUTHORIZATION_CODE) {
+      hhToken = await this.hhAuthService.createToken(body.authorizationCode);
+    }
+    else if (body._authBy === HH_TOKEN) hhToken = body.hhToken;
 
-    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
-    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken!.accessToken);
 
     if (await prisma.hhToken.exists({ hhApplicantId: hhApplicant.id })) {
       throw new HttpError(409, "User with this hh account already exists")
     }
 
-    const applicant = await this.authService.registerApplicantWithHh(body, {...hhToken, hhApplicantId: hhApplicant.id });
+    const applicant = await this.authService.registerApplicantWithHh(body, {...hhToken!, hhApplicantId: hhApplicant.id });
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
@@ -267,8 +276,8 @@ export class AuthController extends Controller {
 
     return {
       message: "Hh token is valid, but registration is required",
-      HhToken: hhToken,
-      HhAccount: {
+      hhToken,
+      hhAccount: {
         firstName: hhApplicant.firstName,
         lastName: hhApplicant.lastName,
         middleName: hhApplicant.middleName,
