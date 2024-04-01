@@ -1,7 +1,7 @@
 import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 import * as yup from "yup";
 import { BasicApplicant } from "../applicant/applicant.dto";
-import { BasicHhToken, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
+import { BasicHhToken, BasicHhTokenSchema, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 import { HhToken } from "@prisma/client";
 import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
 
@@ -22,6 +22,7 @@ export enum UserRole {
 
 export const GUEST_ROLE = "GUEST";
 export const PUBLIC_SCOPE = "PUBLIC";
+
 
 export interface CreateAccessTokenRequest {
   login: string;
@@ -44,6 +45,7 @@ export interface CreateAccessTokenResponse {
 
 export type AuthWithHhUserResponse = CreateAccessTokenResponse | {
   message: "Hh token is valid, but registration is required",
+  HhToken: BasicHhToken,
   HhAccount: {
     firstName: string;
     lastName: string;
@@ -138,9 +140,16 @@ export class RegisterApplicantWithGoogleRequest {
 
 export type registerApplicantHhToken = BasicHhToken & Pick<HhToken, "hhApplicantId">
 
-export type RegisterApplicantWithHhRequest = _RegisterApplicantRequest & HhAuthorizationCodeRequest
 
-export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhRequest> = _RegisterApplicantRequestSchema.concat(HhAuthorizationCodeRequestSchema)
+export type RegisterApplicantWithHhRequest = _RegisterApplicantRequest & (HhAuthorizationCodeRequest | BasicHhToken)
+
+export const RegisterApplicantWithHhByAuthCodeRequestSchema: yup.ObjectSchema<_RegisterApplicantRequest & HhAuthorizationCodeRequest> = _RegisterApplicantRequestSchema.concat(
+  HhAuthorizationCodeRequestSchema
+)
+
+export const RegisterApplicantWithHhByHhTokenRequestSchema: yup.ObjectSchema<_RegisterApplicantRequest & BasicHhToken> = _RegisterApplicantRequestSchema.concat(
+  BasicHhTokenSchema,
+)
 
 export type AuthWithHhRequest = {
   role: APPLICANT;

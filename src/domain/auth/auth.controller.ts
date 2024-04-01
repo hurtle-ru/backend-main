@@ -6,7 +6,8 @@ import {
   RegisterEmployerRequest,
   UserRole,
   RegisterApplicantWithHhRequest,
-  RegisterApplicantWithHhRequestSchema,
+  RegisterApplicantWithHhByAuthCodeRequestSchema,
+  RegisterApplicantWithHhByHhTokenRequestSchema,
   AuthWithHhRequest,
   AuthWithHhRequestSchema,
   AuthWithHhUserResponse,
@@ -22,6 +23,7 @@ import { GoogleAuthService } from "../../external/google/auth/auth.service";
 import { HhAuthService } from "../../external/hh/auth/auth.service";
 import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
 import { HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
+import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -212,7 +214,15 @@ export class AuthController extends Controller {
   public async registerApplicantWithHh(
     @Body() body: RegisterApplicantWithHhRequest,
   ): Promise<CreateAccessTokenResponse> {
-    RegisterApplicantWithHhRequestSchema.validateSync(body)
+    validateSyncByAtLeastOneSchema(
+      [
+        RegisterApplicantWithHhByAuthCodeRequestSchema,
+        RegisterApplicantWithHhByHhTokenRequestSchema
+      ],
+      body
+    )
+
+    if (body.authorizationCode) {}
 
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
@@ -237,7 +247,7 @@ export class AuthController extends Controller {
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
   public async authWithHH(
     @Request() req: ExpressRequest & JwtModel,
-    @Body() body: HhAuthorizationCodeRequest,
+    @Body() body: AuthWithHhRequest,
   ): Promise<AuthWithHhUserResponse> {
     HhAuthorizationCodeRequestSchema.validateSync(body)
 
@@ -257,6 +267,7 @@ export class AuthController extends Controller {
 
     return {
       message: "Hh token is valid, but registration is required",
+      HhToken: hhToken,
       HhAccount: {
         firstName: hhApplicant.firstName,
         lastName: hhApplicant.lastName,
@@ -265,6 +276,5 @@ export class AuthController extends Controller {
         phone: hhApplicant.phone,
       },
     };
-
   }
 }
