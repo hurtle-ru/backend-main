@@ -9,19 +9,11 @@ export type BasicResumeEducation = Omit<
 
 const BasicResumeEducationSchema: yup.ObjectSchema<BasicResumeEducation> = yup.object({
   id: yup.string().defined().length(36),
-  name: yup.string().defined().trim().min(3).max(50),
-  description: yup.string().defined().trim().min(3).max(255).nullable(),
-  degree: yup.string().defined().trim().min(3).max(50),
-  startYear: yup.number().defined().min(1970).max(new Date().getFullYear()).nullable(),
-  endYear: yup.number().defined().min(1970).max(new Date().getFullYear())
-    .when("startYear", (startYear: any, schema: any) => {
-      return schema.test({
-        test: (endYear: any) => {
-          return !startYear || endYear > startYear;
-        },
-        message: "The start date must be earlier than the end date",
-      })
-    }),
+  name: yup.string().defined().trim().min(0).max(50),
+  description: yup.string().defined().trim().min(0).max(255).nullable(),
+  degree: yup.string().defined().trim().min(0).max(50),
+  startYear: yup.number().defined().min(1930).max(3000).nullable(),
+  endYear: yup.number().defined().min(1930).max(3000),
   resumeId: yup.string().defined().length(36),
 })
 
