@@ -1,7 +1,7 @@
 import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 import * as yup from "yup";
 import { BasicApplicant } from "../applicant/applicant.dto";
-import { BasicHhToken, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
+import { BasicHhToken, BasicHhTokenSchema, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 import { HhToken } from "@prisma/client";
 import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
 
@@ -23,9 +23,32 @@ export enum UserRole {
 export const GUEST_ROLE = "GUEST";
 export const PUBLIC_SCOPE = "PUBLIC";
 
+export type HH_AUTHORIZATION_CODE = "HH_AUTHORIZATION_CODE"
+export const HH_AUTHORIZATION_CODE = "HH_AUTHORIZATION_CODE"
+
+export type HH_TOKEN = "HH_TOKEN"
+export const HH_TOKEN = "HH_TOKEN"
+
+
 export interface CreateAccessTokenRequest {
   login: string;
   password: string;
+}
+
+export interface CreateAccessTokenResponse {
+  token: string;
+}
+
+export type AuthWithHhUserResponse = CreateAccessTokenResponse | {
+  message: "Hh token is valid, but registration is required",
+  hhToken: BasicHhToken,
+  hhAccount: {
+    firstName: string;
+    lastName: string;
+    middleName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  }
 }
 
 export class CreateGuestAccessTokenRequest {
@@ -36,21 +59,6 @@ export class CreateGuestAccessTokenRequest {
   constructor(
     public email: string,
   ) {}
-}
-
-export interface CreateAccessTokenResponse {
-  token: string;
-}
-
-export type AuthWithHhUserResponse = CreateAccessTokenResponse | {
-  message: "Hh token is valid, but registration is required",
-  HhAccount: {
-    firstName: string;
-    lastName: string;
-    middleName?: string | null;
-    email?: string | null;
-    phone?: string | null;
-  }
 }
 
 export class RegisterApplicantRequest {
@@ -75,8 +83,7 @@ export class RegisterApplicantRequest {
   ) {}
 }
 
-// will be fixed in 'validation' task
-export type _RegisterApplicantRequest = Pick<BasicApplicant,
+export type RegisterApplicantWithHhRequest = Pick<BasicApplicant,
   | "email"
   | "contact"
   | "birthDate"
@@ -85,7 +92,7 @@ export type _RegisterApplicantRequest = Pick<BasicApplicant,
   | "middleName"
 >
 
-export const _RegisterApplicantRequestSchema: yup.ObjectSchema<_RegisterApplicantRequest> = yup.object({
+export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhRequest> = yup.object({
   email: yup.string().defined().email().min(3),
   contact: yup.string().defined().trim().min(1),
   firstName: yup.string().defined().trim().min(1),
@@ -136,11 +143,24 @@ export class RegisterApplicantWithGoogleRequest {
   ) {}
 }
 
-export type registerApplicantHhToken = BasicHhToken & Pick<HhToken, "hhApplicantId">
+export type RegisterApplicantHhToken = BasicHhToken & Pick<HhToken, "hhApplicantId">
 
-export type RegisterApplicantWithHhRequest = _RegisterApplicantRequest & HhAuthorizationCodeRequest
+export type RegisterApplicantWithHhByAuthCodeRequest = RegisterApplicantWithHhRequest & HhAuthorizationCodeRequest & {
+  _authBy: HH_AUTHORIZATION_CODE
+}
 
-export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhRequest> = _RegisterApplicantRequestSchema.concat(HhAuthorizationCodeRequestSchema)
+export type RegisterApplicantWithHhByHhTokenRequest = RegisterApplicantWithHhRequest & { hhToken: BasicHhToken } & {
+  _authBy: HH_TOKEN
+}
+
+export const RegisterApplicantWithHhByAuthCodeRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhByAuthCodeRequest> = RegisterApplicantWithHhRequestSchema.concat(
+  HhAuthorizationCodeRequestSchema
+).shape({_authBy: yup.string().defined().oneOf([HH_AUTHORIZATION_CODE] as const)})
+
+export const RegisterApplicantWithHhByHhTokenRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhByHhTokenRequest> = RegisterApplicantWithHhRequestSchema.shape({
+  _authBy: yup.string().defined().oneOf([HH_TOKEN] as const),
+  hhToken: BasicHhTokenSchema,
+})
 
 export type AuthWithHhRequest = {
   role: APPLICANT;
