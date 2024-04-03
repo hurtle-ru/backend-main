@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Employer" ALTER COLUMN "ogrn" SET DATA TYPE CHAR(13);

@@ -50,7 +50,7 @@ model Employer {
   phone                String?            @unique @db.VarChar(15)
   name                 String             @db.VarChar(256)
   inn                  String?            @db.VarChar(12)
-  ogrn                 String?            @db.VarChar(15)
+  ogrn                 String?            @db.Char(13)
   legalForm            EmployerLegalForm?
   agreementNumber      Int?               @default(autoincrement())
   agreementDate        DateTime?
