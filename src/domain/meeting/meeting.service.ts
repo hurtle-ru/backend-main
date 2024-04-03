@@ -59,9 +59,10 @@ export class MeetingService {
 
     text += `\nРоль: <b>${user.role}</b>`;
 
+    console.log(appConfig.NODE_ENV === 'dev')
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML" },
+      options: { parse_mode: "HTML", useDevServerLabel: appConfig.NODE_ENV === 'dev'},
     });
   }
 
