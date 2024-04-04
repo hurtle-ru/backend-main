@@ -44,7 +44,7 @@ export type GetEmployerResponse = BasicEmployer & {
   vacancies?: BasicVacancy[]
 };
 
-export type PutMeRequestByEmployer = Pick<
+export type PatchMeByEmployerRequest = Partial<Pick<
   BasicEmployer,
   | "contact"
   | "firstName"
@@ -60,9 +60,27 @@ export type PutMeRequestByEmployer = Pick<
   | "size"
   | "website"
   | "description"
->
+>>
 
-export type PutByIdRequestByEmployer = Pick<
+export const PatchMeByEmployerRequestSchema: yup.ObjectSchema<PatchMeByEmployerRequest> = BasicEmployerSchema.pick([
+  "contact",
+  "firstName",
+  "middleName",
+  "lastName",
+  "phone",
+  "name",
+  "inn",
+  "ogrn",
+  "legalForm",
+  "city",
+  "isStartup",
+  "size",
+  "website",
+  "description",
+]).partial()
+
+
+export type PatchByIdByEmployerRequest = Partial<Pick<
   BasicEmployer,
   | "email"
   | "login"
@@ -83,4 +101,26 @@ export type PutByIdRequestByEmployer = Pick<
   | "size"
   | "website"
   | "description"
->
+>>
+
+export const PatchByIdByEmployerRequestSchema: yup.ObjectSchema<PatchByIdByEmployerRequest> = BasicEmployerSchema.pick([
+  "email",
+  "login",
+  "contact",
+  "firstName",
+  "middleName",
+  "lastName",
+  "phone",
+  "name",
+  "inn",
+  "ogrn",
+  "legalForm",
+  "agreementNumber",
+  "agreementDate",
+  "isConfirmedByManager",
+  "city",
+  "isStartup",
+  "size",
+  "website",
+  "description",
+])

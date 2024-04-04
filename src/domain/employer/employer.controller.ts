@@ -1,15 +1,17 @@
+import path from "path";
+import { injectable } from "tsyringe";
+import { Readable } from "stream";
+
+import {Request as ExpressRequest} from "express";
+
 import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { BasicEmployer, PutByIdRequestByEmployer, PutMeRequestByEmployer, GetEmployerResponse } from "./employer.dto";
+import { BasicEmployer, GetEmployerResponse, PatchByIdByEmployerRequest, PatchByIdByEmployerRequestSchema, PatchMeByEmployerRequest, PatchMeByEmployerRequestSchema } from "./employer.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
-import { injectable } from "tsyringe";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import { ArtifactService} from "../../external/artifact/artifact.service";
-import { Readable } from "stream";
-import {Request as ExpressRequest} from "express";
-import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 
@@ -79,8 +81,10 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeRequestByEmployer>
+    @Body() body: PatchMeByEmployerRequest
   ): Promise<BasicEmployer> {
+    PatchMeByEmployerRequestSchema.validateSync(body)
+
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
       data: body,
@@ -174,8 +178,10 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: Partial<PutByIdRequestByEmployer>
+    @Body() body: PatchByIdByEmployerRequest
   ): Promise<BasicEmployer> {
+    PatchByIdByEmployerRequestSchema.validateSync(body)
+
     const where = { id };
     if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
 

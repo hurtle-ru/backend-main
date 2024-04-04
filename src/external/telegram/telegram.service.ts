@@ -24,15 +24,15 @@ export class TelegramService {
   }
 
   async sendMessage(text: string, options?: CustomSendMessageOptions): Promise<void> {
-    text = this.useOptions(text, options)
+    text = this.useCustomOptions(text, options)
     await this.bot.sendMessage(this.adminGroupChatId, text, options);
   }
 
-  private useOptions(text: string, options?: CustomSendMessageOptions): string {
-    if (options?.useDevServerLabel) text = this.bold(this.TEST_SERVER_LABEL) + "\n\n" + text
+  private useCustomOptions(text: string, options?: CustomSendMessageOptions): string {
+    if (options?.useDevServerLabel) text = this.boldText(this.TEST_SERVER_LABEL) + "\n\n" + text
 
     return text
   }
 
-  public bold = (text: string): string => "<b>" + text + "</b>"
+  public boldText = (text: string): string => "<b>" + text + "</b>"
 }
