@@ -31,7 +31,7 @@ export type BasicApplicant = Pick<
   | "googleTokenSub"
 >;
 
-const BasicApplicantSchema: yup.ObjectSchema<BasicApplicant> = yup.object({
+export const BasicApplicantSchema: yup.ObjectSchema<BasicApplicant> = yup.object({
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
@@ -42,7 +42,7 @@ const BasicApplicantSchema: yup.ObjectSchema<BasicApplicant> = yup.object({
   middleName: yup.string().defined().trim().min(1).max(50).nullable(),
   lastName: yup.string().defined().trim().min(2).max(50),
   phone: yup.string().defined().trim().min(2).max(15).nullable(),
-  birthDate: yup.date().defined().min(2000).max(new Date().getFullYear() - 13).nullable(),
+  birthDate: yup.date().defined().min(new Date(1900, 0)).max(new Date().getFullYear() - 13).nullable(),
   gender: yupOneOfEnum(Gender).defined().nullable(),
   city: yup.string().defined().trim().min(3).max(255).nullable(),
   country: yup.string().defined().trim().min(3).max(62).nullable(),

@@ -1,8 +1,8 @@
-import TelegramBot, { SendMessageOptions } from "node-telegram-bot-api";
+import TelegramBot from "node-telegram-bot-api";
 import { telegramConfig } from "./telegram.config";
 import { singleton } from "tsyringe";
 import { TelegramQueue } from "./mq/telegram.queue";
-import { TelegramAdminNotificationJobData } from "./telegram.dto";
+import { CustomSendMessageOptions, TelegramAdminNotificationJobData, } from "./telegram.dto";
 import { JobsOptions } from "bullmq/dist/esm/types";
 
 
@@ -10,6 +10,8 @@ import { JobsOptions } from "bullmq/dist/esm/types";
 export class TelegramService {
   private bot: TelegramBot;
   private adminGroupChatId = telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID
+
+  private TEST_SERVER_LABEL = "Сообщение инициализировано на тестовом сервере!"
 
   constructor(
     private readonly queue: TelegramQueue,
@@ -21,7 +23,16 @@ export class TelegramService {
     await this.queue.enqueueAdminNotification(data, opts);
   }
 
-  async sendMessage(text: string, options?: SendMessageOptions): Promise<void> {
+  async sendMessage(text: string, options?: CustomSendMessageOptions): Promise<void> {
+    text = this.useCustomOptions(text, options)
     await this.bot.sendMessage(this.adminGroupChatId, text, options);
   }
+
+  private useCustomOptions(text: string, options?: CustomSendMessageOptions): string {
+    if (options?.useDevServerLabel) text = this.boldText(this.TEST_SERVER_LABEL) + "\n\n" + text
+
+    return text
+  }
+
+  public boldText = (text: string): string => "<b>" + text + "</b>"
 }

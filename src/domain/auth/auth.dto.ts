@@ -1,9 +1,10 @@
-import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 import * as yup from "yup";
-import { BasicApplicant } from "../applicant/applicant.dto";
-import { BasicHhToken, BasicHhTokenSchema, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
+import { BasicApplicant, BasicApplicantSchema } from "../applicant/applicant.dto";
+import { AuthWithHhUserAccountResponse, BasicHhToken, BasicHhTokenSchema, HH_AUTHORIZATION_CODE, HH_TOKEN, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 import { HhToken } from "@prisma/client";
 import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
+import { GoogleTokenSchema } from "../../external/google/auth/auth.dto";
+import { BasicEmployer, BasicEmployerSchema } from "../employer/employer.dto";
 
 
 export interface JwtModel {
@@ -23,12 +24,7 @@ export enum UserRole {
 export const GUEST_ROLE = "GUEST";
 export const PUBLIC_SCOPE = "PUBLIC";
 
-export type HH_AUTHORIZATION_CODE = "HH_AUTHORIZATION_CODE"
-export const HH_AUTHORIZATION_CODE = "HH_AUTHORIZATION_CODE"
-
-export type HH_TOKEN = "HH_TOKEN"
-export const HH_TOKEN = "HH_TOKEN"
-
+export const PasswordSchema = yup.string().trim().min(8).defined()
 
 export interface CreateAccessTokenRequest {
   login: string;
@@ -39,49 +35,44 @@ export interface CreateAccessTokenResponse {
   token: string;
 }
 
-export type AuthWithHhUserResponse = CreateAccessTokenResponse | {
-  message: "Hh token is valid, but registration is required",
-  hhToken: BasicHhToken,
-  hhAccount: {
-    firstName: string;
-    lastName: string;
-    middleName?: string | null;
-    email?: string | null;
-    phone?: string | null;
-  }
-}
+export type CreateGuestAccessTokenRequest = Pick<BasicApplicant, "email">
+export const CreateGuestAccessTokenRequestSchema: yup.ObjectSchema<CreateGuestAccessTokenRequest> = BasicApplicantSchema.pick(["email"])
 
-export class CreateGuestAccessTokenRequest {
-  static schema = yup.object({
-    email: yup.string().email().min(3),
-  });
+export type RegisterEmployerRequest = Pick<BasicEmployer,
+  | "name"
+  | "email"
+  | "contact"
+  | "firstName"
+  | "lastName"
+  | "middleName"
+> & { password: string }
 
-  constructor(
-    public email: string,
-  ) {}
-}
+export const RegisterEmployerRequestSchema: yup.ObjectSchema<RegisterEmployerRequest> = BasicEmployerSchema.pick([
+  "name",
+  "email",
+  "contact",
+  "firstName",
+  "lastName",
+  "middleName",
+]).shape({password: PasswordSchema})
 
-export class RegisterApplicantRequest {
-  static schema = yup.object({
-    email: yup.string().email().min(3),
-    contact: yup.string().trim().min(1),
-    birthDate: yup.date(),
-    password: yup.string().trim().min(8),
-    firstName: yup.string().trim().min(1),
-    lastName: yup.string().trim().min(1),
-    middleName: yup.string().trim().min(1).optional(),
-  });
+export type RegisterApplicantRequest = Pick<BasicApplicant,
+  | "email"
+  | "contact"
+  | "birthDate"
+  | "lastName"
+  | "firstName"
+  | "middleName"
+> & { password: string }
 
-  constructor(
-    public email: string,
-    public contact: string,
-    public birthDate: DateWithoutTime,
-    public password: string,
-    public lastName: string,
-    public firstName: string,
-    public middleName?: string,
-  ) {}
-}
+export const RegisterApplicantRequestSchema: yup.ObjectSchema<RegisterApplicantRequest> = BasicApplicantSchema.pick([
+  "email",
+  "contact",
+  "birthDate",
+  "lastName",
+  "firstName",
+  "middleName",
+]).shape({password: PasswordSchema})
 
 export type RegisterApplicantWithHhRequest = Pick<BasicApplicant,
   | "email"
@@ -92,63 +83,39 @@ export type RegisterApplicantWithHhRequest = Pick<BasicApplicant,
   | "middleName"
 >
 
-export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhRequest> = yup.object({
-  email: yup.string().defined().email().min(3),
-  contact: yup.string().defined().trim().min(1),
-  firstName: yup.string().defined().trim().min(1),
-  lastName: yup.string().defined().trim().min(1),
-  middleName: yup.string().defined().trim().min(1).nullable(),
-  birthDate: yup.date().defined().defined()
-})
+export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhRequest> = BasicApplicantSchema.pick([
+  "email",
+  "contact",
+  "birthDate",
+  "lastName",
+  "firstName",
+  "middleName",
+])
 
-export class RegisterEmployerRequest {
-  static schema = yup.object({
-    name: yup.string().trim().min(2),
-    email: yup.string().email().min(3),
-    contact: yup.string().trim().min(1),
-    password: yup.string().trim().min(8),
-    firstName: yup.string().trim().min(1),
-    lastName: yup.string().trim().min(1),
-    middleName: yup.string().trim().min(1).optional(),
-  });
+export type RegisterApplicantWithGoogleRequest = Pick<BasicApplicant,
+  | "contact"
+  | "birthDate"
+  | "lastName"
+  | "firstName"
+  | "middleName"
+> & { googleToken: string }
 
-  constructor(
-    public name: string,
-    public email: string,
-    public contact: string,
-    public password: string,
-    public lastName: string,
-    public firstName: string,
-    public middleName?: string,
-  ) {}
-}
+export const RegisterApplicantWithGoogleRequestSchema: yup.ObjectSchema<RegisterApplicantWithGoogleRequest> = BasicApplicantSchema.pick([
+  "email",
+  "contact",
+  "birthDate",
+  "lastName",
+  "firstName",
+  "middleName",
+]).shape({ googleToken: GoogleTokenSchema })
 
-export class RegisterApplicantWithGoogleRequest {
-  static schema = yup.object({
-    googleToken: yup.string(),
-    contact: yup.string().trim().min(1),
-    birthDate: yup.date(),
-    firstName: yup.string().trim().min(1),
-    lastName: yup.string().trim().min(1),
-    middleName: yup.string().trim().min(1).optional(),
-  });
-
-  constructor(
-    public googleToken: string,
-    public contact: string,
-    public birthDate: DateWithoutTime,
-    public lastName: string,
-    public firstName: string,
-    public middleName?: string,
-  ) {}
-}
 
 export type RegisterApplicantHhToken = BasicHhToken & Pick<HhToken, "hhApplicantId">
+
 
 export type RegisterApplicantWithHhByAuthCodeRequest = RegisterApplicantWithHhRequest & HhAuthorizationCodeRequest & {
   _authBy: HH_AUTHORIZATION_CODE
 }
-
 export type RegisterApplicantWithHhByHhTokenRequest = RegisterApplicantWithHhRequest & { hhToken: BasicHhToken } & {
   _authBy: HH_TOKEN
 }
@@ -162,6 +129,9 @@ export const RegisterApplicantWithHhByHhTokenRequestSchema: yup.ObjectSchema<Reg
   hhToken: BasicHhTokenSchema,
 })
 
+
+export type AuthWithHhUserResponse = CreateAccessTokenResponse | AuthWithHhUserAccountResponse
+
 export type AuthWithHhRequest = {
   role: APPLICANT;
 } & HhAuthorizationCodeRequest
@@ -169,3 +139,5 @@ export type AuthWithHhRequest = {
 export const AuthWithHhRequestSchema: yup.ObjectSchema<AuthWithHhRequest> = HhAuthorizationCodeRequestSchema.shape({
   role: yup.string().defined().oneOf([APPLICANT] as const)
 })
+export { HH_AUTHORIZATION_CODE, HH_TOKEN };
+
