@@ -23,7 +23,7 @@ import {
   GetVacancyResponseResponse,
   PatchVacancyResponseRequest,
   PatchVacancyResponseRequestSchema,
-  responsesCountResponse,
+  ResponsesCountResponse,
 } from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
@@ -246,7 +246,7 @@ export class VacancyResponseController extends Controller {
   public async responsesCount(
     @Request() req: JwtModel,
     @Query() employerId: string,
-  ): Promise<responsesCountResponse> {
+  ): Promise<ResponsesCountResponse> {
     const employer = await prisma.employer.exists( { id: employerId } );
     if (!employer) throw new HttpError(404, "Employer not found")
 
