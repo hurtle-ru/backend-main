@@ -62,7 +62,7 @@ export type GetVacancyResponseResponse = BasicVacancyResponse & {
   candidateRecommendedBy?: BasicManager | null,
 };
 
-export type ResponsesCountResponse = {
+export type GetVacancyResponsesCountResponse = {
   id: string,
   _count: {
     responses: number,
