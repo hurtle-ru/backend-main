@@ -23,6 +23,7 @@ import {
   GetVacancyResponseResponse,
   PatchVacancyResponseRequest,
   PatchVacancyResponseRequestSchema,
+  ResponsesCountResponse,
 } from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
@@ -239,6 +240,26 @@ export class VacancyResponseController extends Controller {
     return new PageResponse(vacancyResponses, page, size, vacancyResponsesCount);
   }
 
+  @Get("count")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
+  public async responsesCount(
+    @Request() req: JwtModel,
+    @Query() employerId: string,
+  ): Promise<ResponsesCountResponse> {
+    const employer = await prisma.employer.exists( { id: employerId } );
+    if (!employer) throw new HttpError(404, "Employer not found")
+
+    return prisma.vacancy.findMany({
+      where: { employerId },
+      select: {
+        id: true,
+        _count: {
+          select: { responses: true },
+        },
+      }
+    })
+  }
 
   @Get("{id}")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])

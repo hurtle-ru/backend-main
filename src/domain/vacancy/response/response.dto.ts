@@ -26,17 +26,11 @@ const BasicVacancyResponseSchema: yup.ObjectSchema<BasicVacancyResponse> = yup.o
   vacancyId: yup.string().defined().length(36),
 })
 
-export type GetVacancyResponseResponse = BasicVacancyResponse & {
-  candidate?: BasicApplicant,
-  vacancy?: BasicVacancy,
-  candidateRecommendedBy?: BasicManager | null,
-};
-
 export type CreateVacancyResponseRequestFromApplicant = Pick<BasicVacancyResponse,
   | "vacancyId"
-> & {_requester: APPLICANT}
+  > & {_requester: APPLICANT}
 
-export const CreateVacancyResponseRequestFromApplicantSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromApplicant> = BasicVacancyResponseSchema.pick(
+  export const CreateVacancyResponseRequestFromApplicantSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromApplicant> = BasicVacancyResponseSchema.pick(
   ["vacancyId"]
 ).shape({
   _requester: yup.string().defined().oneOf([APPLICANT] as const),
@@ -61,3 +55,16 @@ export type PatchVacancyResponseRequest = Partial<Pick<BasicVacancyResponse,
 export const PatchVacancyResponseRequestSchema: yup.ObjectSchema<PatchVacancyResponseRequest> = BasicVacancyResponseSchema.pick(
   ["status", "isViewedByEmployer"]
 ).partial()
+
+export type GetVacancyResponseResponse = BasicVacancyResponse & {
+  candidate?: BasicApplicant,
+  vacancy?: BasicVacancy,
+  candidateRecommendedBy?: BasicManager | null,
+};
+
+export type ResponsesCountResponse = {
+  id: string,
+  _count: {
+    responses: number,
+  }
+}[]
