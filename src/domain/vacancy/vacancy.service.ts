@@ -1,12 +1,15 @@
 import { injectable, singleton } from "tsyringe";
 import { VacancyEmploymentType, VacancyExperience, VacancyStatus } from "@prisma/client";
 import { TelegramService } from "../../external/telegram/telegram.service";
+import { appConfig } from "../../infrastructure/app.config";
+import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
 
 @injectable()
 @singleton()
 export class VacancyService {
   constructor(
     private readonly telegramService: TelegramService,
+    private readonly adminPanelService: AdminPanelService,
   ) {}
 
   async sendVacancyCreatedToAdminGroup(
@@ -26,7 +29,7 @@ export class VacancyService {
       email: string
     }
   ) {
-    const text =
+    let text =
       `Создана новая вакансия!` +
       `\n` +
       `\nНазвание вакансии: <b>${vacancy.name}</b>` +
@@ -39,12 +42,18 @@ export class VacancyService {
       `\nID: <code>${vacancy.id}</code>` +
       `\nКонтакт: <b>${employer.contact}</b>` +
       `\nEmail: <b>${employer.email}</b>` +
-      `\n` +
-      `\n<a href="https://service.hurtle.ru/vacancies/${vacancy.id}">Админ-ссылка</a>`;
+      "\n"
+
+      if (appConfig.NODE_ENV === 'production') {
+        text += "\n\n" + this.telegramService.formatter.hyperLink(
+          "Админ-ссылка",
+          this.adminPanelService.getLinkOnVacancy(vacancy.id)
+        )
+      }
 
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML" },
+      options: { parse_mode: "HTML", useDevServerLabel: appConfig.NODE_ENV === 'dev'},
     });
   }
 }

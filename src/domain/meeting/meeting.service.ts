@@ -9,6 +9,7 @@ import { TelegramService } from "../../external/telegram/telegram.service";
 import { EmailService } from "../../external/email/email.service";
 import { MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
+import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
 
 
 @injectable()
@@ -18,6 +19,7 @@ export class MeetingService {
     private readonly jazzService: SberJazzService,
     private readonly telegramService: TelegramService,
     private readonly emailService: EmailService,
+    private readonly adminPanelService: AdminPanelService,
   ) {}
 
   doesUserHaveAccessToMeetingSlot(userRole: UserRole | typeof GUEST_ROLE, slotTypes: MeetingType[]): boolean {
@@ -59,7 +61,13 @@ export class MeetingService {
 
     text += `\nРоль: <b>${user.role}</b>`;
 
-    console.log(appConfig.NODE_ENV === 'dev')
+    if (appConfig.NODE_ENV === 'production') {
+      text += "\n\n" + this.telegramService.formatter.hyperLink(
+        "Админ-ссылка",
+        this.adminPanelService.getLinkOnMeeting(meeting.id)
+      )
+    }
+
     await this.telegramService.enqueueAdminNotification({
       text,
       options: { parse_mode: "HTML", useDevServerLabel: appConfig.NODE_ENV === 'dev'},

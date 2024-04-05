@@ -1,17 +1,20 @@
-import TelegramBot from "node-telegram-bot-api";
+import TelegramBot, { ParseMode } from "node-telegram-bot-api";
 import { telegramConfig } from "./telegram.config";
 import { singleton } from "tsyringe";
 import { TelegramQueue } from "./mq/telegram.queue";
 import { CustomSendMessageOptions, TelegramAdminNotificationJobData, } from "./telegram.dto";
 import { JobsOptions } from "bullmq/dist/esm/types";
+import { HtmlFormatter } from "./telegram.service.text-formatter";
 
 
 @singleton()
 export class TelegramService {
   private bot: TelegramBot;
-  private adminGroupChatId = telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID
+  public readonly formatter = new HtmlFormatter()
 
-  private TEST_SERVER_LABEL = "Сообщение инициализировано на тестовом сервере!"
+  public readonly TEST_SERVER_LABEL = "Сообщение инициализировано на тестовом сервере!"
+
+  private adminGroupChatId = telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID
 
   constructor(
     private readonly queue: TelegramQueue,
@@ -29,10 +32,9 @@ export class TelegramService {
   }
 
   private useCustomOptions(text: string, options?: CustomSendMessageOptions): string {
-    if (options?.useDevServerLabel) text = this.boldText(this.TEST_SERVER_LABEL) + "\n\n" + text
+    if (options?.useDevServerLabel) text = this.formatter.boldText(this.TEST_SERVER_LABEL) + "\n\n" + text
 
     return text
   }
 
-  public boldText = (text: string): string => "<b>" + text + "</b>"
 }
