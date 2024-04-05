@@ -32,6 +32,8 @@ export class HhAuthService {
     });
 
     if (response.status !== 200) {
+      console.log("AAAAAAAAAAAAAAAAAAAAAAAA")
+      console.log(response.data)
       throw new HttpError(401, "Code is invalid");
     }
 
