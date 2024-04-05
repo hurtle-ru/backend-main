@@ -94,15 +94,15 @@ model Password {
 }
 
 model HhToken {
-  createdAt          DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  applicant          Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  applicantId        String    @unique
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String    @unique
 
-  hhApplicantId      String    @unique
-  accessToken        String    @db.VarChar(255)
-  refreshToken       String    @db.VarChar(255)
-  expiresIn          Int
+  hhApplicantId String @unique
+  accessToken   String @db.VarChar(255)
+  refreshToken  String @db.VarChar(255)
+  expiresIn     Int
 }
 
 model EmailVerification {
@@ -168,11 +168,11 @@ model Resume {
   id                    String                       @id @default(uuid())
   createdAt             DateTime                     @default(now())
   importedFrom          ResumeImportExternalService?
-  importedId            String?                      @db.VarChar(255)
-  title                 String                       @db.VarChar(50)
-  summary               String?                      @db.VarChar(3000)
+  importedId            String?                      @db.VarChar(512)
+  title                 String                       @db.VarChar(255)
+  summary               String?                      @db.VarChar(5000)
   city                  String?                      @db.VarChar(255)
-  skills                String[]                     @db.VarChar(50)
+  skills                String[]                     @db.VarChar(5000)
   isVisibleToEmployers  Boolean                      @default(true)
   desiredSalary         Int?
   desiredSalaryCurrency Currency?
