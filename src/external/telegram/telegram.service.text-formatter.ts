@@ -8,6 +8,6 @@ abstract class TextFormatter {
 
 @singleton()
 export class HtmlFormatter extends TextFormatter {
-    public boldText  = (text: string,): string => `<b>${text}</b>`
+    public boldText  = (text: string): string => `<b>${text}</b>`
     public hyperLink = (text: string, link: string): string => `<a href="${link}">${text}</a>`
 }
