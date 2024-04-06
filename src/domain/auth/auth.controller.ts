@@ -79,7 +79,7 @@ export class AuthController extends Controller {
       throw new HttpError(401, "User does not have password");
     }
 
-    if (!user || !(await this.authService.comparePasswords(password, user.password!.hash))) {
+    if (!user || !(await this.authService.comparePasswords(password, user.password!.hash.trim()))) {
       throw new HttpError(401, "Invalid login or password");
     }
 
