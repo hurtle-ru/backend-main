@@ -1,7 +1,7 @@
 import { Body, Controller, Request, Path, Post, Query, Response, Route, Tags } from "tsoa";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { Applicant, Employer } from "@prisma/client";
+import { Applicant, Employer, Prisma } from "@prisma/client";
 import { UserRole } from "../auth.dto";
 import { injectable } from "tsyringe";
 import { PasswordResetService } from "./password-reset.service";
@@ -58,12 +58,37 @@ export class PasswordResetController extends Controller {
     const passwordResetRequest = await prisma.passwordResetRequest.delete({ where });
     const passwordHash = await this.authService.generatePasswordHash(body.password);
 
-    const updateQuery = {
-      where: { email: passwordResetRequest.email },
-      data: { password: { update: { hash: passwordHash } } },
-    };
+    let userRoleWithId: { applicantId: string } | { employerId: string } | null = null;
 
-    if(passwordResetRequest.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
-    if(passwordResetRequest.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
+    if(passwordResetRequest.role === UserRole.APPLICANT) {
+      const applicant = await prisma.applicant.findUnique({
+        where: { email: passwordResetRequest.email },
+        select: { id: true },
+      });
+
+      if(applicant) userRoleWithId = { applicantId: applicant.id };
+    }
+
+    if(passwordResetRequest.role === UserRole.EMPLOYER) {
+      const employer = await prisma.employer.findUnique({
+        where: { email: passwordResetRequest.email },
+        select: { id: true },
+      });
+
+      if(employer) userRoleWithId = { employerId: employer.id };
+    }
+
+    if(!userRoleWithId) throw new HttpError(404, "Invalid email or code");
+
+    await prisma.password.upsert({
+      where: userRoleWithId,
+      update: {
+        hash: passwordHash,
+      },
+      create: {
+        hash: passwordHash,
+        ...userRoleWithId,
+      },
+    });
   }
 }
