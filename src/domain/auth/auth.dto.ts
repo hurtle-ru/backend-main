@@ -101,7 +101,6 @@ export type RegisterApplicantWithGoogleRequest = Pick<BasicApplicant,
 > & { googleToken: string }
 
 export const RegisterApplicantWithGoogleRequestSchema: yup.ObjectSchema<RegisterApplicantWithGoogleRequest> = BasicApplicantSchema.pick([
-  "email",
   "contact",
   "birthDate",
   "lastName",
