@@ -76,7 +76,7 @@ export class AuthController extends Controller {
     if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery);
 
     if(user && !user.password) {
-      throw new HttpError(401, "User does not have a password");
+      throw new HttpError(401, "User does not have password");
     }
 
     if (!user || !(await this.authService.comparePasswords(password, user.password!.hash))) {
