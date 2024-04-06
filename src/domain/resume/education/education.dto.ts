@@ -51,4 +51,4 @@ export const PatchResumeEducationRequestSchema: yup.ObjectSchema<PatchResumeEduc
   "degree",
   "startYear",
   "endYear",
-])
+]).partial()
