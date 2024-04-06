@@ -291,6 +291,24 @@ export class AuthController extends Controller {
       return { token: accessToken };
     }
 
+    if (hhApplicant.email){
+      const applicantByEmail = await prisma.applicant.findUnique({ where: { email: hhApplicant.email } })
+
+      if ( applicantByEmail ) {
+        await prisma.hhToken.create({data: {
+          ...hhToken,
+          applicant: { connect: { id: applicantByEmail.id} },
+          hhApplicantId: hhApplicant.id,
+        }})
+        const accessToken = this.authService.createToken({
+          id: applicantByEmail.id,
+          role: UserRole.APPLICANT,
+        });
+
+        return { token: accessToken };
+      }
+    }
+
     return {
       message: "Hh token is valid, but registration is required",
       hhToken,
