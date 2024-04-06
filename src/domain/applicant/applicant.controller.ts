@@ -160,7 +160,7 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}/avatar")
-  @Middlewares(rateLimit({limit: 30, interval: 60}))
+  @Middlewares(rateLimit({limit: 300, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "Applicant not found"}>(404)
   public async getAvatar(
     @Request() req: ExpressRequest,

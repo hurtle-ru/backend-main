@@ -48,7 +48,10 @@ export class AuthController extends Controller {
 
   @Post("accessToken")
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Invalid login or password"}>(401)
+  @Response<HttpErrorBody & {"error":
+      | "Invalid login or password"
+      | "User does not have a password"
+  }>(401)
   public async createAccessToken(
     @Body() body: CreateAccessTokenRequest,
     @Query() role: UserRole,
@@ -71,6 +74,10 @@ export class AuthController extends Controller {
     if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery);
     if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findQuery);
     if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery);
+
+    if(user && !user.password) {
+      throw new HttpError(401, "User does not have password");
+    }
 
     if (!user || !(await this.authService.comparePasswords(password, user.password!.hash))) {
       throw new HttpError(401, "Invalid login or password");
