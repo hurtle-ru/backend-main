@@ -12,7 +12,7 @@ export type AuthWithGoogleUserResponse = CreateAccessTokenResponse | {
   message: "Google token is valid, but registration is required",
   googleAccount: {
     isEmailVerified?: boolean,
-    email: string,
+    email: string | undefined,
     name?: string,
     givenName?: string,
     familyName?: string,
