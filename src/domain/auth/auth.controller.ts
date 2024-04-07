@@ -199,7 +199,7 @@ export class AuthController extends Controller {
       throw new HttpError(401, "Invalid Google token");
     }
 
-    let email = ( googleToken.email_verified ? googleToken.email : body.email)
+    let email = ( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email
     if (!email) throw new HttpError(409, "Need verified google email or provide it")
 
     const existingApplicantByEmail = await prisma.applicant.exists({ email });
