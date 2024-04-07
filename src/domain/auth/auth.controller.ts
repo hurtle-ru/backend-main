@@ -304,6 +304,7 @@ export class AuthController extends Controller {
           applicant: { connect: { id: applicantByEmail.id} },
           hhApplicantId: hhApplicant.id,
         }})
+
         const accessToken = this.authService.createToken({
           id: applicantByEmail.id,
           role: UserRole.APPLICANT,

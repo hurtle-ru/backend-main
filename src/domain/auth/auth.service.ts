@@ -74,12 +74,12 @@ export class AuthService {
   async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined) {
     return await prisma.applicant.create({
       data: {
-        login: googleToken.email || email!,
+        login: (googleToken.email_verified ? googleToken.email : email)!,
         firstName: body.firstName,
         lastName: body.lastName,
         middleName: body.middleName,
         contact: body.contact,
-        email: googleToken.email || email!,
+        email: (googleToken.email_verified ? googleToken.email : email)!,
         birthDate: body.birthDate,
         googleTokenSub: googleToken.sub,
       },
