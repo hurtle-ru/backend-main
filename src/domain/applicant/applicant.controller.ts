@@ -236,7 +236,7 @@ export class ApplicantController extends Controller {
     await prisma.applicant.archive(id);
   }
 
-  @Get("{id}")
+  @Get("{uniqueField}")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   public async getByUniqueKey(
