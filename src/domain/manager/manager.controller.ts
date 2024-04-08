@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { BasicManager, GetManagerResponse, PutMeRequestByManager } from "./manager.dto";
+import { BasicManager, GetManagerResponse, PatchMeRequestByManager, PatchMeRequestByManagerSchema } from "./manager.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { injectable } from "tsyringe";
 import { ArtifactService} from "../../external/artifact/artifact.service";
@@ -64,8 +64,10 @@ export class ManagerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeRequestByManager>
+    @Body() body: PatchMeRequestByManager
   ): Promise<BasicManager> {
+    PatchMeRequestByManagerSchema.validateSync(body)
+
     return prisma.manager.update({
       where: { id: req.user.id },
       data: body,

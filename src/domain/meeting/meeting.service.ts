@@ -61,16 +61,14 @@ export class MeetingService {
 
     text += `\nРоль: <b>${user.role}</b>`;
 
-    if (appConfig.NODE_ENV === 'production') {
-      text += "\n\n" + this.telegramService.formatter.hyperLink(
-        "Админ-ссылка",
-        this.adminPanelService.getLinkOnMeeting(meeting.id)
-      )
-    }
+    text += "\n\n" + this.telegramService.TextFormatter.hyperLink(
+      "Админ-ссылка",
+      this.adminPanelService.getLinkOnMeeting(meeting.id)
+    )
 
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML", useDevServerLabel: appConfig.NODE_ENV === 'dev'},
+      options: { parse_mode: "HTML" },
     });
   }
 
