@@ -33,6 +33,7 @@ import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { Prisma } from "@prisma/client";
 
 
 @injectable()
@@ -245,22 +246,25 @@ export class ApplicantController extends Controller {
     @Query() uniqueFieldType: "id" | "nickname" = "id",
     @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[]
   ): Promise<GetApplicantResponse> {
-    let includeResume: any = false;
-    let includeAiChats: any = false;
+    let includeQuery: Prisma.ApplicantInclude = {};
 
     if(req.user) {
       switch (req.user.role) {
         case UserRole.MANAGER:
-          if (include?.includes("resume")) includeResume = true;
-          if (include?.includes("aiChats")) includeAiChats = true;
+          if(include?.includes("resume")) includeQuery = { ...include, resume: true };
+          if(include?.includes("aiChats")) includeQuery = { ...include, aiChats: true };
+          if(include?.includes("meetings")) includeQuery = { ...include, meetings: true };
+          if(include?.includes("vacancyResponses")) includeQuery = { ...include, vacancyResponses: true };
           break;
         case UserRole.EMPLOYER:
-          if (include?.includes("resume")) includeResume = { where: { isVisibleToEmployers: true } };
-          if (include?.includes("aiChats")) includeAiChats = { where: { employerId: req.user.id } }
+          if(include?.includes("resume")) includeQuery = { ...include, resume: { where: { isVisibleToEmployers: true } } };
+          if(include?.includes("aiChats")) includeQuery = { ...include, aiChats: { where: { employerId: req.user.id } } };
+          if(include?.includes("meetings")) includeQuery = { ...include, meetings: true };
+          if(include?.includes("vacancyResponses")) includeQuery = { ...include, vacancyResponses: true };
           break;
       }
     } else {
-      if (include?.includes("resume")) includeResume = { where: { isVisibleToEmployers: true } };
+      if(include?.includes("resume")) includeQuery = { ...include, resume: { where: { isVisibleToEmployers: true } } };
     }
 
     let where = null;
@@ -269,12 +273,7 @@ export class ApplicantController extends Controller {
 
     const applicant = await prisma.applicant.findUnique({
       where: where!,
-      include: {
-        resume: includeResume,
-        meetings: include?.includes("meetings"),
-        vacancyResponses: include?.includes("vacancyResponses"),
-        aiChats: includeAiChats,
-      },
+      include: includeQuery,
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
