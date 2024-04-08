@@ -7,7 +7,6 @@ import {
   Patch,
   Path,
   Post,
-  Put,
   Query,
   Request,
   Response,
@@ -16,13 +15,18 @@ import {
   Tags,
 } from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
-import { JwtModel, UserRole } from "../auth/auth.dto";
+import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import {
   BasicResume,
-  CreateResumeRequest, CreateResumeRequestSchema,
-  GetResumeResponse, PatchByIdResumeRequest, PatchByIdResumeRequestSchema, PatchResumeResponse,
+  CreateResumeRequest,
+  CreateResumeRequestSchema,
+  GetResumeResponse,
+  PatchByIdResumeRequest,
+  PatchByIdResumeRequestSchema,
+  PatchResumeResponse,
 } from "./resume.dto";
+import { Prisma } from "@prisma/client";
 
 
 @injectable()
@@ -100,16 +104,25 @@ export class ResumeController extends Controller {
 
   @Get("{id}")
   @Response<HttpErrorBody>(404, "Resume not found or is not visible for employers")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("applicant" | "certificates" | "contacts" | "education" | "experience" | "languages")[],
   ): Promise<GetResumeResponse> {
-    const where = {
-      id,
-      ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id }),
-      ...(req.user.role === UserRole.EMPLOYER && { isVisibleToEmployers: true }),
+    let where: Prisma.ResumeWhereUniqueInput = { id };
+
+    if(req.user) {
+      switch(req.user.role) {
+        case UserRole.APPLICANT:
+          where = { ...where, applicantId: req.user.id };
+          break;
+        case UserRole.EMPLOYER:
+          where = { ...where, isVisibleToEmployers: true };
+          break;
+      }
+    } else {
+      where = { ...where, isVisibleToEmployers: true };
     }
 
     const resume = await prisma.resume.findUnique({
