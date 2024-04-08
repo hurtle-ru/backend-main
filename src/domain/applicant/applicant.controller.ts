@@ -239,7 +239,7 @@ export class ApplicantController extends Controller {
   @Get("{uniqueField}")
   @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  public async getByUniqueKey(
+  public async getByUniqueField(
     @Request() req: JwtModel,
     @Path() uniqueField: string,
     @Query() uniqueFieldType: "id" | "nickname" = "id",
