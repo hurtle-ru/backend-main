@@ -1,4 +1,4 @@
-import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags} from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE, JwtModel,
@@ -170,7 +170,7 @@ export class AuthController extends Controller {
       message: "Google token is valid, but registration is required",
       googleAccount: {
         isEmailVerified: googleToken.email_verified,
-        email: googleToken.email!,
+        email: googleToken.email,
         name: googleToken.name,
         givenName: googleToken.given_name,
         familyName: googleToken.family_name,
@@ -185,6 +185,7 @@ export class AuthController extends Controller {
   @Response<HttpErrorBody & {"error":
       | "User with this email already exists"
       | "User with this Google account already exists"
+      | "Need verified google email or provide it"
   }>(409)
   public async registerApplicantWithGoogle(
     @Body() body: RegisterApplicantWithGoogleRequest
@@ -198,13 +199,16 @@ export class AuthController extends Controller {
       throw new HttpError(401, "Invalid Google token");
     }
 
-    const existingApplicantByEmail = await prisma.applicant.exists({ email: googleToken.email! } );
+    let email = ( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email
+    if (!email) throw new HttpError(409, "Need verified google email or provide it")
+
+    const existingApplicantByEmail = await prisma.applicant.exists({ email });
     if(existingApplicantByEmail) throw new HttpError(409, "User with this email already exists");
 
-    const existingApplicantByGoogleToken = await prisma.applicant.exists({ googleTokenSub: googleToken.sub } );
+    const existingApplicantByGoogleToken = await prisma.applicant.exists({ googleTokenSub: googleToken.sub });
     if(existingApplicantByGoogleToken) throw new HttpError(409, "User with this Google account already exists");
 
-    const applicant = await this.authService.registerApplicantWithGoogle(body, googleToken);
+    const applicant = await this.authService.registerApplicantWithGoogle(body, googleToken, email);
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
@@ -289,6 +293,25 @@ export class AuthController extends Controller {
       });
 
       return { token: accessToken };
+    }
+
+    if (hhApplicant.email){
+      const applicantByEmail = await prisma.applicant.findUnique({ where: { email: hhApplicant.email } })
+
+      if ( applicantByEmail ) {
+        await prisma.hhToken.create({data: {
+          ...hhToken,
+          applicant: { connect: { id: applicantByEmail.id} },
+          hhApplicantId: hhApplicant.id,
+        }})
+
+        const accessToken = this.authService.createToken({
+          id: applicantByEmail.id,
+          role: UserRole.APPLICANT,
+        });
+
+        return { token: accessToken };
+      }
     }
 
     return {

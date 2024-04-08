@@ -68,15 +68,18 @@ export class AuthService {
     });
   }
 
-  async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload) {
+  /**
+  * @param {string | undefined} email inputted by user email for not email verified google accounts
+  */
+  async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined) {
     return await prisma.applicant.create({
       data: {
-        login: googleToken.email!,
+        login: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
         firstName: body.firstName,
         lastName: body.lastName,
         middleName: body.middleName,
         contact: body.contact,
-        email: googleToken.email!,
+        email: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
         birthDate: body.birthDate,
         googleTokenSub: googleToken.sub,
       },
