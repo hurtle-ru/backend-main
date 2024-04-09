@@ -4,7 +4,7 @@ import { VacancyResponse, VacancyResponseStatus } from "@prisma/client";
 import { BasicApplicant } from "../../applicant/applicant.dto";
 import { BasicVacancy } from "../vacancy.dto";
 import { BasicManager } from "../../manager/manager.dto";
-import { APPLICANT, MANAGER, RequesterApplicant, RequesterManager } from "../../../infrastructure/controller/requester/requester.dto";
+import { APPLICANT, MANAGER, RequesterApplicant, RequesterApplicantSchema, RequesterManager, RequesterManagerSchema } from "../../../infrastructure/controller/requester/requester.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 
 
@@ -32,9 +32,7 @@ export type CreateVacancyResponseRequestFromApplicant = Pick<BasicVacancyRespons
 
   export const CreateVacancyResponseRequestFromApplicantSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromApplicant> = BasicVacancyResponseSchema.pick(
   ["vacancyId"]
-).shape({
-  _requester: yup.string().defined().oneOf([APPLICANT] as const),
-})
+).concat(RequesterApplicantSchema)
 
 export type CreateVacancyResponseRequestFromManager = Pick<BasicVacancyResponse,
   | "vacancyId"
@@ -43,9 +41,7 @@ export type CreateVacancyResponseRequestFromManager = Pick<BasicVacancyResponse,
 
 export const CreateVacancyResponseRequestFromManagerSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromManager> = BasicVacancyResponseSchema.pick(
   ["vacancyId", "candidateId"]
-).shape({
-  _requester: yup.string().defined().oneOf([MANAGER] as const),
-})
+).concat(RequesterManagerSchema)
 
 export type PatchVacancyResponseRequest = Partial<Pick<BasicVacancyResponse,
   | "status"

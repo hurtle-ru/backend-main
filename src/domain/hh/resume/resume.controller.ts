@@ -39,7 +39,7 @@ export class HhResumeController extends Controller {
   }
 
   /**
-   * Получает список резюме, доступных для импорта, в формате краткого описания (саммари).
+   * Получает список резюме, доступных для импорта, в формате краткого описания (summary).
    */
   @Get("")
   @Security("jwt", [UserRole.APPLICANT])
@@ -47,10 +47,10 @@ export class HhResumeController extends Controller {
   public async getAll(
     @Request() req: JwtModel,
   ): Promise<GetHhResumeSummaryResponse[]> {
-    const hhToken = await prisma.hhToken.findUnique({ where: { applicantId: req.user.id } });
+    let hhToken = await prisma.hhToken.findUnique({ where: { applicantId: req.user.id } });
     if (!hhToken) throw new HttpError(401, "Not authorized in hh.ru");
 
-    await this.hhAuthService.refreshTokenAndSaveIfNeed(hhToken);
+    hhToken = await this.hhAuthService.refreshTokenAndSaveIfNeed(hhToken);
     const hhResumes = await this.hhResumeService.getMine(hhToken.accessToken);
 
     return hhResumes.map(resume => ({

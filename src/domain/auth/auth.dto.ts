@@ -2,7 +2,7 @@ import * as yup from "yup";
 import { BasicApplicant, BasicApplicantSchema } from "../applicant/applicant.dto";
 import { AuthWithHhUserAccountResponse, BasicHhToken, BasicHhTokenSchema, HH_AUTHORIZATION_CODE, HH_TOKEN, HhAuthorizationCodeRequest, HhAuthorizationCodeRequestSchema } from "../../external/hh/auth/auth.dto";
 import { HhToken } from "@prisma/client";
-import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
+import { APPLICANT, APPLICANT_SCHEMA } from "../../infrastructure/controller/requester/requester.dto";
 import { GoogleTokenSchema } from "../../external/google/auth/auth.dto";
 import { BasicEmployer, BasicEmployerSchema } from "../employer/employer.dto";
 
@@ -26,6 +26,7 @@ export const PUBLIC_SCOPE = "PUBLIC";
 
 export const PasswordSchema = yup.string().trim().min(8).defined()
 
+
 export interface CreateAccessTokenRequest {
   login: string;
   password: string;
@@ -35,8 +36,10 @@ export interface CreateAccessTokenResponse {
   token: string;
 }
 
+
 export type CreateGuestAccessTokenRequest = Pick<BasicApplicant, "email">
 export const CreateGuestAccessTokenRequestSchema: yup.ObjectSchema<CreateGuestAccessTokenRequest> = BasicApplicantSchema.pick(["email"])
+
 
 export type RegisterEmployerRequest = Pick<BasicEmployer,
   | "name"
@@ -56,6 +59,7 @@ export const RegisterEmployerRequestSchema: yup.ObjectSchema<RegisterEmployerReq
   "middleName",
 ]).shape({password: PasswordSchema})
 
+
 export type RegisterApplicantRequest = Pick<BasicApplicant,
   | "email"
   | "contact"
@@ -74,6 +78,7 @@ export const RegisterApplicantRequestSchema: yup.ObjectSchema<RegisterApplicantR
   "middleName",
 ]).shape({password: PasswordSchema})
 
+
 export type RegisterApplicantWithHhRequest = Pick<BasicApplicant,
   | "email"
   | "contact"
@@ -91,6 +96,7 @@ export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterAppl
   "firstName",
   "middleName",
 ])
+
 
 export type RegisterApplicantWithGoogleRequest = Pick<BasicApplicant,
   | "contact"
@@ -136,7 +142,6 @@ export type AuthWithHhRequest = {
 } & HhAuthorizationCodeRequest
 
 export const AuthWithHhRequestSchema: yup.ObjectSchema<AuthWithHhRequest> = HhAuthorizationCodeRequestSchema.shape({
-  role: yup.string().defined().oneOf([APPLICANT] as const)
+  role: APPLICANT_SCHEMA
 })
 export { HH_AUTHORIZATION_CODE, HH_TOKEN };
-

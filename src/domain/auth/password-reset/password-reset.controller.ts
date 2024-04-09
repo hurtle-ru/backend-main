@@ -1,7 +1,7 @@
 import { Body, Controller, Request, Path, Post, Query, Response, Route, Tags } from "tsoa";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { Applicant, Employer, Prisma } from "@prisma/client";
+import { Applicant, Employer } from "@prisma/client";
 import { UserRole } from "../auth.dto";
 import { injectable } from "tsyringe";
 import { PasswordResetService } from "./password-reset.service";
