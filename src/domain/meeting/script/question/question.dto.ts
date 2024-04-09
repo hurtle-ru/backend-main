@@ -16,8 +16,8 @@ export const BasicMeetingScriptQuestionSchema: yup.ObjectSchema<BasicMeetingScri
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  text: yup.string().defined().length(36),
-  answerOptions: yup.array(yup.string().defined().length(36)).defined(),
+  text: yup.string().defined(),
+  answerOptions: yup.array(yup.string().defined()).defined(),
 })
 
 export type CreateMeetingScriptQuestionRequest = Pick<
