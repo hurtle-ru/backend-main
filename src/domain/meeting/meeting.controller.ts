@@ -21,8 +21,8 @@ import { MeetingService } from "./meeting.service";
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
-  CreateMeetingRequestByApplicantOrEmployer, CreateMeetingGuestRequest,
-  GetMeetingResponse, PutMeetingRequestByManager, ExportAllResponse,
+  CreateMeetingGuestRequest,
+  GetMeetingResponse, PatchMeetingByManagerRequest, ExportAllResponse, CreateMeetingByApplicantOrEmployerRequest, CreateMeetingRequestSchema, CreateMeetingByApplicantRequestSchema, CreateMeetingByEmployerRequestSchema, PatchMeetingByManagerRequestSchema,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -37,6 +37,7 @@ import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/r
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus } from "@prisma/client";
+import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -70,8 +71,14 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
     @Request() req: ExpressRequest & JwtModel,
-    @Body() body: CreateMeetingGuestRequest | CreateMeetingRequestByApplicantOrEmployer,
+    @Body() body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
   ): Promise<BasicMeeting> {
+    validateSyncByAtLeastOneSchema([
+      CreateMeetingRequestSchema,
+      CreateMeetingByApplicantRequestSchema,
+      CreateMeetingByEmployerRequestSchema,
+    ], body)
+
     const { _requester, ...bodyData } = body;
 
     if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
@@ -437,9 +444,11 @@ export class MeetingController extends Controller {
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   public async patchById(
     @Request() req: JwtModel,
-    @Body() body: Partial<PutMeetingRequestByManager>,
+    @Body() body: PatchMeetingByManagerRequest,
     @Path() id: string,
   ): Promise<BasicMeeting> {
+    PatchMeetingByManagerRequestSchema.validateSync(body)
+
     const where = { id };
 
     const meeting = await prisma.meeting.findUnique({

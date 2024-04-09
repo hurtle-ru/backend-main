@@ -20,12 +20,12 @@ import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.
 import { MeetingScriptAnswerService } from "./answer.service";
 import {
   BasicMeetingScriptAnswer,
-  CreateMeetingScriptAnswerRequest, GetMeetingScriptAnswerResponse,
-  PutMeetingScriptAnswerRequest,
+  CreateMeetingScriptAnswerRequest, CreateMeetingScriptAnswerRequestSchema, GetMeetingScriptAnswerResponse,
+  PatchMeetingScriptAnswerRequest,
+  PatchMeetingScriptAnswerRequestSchema,
 } from "./answer.dto";
 import { PageNumber, PageSizeNumber } from "../../../../infrastructure/controller/pagination/page.dto";
 import { PageResponse } from "../../../../infrastructure/controller/pagination/page.response";
-import { GetMeetingScriptTemplateResponse } from "../template/template.dto";
 
 
 @injectable()
@@ -42,6 +42,8 @@ export class MeetingScriptAnswerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptAnswerRequest,
   ): Promise<BasicMeetingScriptAnswer> {
+    CreateMeetingScriptAnswerRequestSchema.validateSync(body)
+
     return prisma.meetingScriptAnswer.create({
       data: body,
     });
@@ -84,8 +86,10 @@ export class MeetingScriptAnswerController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutMeetingScriptAnswerRequest>,
+    @Body() body: PatchMeetingScriptAnswerRequest,
   ): Promise<void> {
+    PatchMeetingScriptAnswerRequestSchema.validateSync(body)
+
     const answer = await prisma.meetingScriptAnswer.findUnique({
       where: { id },
       select: { id: true },

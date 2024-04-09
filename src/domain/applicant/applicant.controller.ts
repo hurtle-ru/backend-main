@@ -23,7 +23,7 @@ import {
   GetApplicantStatusResponse, PatchMeApplicantRequest, PatchMeApplicantRequestSchema,
   PatchByIdApplicantRequest, PatchByIdApplicantRequestSchema,
 } from "./applicant.dto";
-import { JwtModel, UserRole } from "../auth/auth.dto";
+import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { injectable } from "tsyringe";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
@@ -33,6 +33,7 @@ import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { Prisma } from "@prisma/client";
 
 
 @injectable()
@@ -198,9 +199,9 @@ export class ApplicantController extends Controller {
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async uploadAvatar(
-      @Request() req: JwtModel,
-      @UploadedFile() file: Express.Multer.File,
-      @Path() id: string,
+    @Request() req: JwtModel,
+    @UploadedFile() file: Express.Multer.File,
+    @Path() id: string,
   ): Promise<void> {
     const applicant = await prisma.applicant.findUnique({ where: { id } });
     if (!applicant) throw new HttpError(404, "Applicant not found");
@@ -236,36 +237,43 @@ export class ApplicantController extends Controller {
     await prisma.applicant.archive(id);
   }
 
-  @Get("{id}")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  @Get("{uniqueField}")
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  public async getById(
+  public async getByUniqueField(
     @Request() req: JwtModel,
-    @Path() id: string,
+    @Path() uniqueField: string,
+    @Query() uniqueFieldType: "id" | "nickname" = "id",
     @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[]
   ): Promise<GetApplicantResponse> {
-    let includeResume: any = false;
-    let includeAiChats: any = false;
+    let includeQuery: Prisma.ApplicantInclude = {};
 
-    switch(req.user.role) {
-      case UserRole.MANAGER:
-        if(include?.includes("resume")) includeResume = true;
-        if(include?.includes("aiChats")) includeAiChats = true;
-        break;
-      case UserRole.EMPLOYER:
-        if(include?.includes("resume")) includeResume = { where: { isVisibleToEmployers: true } };
-        if(include?.includes("aiChats")) includeAiChats = { where: { employerId: req.user.id } }
-        break;
+    if(req.user) {
+      switch (req.user.role) {
+        case UserRole.MANAGER:
+          if(include?.includes("resume")) includeQuery = { ...include, resume: true };
+          if(include?.includes("aiChats")) includeQuery = { ...include, aiChats: true };
+          if(include?.includes("meetings")) includeQuery = { ...include, meetings: true };
+          if(include?.includes("vacancyResponses")) includeQuery = { ...include, vacancyResponses: true };
+          break;
+        case UserRole.EMPLOYER:
+          if(include?.includes("resume")) includeQuery = { ...include, resume: { where: { isVisibleToEmployers: true } } };
+          if(include?.includes("aiChats")) includeQuery = { ...include, aiChats: { where: { employerId: req.user.id } } };
+          if(include?.includes("meetings")) includeQuery = { ...include, meetings: true };
+          if(include?.includes("vacancyResponses")) includeQuery = { ...include, vacancyResponses: true };
+          break;
+      }
+    } else {
+      if(include?.includes("resume")) includeQuery = { ...include, resume: { where: { isVisibleToEmployers: true } } };
     }
 
+    let where = null;
+    if (uniqueFieldType === "id") where = { id: uniqueField };
+    else if (uniqueFieldType === "nickname") where = { nickname: uniqueField };
+
     const applicant = await prisma.applicant.findUnique({
-      where: { id },
-      include: {
-        resume: includeResume,
-        meetings: include?.includes("meetings"),
-        vacancyResponses: include?.includes("vacancyResponses"),
-        aiChats: includeAiChats,
-      },
+      where: where!,
+      include: includeQuery,
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");

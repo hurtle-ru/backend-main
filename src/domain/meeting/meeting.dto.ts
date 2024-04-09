@@ -1,16 +1,22 @@
-import { Meeting, MeetingSlot, MeetingStatus, MeetingType } from "@prisma/client";
-import { UserRole } from "../auth/auth.dto";
+import * as yup from 'yup'
+
+import { Meeting, MeetingStatus, MeetingType } from "@prisma/client";
 import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicMeetingSlot } from "./slot/slot.dto";
 import { BasicMeetingFeedback } from "./feedback/feedback.dto";
 import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
 import {
+  APPLICANT_SCHEMA,
+  EMPLOYER_SCHEMA,
   RequesterApplicant,
+  RequesterApplicantSchema,
   RequesterEmployer,
-  RequesterGuest, RequesterManager,
+  RequesterEmployerSchema,
+  RequesterGuest,
+  RequesterGuestSchema,
 } from "../../infrastructure/controller/requester/requester.dto";
-import { CreateMeetingPaymentRequest } from "./payment/payment.dto";
+import { yupOneOfEnum } from '../../infrastructure/validation/requests/enum.yup';
 
 
 export type BasicMeeting = Omit<
@@ -21,6 +27,22 @@ export type BasicMeeting = Omit<
   | "applicant"
   | "employer"
 >;
+
+export const BasicMeetingSchema: yup.ObjectSchema<BasicMeeting> = yup.object({
+  id: yup.string().defined(),
+  createdAt: yup.date().defined(),
+  updatedAt: yup.date().defined(),
+  name: yup.string().defined().trim().min(2).max(100),
+  description: yup.string().defined().trim().max(1000),
+  roomUrl: yup.string().defined().min(3).max(255),
+  type: yupOneOfEnum(MeetingType).defined(),
+  status: yupOneOfEnum(MeetingStatus).defined(),
+  transcript: yup.string().defined().min(3).max(65535).nullable(),
+  slotId: yup.string().defined().length(36),
+  guestEmail: yup.string().defined().min(3).max(255).nullable(),
+  applicantId: yup.string().defined().length(36).nullable(),
+  employerId: yup.string().defined().length(36).nullable(),
+})
 
 export type GetMeetingResponse = BasicMeeting & {
   feedback?: BasicMeetingFeedback[],
@@ -38,28 +60,55 @@ export type CreateMeetingRequest = Pick<
   | "type"
 >;
 
+
+export const CreateMeetingRequestSchema: yup.ObjectSchema<CreateMeetingRequest> = BasicMeetingSchema.pick([
+  "name",
+  "description",
+  "slotId",
+  "type"
+])
+
+
 export type CreateMeetingGuestRequest = CreateMeetingRequest & RequesterGuest & {
   "successCode": string
 }
 
-export type CreateMeetingRequestByApplicantOrEmployer = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
+export const CreateMeetingGuestRequestSchema: yup.ObjectSchema<CreateMeetingGuestRequest> = CreateMeetingRequestSchema
+.concat(RequesterGuestSchema)
+.shape({ successCode: yup.string().trim().min(1).defined() })
 
 
-export type PutMeetingRequestByManager = Pick<
+export type CreateMeetingByApplicantOrEmployerRequest = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
+
+export const CreateMeetingByApplicantRequestSchema: yup.ObjectSchema<CreateMeetingRequest & RequesterApplicant> = CreateMeetingRequestSchema.concat(RequesterApplicantSchema)
+export const CreateMeetingByEmployerRequestSchema: yup.ObjectSchema<CreateMeetingRequest & RequesterEmployer>  = CreateMeetingRequestSchema.concat(RequesterEmployerSchema)
+
+
+export type PatchMeetingByManagerRequest = Partial<Pick<
   Meeting,
   | "name"
   | "description"
   | "status"
   | "transcript"
->;
+>>;
 
-export type PutMeetingRequestByApplicantOrEmployer = Pick<
+export const PatchMeetingByManagerRequestSchema: yup.ObjectSchema<PatchMeetingByManagerRequest> = BasicMeetingSchema.pick([
+  "name",
+  "description",
+  "status",
+  "transcript"
+]).partial()
+
+
+export type PatchMeetingByApplicantOrEmployerRequest = Partial<Pick<
   Meeting,
   | "slotId"
->;
+>>;
 
-// export type PatchMeetingRequestByManager = Partial<PutMeetingRequestByManager> & RequesterManager;
-// export type PatchMeetingRequestByApplicantOrEmployer = Partial<PutMeetingRequestByApplicantOrEmployer> & (RequesterApplicant | RequesterEmployer);
+export const PatchMeetingByApplicantOrEmployerSchemaRequest: yup.ObjectSchema<PatchMeetingByApplicantOrEmployerRequest> = BasicMeetingSchema.pick([
+  "slotId",
+]).partial()
+
 
 export type ExportAllRequest = {
   dateTime: Date,

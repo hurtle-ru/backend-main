@@ -45,7 +45,7 @@ export class VacancyService {
       "\n"
 
       if (appConfig.NODE_ENV === 'production') {
-        text += "\n\n" + this.telegramService.formatter.hyperLink(
+        text += "\n\n" + this.telegramService.TextFormatter.hyperLink(
           "Админ-ссылка",
           this.adminPanelService.getLinkOnVacancy(vacancy.id)
         )
@@ -53,7 +53,7 @@ export class VacancyService {
 
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML", useDevServerLabel: appConfig.NODE_ENV === 'dev'},
+      options: { parse_mode: "HTML" },
     });
   }
 }

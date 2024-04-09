@@ -20,8 +20,9 @@ import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.
 import { MeetingScriptQuestionService } from "./question.service";
 import {
   BasicMeetingScriptQuestion,
-  CreateMeetingScriptQuestionRequest, GetMeetingScriptQuestionResponse,
-  PutMeetingScriptQuestionRequest,
+  CreateMeetingScriptQuestionRequest, CreateMeetingScriptQuestionRequestSchema, GetMeetingScriptQuestionResponse,
+  PatchMeetingScriptQuestionRequest,
+  PatchMeetingScriptQuestionRequestSchema,
 } from "./question.dto";
 
 
@@ -39,6 +40,8 @@ export class MeetingScriptQuestionController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptQuestionRequest,
   ): Promise<BasicMeetingScriptQuestion> {
+    CreateMeetingScriptQuestionRequestSchema.validateSync(body)
+
     return prisma.meetingScriptQuestion.create({
       data: body,
     });
@@ -50,8 +53,9 @@ export class MeetingScriptQuestionController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutMeetingScriptQuestionRequest>,
+    @Body() body: PatchMeetingScriptQuestionRequest,
   ): Promise<void> {
+    PatchMeetingScriptQuestionRequestSchema.validateSync(body)
     const question = await prisma.meetingScriptQuestion.findUnique({
       where: { id },
       select: { id: true },
