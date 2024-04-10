@@ -252,15 +252,15 @@ export class ApplicantController extends Controller {
       switch (req.user.role) {
         case UserRole.MANAGER:
           if(include?.includes("resume")) includeQuery = { ...include, resume: true };
-          if(include?.includes("aiChats")) includeQuery = { ...include, aiChats: true };
-          if(include?.includes("meetings")) includeQuery = { ...include, meetings: true };
-          if(include?.includes("vacancyResponses")) includeQuery = { ...include, vacancyResponses: true };
+          if(include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: true };
+          if(include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
+          if(include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
           break;
         case UserRole.EMPLOYER:
           if(include?.includes("resume")) includeQuery = { ...include, resume: { where: { isVisibleToEmployers: true } } };
-          if(include?.includes("aiChats")) includeQuery = { ...include, aiChats: { where: { employerId: req.user.id } } };
-          if(include?.includes("meetings")) includeQuery = { ...include, meetings: true };
-          if(include?.includes("vacancyResponses")) includeQuery = { ...include, vacancyResponses: true };
+          if(include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: { where: { employerId: req.user.id } } };
+          if(include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
+          if(include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
           break;
       }
     } else {
