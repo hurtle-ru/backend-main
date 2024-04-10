@@ -342,7 +342,7 @@ model PartnershipInquiry {
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
   representativeName String                   @db.VarChar(255)
-  companyName        String                   @db.VarChar(256)
+  companyName        String                   @db.VarChar(255)
   contact            String                   @db.VarChar(255)
   email              String                   @db.VarChar(255)
   status             PartnershipInquiryStatus @default(PENDING)
