@@ -79,7 +79,7 @@ export const CreateVacancyRequestSchema: yup.ObjectSchema<CreateVacancyRequest> 
   "workingHours",
   "workplaceModel",
   "keySkills",
-  "isHidden"
+  "isHidden",
 ])
 
 
