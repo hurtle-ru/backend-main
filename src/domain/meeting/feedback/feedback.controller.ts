@@ -19,8 +19,10 @@ import { MeetingFeedbackService } from "./feedback.service";
 import {
   BasicMeetingFeedback,
   CreateMeetingFeedbackRequest,
+  CreateMeetingFeedbackRequestSchema,
   GetMeetingFeedbackResponse,
-  PutMeetingFeedbackRequest,
+  PatchMeetingFeedbackRequest,
+  PatchMeetingFeedbackRequestSchema,
 } from "./feedback.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -43,6 +45,8 @@ export class MeetingFeedbackController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingFeedbackRequest,
   ): Promise<BasicMeetingFeedback> {
+    CreateMeetingFeedbackRequestSchema.validateSync(body)
+
     const meeting = await prisma.meeting.findUnique({
       where: { id: body.meetingId },
       select: { id: true },
@@ -137,8 +141,10 @@ export class MeetingFeedbackController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutMeetingFeedbackRequest>,
+    @Body() body: PatchMeetingFeedbackRequest,
   ): Promise<BasicMeetingFeedback> {
+    PatchMeetingFeedbackRequestSchema.validateSync(body)
+
     const where = {
       id,
       meeting: { slot: { managerId: req.user.id  } },

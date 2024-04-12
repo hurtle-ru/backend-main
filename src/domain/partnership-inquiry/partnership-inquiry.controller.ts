@@ -16,7 +16,9 @@ import {
 import {
   BasicPartnershipInquiry,
   CreatePartnershipInquiryRequest,
-  PutByIdPartnershipInquiryStatus,
+  CreatePartnershipInquiryRequestSchema,
+  PatchByIdPartnershipInquiryStatusRequest,
+  PatchByIdPartnershipInquiryStatusRequestSchema,
 } from "./partnership-inquiry.dto";
 import { UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
@@ -41,6 +43,8 @@ export class PartnershipInquiryController extends Controller {
   public async create(
     @Body() body: CreatePartnershipInquiryRequest,
   ): Promise<BasicPartnershipInquiry> {
+    CreatePartnershipInquiryRequestSchema.validateSync(body)
+
     const partnershipInquiry = await prisma.partnershipInquiry.create({
       data: body,
     });
@@ -74,8 +78,10 @@ export class PartnershipInquiryController extends Controller {
   @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
   public async patchStatusById(
     @Path() id: string,
-    @Body() body: Partial<PutByIdPartnershipInquiryStatus>,
+    @Body() body: PatchByIdPartnershipInquiryStatusRequest,
   ): Promise<BasicPartnershipInquiry> {
+    PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body)
+
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
       where: { id },
     });

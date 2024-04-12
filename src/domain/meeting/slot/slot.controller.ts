@@ -17,9 +17,9 @@ import {
 import { GUEST_ROLE, JwtModel, UserRole } from "../../auth/auth.dto";
 import {
   BasicMeetingSlot,
-  CreateMeetingSlotRequest, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
+  CreateMeetingSlotRequest, CreateMeetingSlotRequestSchema, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
   GetMeetingSlotResponse,
-  PutMeetingSlotRequest, SlotPageSizeNumber,
+  PatchMeetingSlotRequest, PatchMeetingSlotRequestSchema, SlotPageSizeNumber,
 } from "./slot.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -44,6 +44,8 @@ export class MeetingSlotController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingSlotRequest,
   ): Promise<BasicMeetingSlot> {
+    CreateMeetingSlotRequestSchema.validateSync(body)
+
     return prisma.meetingSlot.create({
       data: {
         ...body,
@@ -215,8 +217,10 @@ export class MeetingSlotController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutMeetingSlotRequest>,
+    @Body() body: PatchMeetingSlotRequest,
   ): Promise<BasicMeetingSlot> {
+    PatchMeetingSlotRequestSchema.validateSync(body)
+
     const where = {
       id,
       managerId: req.user.id,

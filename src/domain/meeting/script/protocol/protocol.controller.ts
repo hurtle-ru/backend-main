@@ -21,6 +21,7 @@ import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.
 import {
   BasicMeetingScriptProtocol,
   CreateMeetingScriptProtocolRequest,
+  CreateMeetingScriptProtocolRequestSchema,
   GetMeetingScriptProtocolResponse,
 } from "./protocol.dto";
 import { PageNumber, PageSizeNumber } from "../../../../infrastructure/controller/pagination/page.dto";
@@ -42,6 +43,8 @@ export class MeetingScriptProtocolController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptProtocolRequest,
   ): Promise<BasicMeetingScriptProtocol> {
+    CreateMeetingScriptProtocolRequestSchema.validateSync(body)
+
     const meeting = await prisma.meeting.findUnique({
       where: { id: body.meetingId },
       select: { id: true },
@@ -68,7 +71,6 @@ export class MeetingScriptProtocolController extends Controller {
       meetingId: meetingId ?? undefined,
       templateId: templateId ?? undefined,
     }
-
     const [protocols, protocolsCount] = await Promise.all([
       prisma.meetingScriptProtocol.findMany({
         skip: (page - 1) * size,

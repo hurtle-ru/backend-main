@@ -38,7 +38,7 @@ const BasicResumeSchema: yup.ObjectSchema<BasicResume> = yup.object({
   isVisibleToEmployers: yup.boolean().defined(),
   desiredSalary: yupUint32().defined().nullable(),
   desiredSalaryCurrency: yupOneOfEnum(Currency).defined().nullable(),
-  applicantId: yup.string().defined(),
+  applicantId: yup.string().defined().length(36),
 });
 
 export type GetResumeResponse = BasicResume & {

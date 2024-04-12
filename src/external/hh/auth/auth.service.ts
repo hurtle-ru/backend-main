@@ -59,18 +59,24 @@ export class HhAuthService {
     };
   }
 
-  async refreshTokenAndSaveIfNeed(hhToken: HhToken) {
+  async refreshTokenAndSaveIfNeed(hhToken: HhToken): Promise<HhToken> {
     if(prisma.hhToken.isExpired(hhToken)) {
       const newToken = await this.refreshAccessToken(hhToken.refreshToken);
+      const newTokenData = {
+        accessToken: newToken.accessToken,
+        refreshToken: newToken.refreshToken,
+        expiresIn: newToken.expiresIn,
+      }
 
       await prisma.hhToken.update({
         where: { applicantId: hhToken.applicantId },
-        data: {
-          accessToken: newToken.accessToken,
-          refreshToken: newToken.refreshToken,
-          expiresIn: newToken.expiresIn,
-        },
+        data: newTokenData,
       });
+
+      return {...hhToken, ...newTokenData}
     }
+
+  return hhToken
   }
+
 }

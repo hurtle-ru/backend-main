@@ -2,7 +2,7 @@ import * as yup from "yup";
 import { Currency, Vacancy, VacancyEmploymentType, VacancyExperience, VacancyReportingForm, VacancyStatus, VacancyTeamRole, VacancyWorkingHours, VacancyWorkplaceModel } from "@prisma/client";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicVacancyResponse } from "./response/response.dto"
-import { MANAGER, EMPLOYER } from "../../infrastructure/controller/requester/requester.dto";
+import { MANAGER, EMPLOYER, RequesterEmployerSchema, RequesterManagerSchema } from "../../infrastructure/controller/requester/requester.dto";
 import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";
 
@@ -87,9 +87,7 @@ export type PatchVacancyRequestFromEmployer = Partial<CreateVacancyRequest> & {
   _requester: EMPLOYER
 }
 
-export const PatchVacancyRequestFromEmployerSchema: yup.ObjectSchema<PatchVacancyRequestFromEmployer> = CreateVacancyRequestSchema.partial().shape({
-  _requester: yup.string().defined().oneOf([EMPLOYER] as const),
-})
+export const PatchVacancyRequestFromEmployerSchema: yup.ObjectSchema<PatchVacancyRequestFromEmployer> = CreateVacancyRequestSchema.partial().concat(RequesterEmployerSchema)
 
 export type PatchVacancyRequestFromManager = Partial<
     CreateVacancyRequest
@@ -105,6 +103,4 @@ export const PatchVacancyRequestFromManagerSchema: yup.ObjectSchema<PatchVacancy
     "price",
     "status",
   ])
-).partial().shape({
-  _requester: yup.string().defined().oneOf([MANAGER] as const),
-})
+).partial().concat(RequesterManagerSchema)
