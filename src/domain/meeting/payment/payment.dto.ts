@@ -27,7 +27,7 @@ export const BasicMeetingPaymentSchema: yup.ObjectSchema<BasicMeetingPayment> = 
   failCode: yup.string().defined().trim().min(1).max(512).nullable(),
   amount: yupUint32().defined().nullable(),
   dueDate: yup.date().defined(),
-  slotId: yup.string().defined().length(36),
+  slotId: yup.string().defined(),
   type: yupOneOfEnum(MeetingType).defined(),
 })
 
