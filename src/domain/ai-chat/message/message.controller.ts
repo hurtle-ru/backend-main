@@ -2,19 +2,13 @@ import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
-  Delete,
-  Get,
   Middlewares,
-  Path,
   Post,
-  Put,
-  Query,
   Request,
   Response,
   Route,
   Security,
   Tags,
-  UploadedFile,
 } from "tsoa";
 import { ApplicantAiChatService } from "../ai-chat.service";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
@@ -23,6 +17,7 @@ import { prisma } from "../../../infrastructure/database/prisma.provider";
 import {
   BasicApplicantAiChatMessage,
   CreateApplicantAiChatMessageRequest,
+  CreateApplicantAiChatMessageRequestSchema,
 } from "./message.dto";
 import { MeetingStatus, MeetingType } from "@prisma/client";
 import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
@@ -50,7 +45,7 @@ export class ApplicantAiChatMessageController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: CreateApplicantAiChatMessageRequest
   ): Promise<BasicApplicantAiChatMessage> {
-    CreateApplicantAiChatMessageRequest.schema.validateSync(body);
+    CreateApplicantAiChatMessageRequestSchema.validateSync(body);
 
     const chat = await prisma.applicantAiChat.findUnique({
       where: { id: body.chatId, employerId: req.user.id },
