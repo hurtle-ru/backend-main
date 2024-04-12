@@ -22,7 +22,7 @@ const BasicVacancySchema: yup.ObjectSchema<BasicVacancy> = yup.object({
   name: yup.string().defined().trim().min(0).max(50),
   teamRole: yupOneOfEnum(VacancyTeamRole).defined(),
   description: yup.string().defined().trim().min(0).max(3000),
-  shortDescription: yup.string().defined().trim().min(0).max(500).nullable(),
+  shortDescription: yup.string().defined().trim().min(0).max(3000).nullable(),
   salary: yupUint32().defined().max(100_000_000),
   salaryCurrency: yupOneOfEnum(Currency).defined(),
   experience: yupOneOfEnum(VacancyExperience).defined(),
@@ -33,7 +33,7 @@ const BasicVacancySchema: yup.ObjectSchema<BasicVacancy> = yup.object({
   workingHours: yupOneOfEnum(VacancyWorkingHours).defined(),
   workplaceModel: yupOneOfEnum(VacancyWorkplaceModel).defined(),
   status: yupOneOfEnum(VacancyStatus).defined(),
-  keySkills: yup.array().of(yup.string().defined().trim().min(0).max(50)).defined().max(30),
+  keySkills: yup.array().of(yup.string().defined().trim().min(0).max(500)).defined().max(50),
   employerId: yup.string().defined().length(36),
   isHidden: yup.boolean().defined(),
 })
