@@ -28,4 +28,6 @@ export type CreateApplicantAiChatMessageRequest = Pick<BasicApplicantAiChatMessa
 
 export const CreateApplicantAiChatMessageRequestSchema: yup.ObjectSchema<CreateApplicantAiChatMessageRequest> = BasicApplicantAiChatMessageSchema.pick(
   ["chatId"]
-  ).shape({ question: yup.string().trim().min(4).max(4000).defined() })
+).shape({
+  question: yup.string().trim().min(4).max(4000).defined(),
+});
