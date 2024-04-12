@@ -12,11 +12,11 @@ export type BasicResumeExperience = Omit<
 const BasicResumeExperienceSchema: yup.ObjectSchema<BasicResumeExperience> = yup.object({
   id: yup.string().defined().length(36),
   company: yup.string().defined().trim().min(0).max(256).nullable(),
-  position: yup.string().defined().trim().max(100),
-  startMonth: yup.number().defined().min(0).max(12),
-  endMonth: yup.number().defined().min(0).max(12).nullable(),
-  endYear: yup.number().defined().min(1930).max(new Date().getFullYear()),
-  startYear: yup.number().defined().min(1930).max(new Date().getFullYear()),
+  position: yup.string().defined().trim().max(255),
+  startMonth: yup.number().defined().max(12),
+  endMonth: yup.number().defined().max(12).nullable(),
+  endYear: yup.number().defined().max(new Date().getFullYear()),
+  startYear: yup.number().defined().max(new Date().getFullYear()),
   description: yup.string().defined().trim().min(0).max(3000).nullable(),
   resumeId: yup.string().defined().length(36),
 })
