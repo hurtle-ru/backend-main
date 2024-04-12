@@ -20,19 +20,14 @@ export const BasicMeetingPaymentSchema: yup.ObjectSchema<BasicMeetingPayment> = 
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   status: yupOneOfEnum(MeetingPaymentStatus).defined(),
-  guestEmail: yup.string().defined().email().max(255),
-  url: yup.string().defined().trim().url().max(255).nullable(),
-  kassaPaymentId: yup.string().defined().min(1).max(255).nullable(),
-  successCode: yup.string().defined().trim().min(1).max(127).nullable(),
-  failCode: yup.string().defined().trim().min(1).max(127).nullable(),
+  guestEmail: yup.string().defined().email().max(512),
+  url: yup.string().defined().trim().url().max(2048).nullable(),
+  kassaPaymentId: yup.string().defined().min(1).max(512).nullable(),
+  successCode: yup.string().defined().trim().min(1).max(512).nullable(),
+  failCode: yup.string().defined().trim().min(1).max(512).nullable(),
   amount: yupUint32().defined().nullable(),
-  dueDate: yup.date().defined(
-  ).min(
-    new Date(new Date().getFullYear() - 1, 11)
-  ).max(
-    new Date(new Date().getFullYear() + 1, 11)
-  ),
-  slotId: yup.string().defined().length(36),
+  dueDate: yup.date().defined(),
+  slotId: yup.string().defined(),
   type: yupOneOfEnum(MeetingType).defined(),
 })
 

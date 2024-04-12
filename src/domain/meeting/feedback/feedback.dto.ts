@@ -13,8 +13,8 @@ export const BasicMeetingFeedbackSchema: yup.ObjectSchema<BasicMeetingFeedback> 
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  name: yup.string().defined().min(1).max(100),
-  text: yup.string().defined().min(1).max(1000),
+  name: yup.string().defined().min(0).max(1000),
+  text: yup.string().defined().min(0).max(1000),
   meetingId: yup.string().defined().length(36),
 })
 

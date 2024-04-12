@@ -9,9 +9,9 @@ export type BasicResumeCertificate = Omit<
 
 const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertificate> = yup.object({
   id: yup.string().defined().length(36),
-  name: yup.string().defined().trim().min(0).max(100),
+  name: yup.string().defined().trim().min(0).max(255),
   description: yup.string().defined().trim().min(0).max(255).nullable(),
-  year: yup.number().defined().min(1930).max(new Date().getFullYear()).nullable(),
+  year: yup.number().defined().nullable(),
   resumeId: yup.string().defined().length(36),
 })
 

@@ -11,9 +11,9 @@ export const BasicPartnershipInquirySchema: yup.ObjectSchema<BasicPartnershipInq
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  representativeName: yup.string().defined().min(1).max(255),
-  companyName: yup.string().defined().min(1).max(255),
-  contact: yup.string().defined().min(1).max(255),
+  representativeName: yup.string().defined().min(0).max(255),
+  companyName: yup.string().defined().min(0).max(255),
+  contact: yup.string().defined().min(0).max(255),
   email: yup.string().defined().email().max(255),
   status: yupOneOfEnum(PartnershipInquiryStatus).defined(),
 })
