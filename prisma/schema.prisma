@@ -187,7 +187,7 @@ model Resume {
 
 model ResumeCertificate {
   id          String  @id @default(uuid())
-  name        String  @db.VarChar(100)
+  name        String  @db.VarChar(255)
   description String? @db.VarChar(255)
   year        Int?
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
@@ -196,7 +196,7 @@ model ResumeCertificate {
 
 model ResumeContact {
   id        String      @id @default(uuid())
-  name      String?     @db.VarChar(50)
+  name      String?     @db.VarChar(255)
   type      ContactType
   value     String      @db.VarChar(255)
   preferred Boolean     @default(false)
@@ -206,9 +206,9 @@ model ResumeContact {
 
 model ResumeEducation {
   id          String  @id @default(uuid())
-  name        String  @db.VarChar(50)
+  name        String  @db.VarChar(255)
   description String? @db.VarChar(255)
-  degree      String? @db.VarChar(50)
+  degree      String? @db.VarChar(255)
   startYear   Int?
   endYear     Int
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
@@ -218,7 +218,7 @@ model ResumeEducation {
 model ResumeExperience {
   id          String  @id @default(uuid())
   company     String? @db.VarChar(256)
-  position    String  @db.VarChar(100)
+  position    String  @db.VarChar(255)
   startMonth  Int
   startYear   Int
   endMonth    Int?
@@ -230,8 +230,8 @@ model ResumeExperience {
 
 model ResumeLanguage {
   id       String  @id @default(uuid())
-  name     String  @db.VarChar(20)
-  level    String? @db.VarChar(20)
+  name     String  @db.VarChar(100)
+  level    String? @db.VarChar(100)
   resume   Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId String
 }
@@ -342,7 +342,7 @@ model PartnershipInquiry {
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
   representativeName String                   @db.VarChar(255)
-  companyName        String                   @db.VarChar(256)
+  companyName        String                   @db.VarChar(255)
   contact            String                   @db.VarChar(255)
   email              String                   @db.VarChar(255)
   status             PartnershipInquiryStatus @default(PENDING)

@@ -21,8 +21,9 @@ import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.
 import { prisma } from "../../../../infrastructure/database/prisma.provider";
 import {
   BasicMeetingScriptTemplate,
-  CreateMeetingScriptTemplateRequest, GetMeetingScriptTemplateResponse,
-  PutMeetingScriptTemplateRequest,
+  CreateMeetingScriptTemplateRequest, CreateMeetingScriptTemplateRequestSchema, GetMeetingScriptTemplateResponse,
+  PatchMeetingScriptTemplateRequest,
+  PatchMeetingScriptTemplateRequestSchema,
 } from "./template.dto";
 import { PageNumber, PageSizeNumber } from "../../../../infrastructure/controller/pagination/page.dto";
 import { PageResponse } from "../../../../infrastructure/controller/pagination/page.response";
@@ -42,6 +43,8 @@ export class MeetingScriptTemplateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptTemplateRequest,
   ): Promise<BasicMeetingScriptTemplate> {
+    CreateMeetingScriptTemplateRequestSchema.validateSync(body)
+
     return prisma.meetingScriptTemplate.create({
       data: body,
     });
@@ -79,8 +82,10 @@ export class MeetingScriptTemplateController extends Controller {
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Body() body: Partial<PutMeetingScriptTemplateRequest>,
+    @Body() body: PatchMeetingScriptTemplateRequest,
   ): Promise<void> {
+    PatchMeetingScriptTemplateRequestSchema.validateSync(body)
+
     const template = await prisma.meetingScriptTemplate.findUnique({
       where: { id },
       select: { id: true },

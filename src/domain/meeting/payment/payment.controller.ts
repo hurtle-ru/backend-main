@@ -16,9 +16,10 @@ import {
 } from "tsoa";
 import {
   BasicMeetingPayment,
-  CreateMeetingPaymentRequest, GetMeetingPaymentResponse,
+  CreateMeetingPaymentRequest, CreateMeetingPaymentRequestSchema, GetMeetingPaymentResponse,
   MeetingPaymentTinkoffNotificationRequest, PatchMeetingPaymentRequest,
-  PutMeetingPaymentStatusRequest, TinkoffPaymentStatusToMeetingPaymentStatus,
+  PatchMeetingPaymentRequestSchema,
+  TinkoffPaymentStatusToMeetingPaymentStatus,
 } from "./payment.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
@@ -60,6 +61,8 @@ export class MeetingPaymentController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingPaymentRequest,
   ): Promise<BasicMeetingPayment> {
+    CreateMeetingPaymentRequestSchema.validateSync(body)
+
     const slot = await prisma.meetingSlot.findUnique({
       where: {
         id: body.slotId,
@@ -161,6 +164,8 @@ export class MeetingPaymentController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingPaymentRequest
   ): Promise<BasicMeetingPayment> {
+    PatchMeetingPaymentRequestSchema.validateSync(body)
+
     const where = { id, guestEmail: req.user.id };
     const payment = await prisma.meetingPayment.findUnique({ where });
 
