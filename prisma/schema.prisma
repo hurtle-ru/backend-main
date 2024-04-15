@@ -147,6 +147,7 @@ model Vacancy {
   isHidden                 Boolean               @default(false)
   keySkills                String[]              @db.VarChar(500)
   responses                VacancyResponse[]
+  guestResponses           GuestVacancyResponse[]
   employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
   employerId               String
 }
@@ -160,8 +161,8 @@ model Offer {
   salaryCurrency Currency
   status         OfferStatus @default(PENDING)
 
-  vacancyResponseId String          @unique
-  vacancyResponse   VacancyResponse @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)
+  vacancyResponseId String?          @unique
+  vacancyResponse   VacancyResponse? @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)
 }
 
 model Resume {
@@ -219,8 +220,8 @@ model ResumeExperience {
   id          String  @id @default(uuid())
   company     String? @db.VarChar(256)
   position    String  @db.VarChar(255)
-  startMonth  Int
-  startYear   Int
+  startMonth  Int?
+  startYear   Int?
   endMonth    Int?
   endYear     Int?
   description String? @db.VarChar(3000)
@@ -378,6 +379,18 @@ model VacancyResponse {
   candidateRecommendedByManagerId String?
 
   @@unique([candidateId, vacancyId])
+}
+
+model GuestVacancyResponse {
+  id                              String                @id @default(uuid())
+  createdAt                       DateTime              @default(now())
+  updatedAt                       DateTime              @updatedAt
+  text                            String                @db.VarChar(3000)
+  status                          VacancyResponseStatus @default(NEW_APPLICATION)
+  isViewedByEmployer              Boolean               @default(false)
+  resume                          Json
+  vacancy                         Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  vacancyId                       String
 }
 
 model ApplicantAiChat {

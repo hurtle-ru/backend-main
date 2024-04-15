@@ -37,8 +37,7 @@ export class ResumeOcrController extends Controller {
   }
 
   @Put("pdf")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async recognizePdf(
