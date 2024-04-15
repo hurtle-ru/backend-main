@@ -210,7 +210,7 @@ model ResumeEducation {
   description String? @db.VarChar(255)
   degree      String? @db.VarChar(255)
   startYear   Int?
-  endYear     Int
+  endYear     Int?
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
 }

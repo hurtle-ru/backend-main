@@ -47,6 +47,5 @@ export class ResumeOcrController extends Controller {
   ): Promise<void> {
     await this.artifactService.validateFileAttributes(file, [PDF_MIME_TYPE], artifactConfig.MAX_IMAGE_FILE_SIZE);
     return await this.resumeOcrService.recognizePdf(file);
-    // await this.artifactService.saveImageFile(file, avatarPath);
   }
 }

@@ -11,9 +11,9 @@ const BasicResumeEducationSchema: yup.ObjectSchema<BasicResumeEducation> = yup.o
   id: yup.string().defined().length(36),
   name: yup.string().defined().trim().min(0).max(255),
   description: yup.string().defined().trim().min(0).max(255).nullable(),
-  degree: yup.string().defined().trim().min(0).max(255),
+  degree: yup.string().defined().trim().min(0).max(255).nullable(),
   startYear: yup.number().defined().max(3000).nullable(),
-  endYear: yup.number().defined().max(3000),
+  endYear: yup.number().defined().max(3000).nullable(),
   resumeId: yup.string().defined().length(36),
 })
 
