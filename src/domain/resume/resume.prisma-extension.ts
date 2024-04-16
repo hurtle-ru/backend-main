@@ -5,14 +5,7 @@ import { GetResumeResponse } from "./resume.dto";
 export const resumePrismaExtension = Prisma.defineExtension({
   model: {
     resume: {
-      isFilled(
-        {
-          summary, skills, certificates, education, experience, languages
-        }: Pick<
-          GetResumeResponse,
-          "summary" | "skills" | "certificates" | "education" | "experience" | "languages"
-        >
-      ): boolean {
+      isFilled({ summary, skills, certificates, education, experience, languages }: GetResumeResponse): boolean {
         return !!(
           summary
           || (skills && skills.length > 0)

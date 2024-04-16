@@ -2,9 +2,7 @@ import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
-  Delete,
-  Get, Middlewares,
-  Patch,
+  Get,
   Path,
   Post,
   Query,
@@ -17,16 +15,17 @@ import {
 import {
   BasicGuestVacancyResponse,
   CreateGuestVacancyResponseRequest,
-  CreateGuestVacancyResponseRequestResume,
   CreateGuestVacancyResponseRequestSchema,
   GetGuestVacancyResponseResponse,
 } from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { VacancyStatus } from "@prisma/client";
-import { GetResumeResponse } from "../../resume/resume.dto";
+import { VacancyResponseStatus, VacancyStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client"
+import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
+import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
+import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 
 
 @injectable()
@@ -39,7 +38,7 @@ export class GuestVacancyResponseController extends Controller {
 
   @Post("")
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
-  @Response<HttpErrorBody & {"error": "Vacancy is unpublished or hidden"}>(409)
+  @Response<HttpErrorBody & {"error": "Vacancy is unpublished or hidden" | "Resume is unfilled or does not exist"}>(409)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateGuestVacancyResponseRequest,
@@ -54,9 +53,6 @@ export class GuestVacancyResponseController extends Controller {
       throw new HttpError(409, "Vacancy is unpublished or hidden");
     }
 
-    // if ( !prisma.resume.isFilled(body.resume as CreateGuestVacancyResponseRequestResume) )
-      // throw new HttpError(409, "Applicant resume is unfilled or does not exist");
-
     let {resume, vacancyId, ...bodyData} = body
 
     return prisma.guestVacancyResponse.create({
@@ -70,6 +66,60 @@ export class GuestVacancyResponseController extends Controller {
         resume: resume !== null ? resume: Prisma.JsonNull
       },
     })
+  }
+
+  @Get("my")
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  public async getMy(
+    @Request() req: JwtModel,
+    @Query() include?: ("vacancy" | "vacancy.employer")[],
+    @Query() page: PageNumber = 1,
+    @Query() size: PageSizeNumber = 20,
+    @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
+    @Query() status?: VacancyResponseStatus[],
+    @Query() vacancyId?: string[],
+    @Query() vacancy_city?: string[],
+    @Query() vacancy_minSalary?: number,
+    @Query() vacancy_maxSalary?: number,
+    @Query() candidate_resume_minDesiredSalary?: number,
+    @Query() candidate_resume_maxDesiredSalary?: number,
+  ): Promise<PageResponse<GetGuestVacancyResponseResponse>> {
+    let where: Prisma.GuestVacancyResponseWhereInput = {
+      status: { in: status ?? undefined },
+      vacancyId: { in: vacancyId ?? undefined },
+      vacancy: {
+        city: { in: vacancy_city ?? undefined },
+        salary: {
+          gte: vacancy_minSalary ?? undefined,
+          lte: vacancy_maxSalary ?? undefined,
+        },
+      },
+      resume: (candidate_resume_minDesiredSalary || candidate_resume_maxDesiredSalary) ? {
+        path: ["desiredSalary"],
+        gte: candidate_resume_minDesiredSalary ?? undefined,
+        lte: candidate_resume_maxDesiredSalary ?? undefined,
+      }: undefined,
+    }
+    if (req.user.role === UserRole.EMPLOYER){
+      where = { ...where, vacancy: { employerId: req.user.id } };
+    }
+
+    const [vacancyResponses, vacancyResponsesCount] = await Promise.all([
+      prisma.guestVacancyResponse.findMany({
+        skip: (page - 1) * size,
+        take: size,
+        where: where!,
+        orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
+        include: {
+          vacancy: include?.includes("vacancy.employer")
+            ? { include: { employer: true } }
+            : include?.includes("vacancy"),
+        },
+      }),
+      prisma.guestVacancyResponse.count({ where: where! }),
+    ]);
+
+    return new PageResponse(vacancyResponses, page, size, vacancyResponsesCount);
   }
 
   @Get("{id}")
@@ -111,4 +161,4 @@ export class GuestVacancyResponseController extends Controller {
 
     return guestVacancyResponse
   }
-}
+};

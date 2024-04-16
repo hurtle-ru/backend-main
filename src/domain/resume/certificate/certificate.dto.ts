@@ -1,5 +1,6 @@
 import * as yup from "yup";
 import { ResumeCertificate } from "@prisma/client";
+import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
 
 
 export type BasicResumeCertificate = Omit<
@@ -7,11 +8,11 @@ export type BasicResumeCertificate = Omit<
   | "resume"
 >;
 
-const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertificate> = yup.object({
+export const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertificate> = yup.object({
   id: yup.string().defined().length(36),
   name: yup.string().defined().trim().min(0).max(255),
   description: yup.string().defined().trim().min(0).max(255).nullable(),
-  year: yup.number().defined().nullable(),
+  year: yupUint32().max(999).defined().nullable(),
   resumeId: yup.string().defined().length(36),
 })
 
