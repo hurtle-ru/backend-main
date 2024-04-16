@@ -17,6 +17,7 @@ import {
 import {
   BasicGuestVacancyResponse,
   CreateGuestVacancyResponseRequest,
+  CreateGuestVacancyResponseRequestResume,
   CreateGuestVacancyResponseRequestSchema,
   GetGuestVacancyResponseResponse,
 } from "./response.dto";
@@ -25,6 +26,7 @@ import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { VacancyStatus } from "@prisma/client";
 import { GetResumeResponse } from "../../resume/resume.dto";
+import { Prisma } from "@prisma/client"
 
 
 @injectable()
@@ -52,11 +54,21 @@ export class GuestVacancyResponseController extends Controller {
       throw new HttpError(409, "Vacancy is unpublished or hidden");
     }
 
-    if ( !prisma.resume.isFilled(body.resume) )
-      throw new HttpError(409, "Applicant resume is unfilled or does not exist");
+    // if ( !prisma.resume.isFilled(body.resume as CreateGuestVacancyResponseRequestResume) )
+      // throw new HttpError(409, "Applicant resume is unfilled or does not exist");
+
+    let {resume, vacancyId, ...bodyData} = body
 
     return prisma.guestVacancyResponse.create({
-      data: body,
+      data: {
+        ...bodyData,
+        vacancy: {
+          connect: {
+            id: body.vacancyId
+          }
+        },
+        resume: resume !== null ? resume: Prisma.JsonNull
+      },
     })
   }
 

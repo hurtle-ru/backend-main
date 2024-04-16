@@ -161,8 +161,8 @@ model Offer {
   salaryCurrency Currency
   status         OfferStatus @default(PENDING)
 
-  vacancyResponseId String?          @unique
-  vacancyResponse   VacancyResponse? @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)
+  vacancyResponseId String          @unique
+  vacancyResponse   VacancyResponse @relation(fields: [vacancyResponseId], references: [id], onDelete: Cascade)
 }
 
 model Resume {
