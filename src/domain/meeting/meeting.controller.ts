@@ -73,7 +73,7 @@ export class MeetingController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
   ): Promise<BasicMeeting> {
-    validateSyncByAtLeastOneSchema([
+    body = validateSyncByAtLeastOneSchema([
       CreateMeetingRequestSchema,
       CreateMeetingByApplicantRequestSchema,
       CreateMeetingByEmployerRequestSchema,
@@ -447,7 +447,7 @@ export class MeetingController extends Controller {
     @Body() body: PatchMeetingByManagerRequest,
     @Path() id: string,
   ): Promise<BasicMeeting> {
-    PatchMeetingByManagerRequestSchema.validateSync(body)
+    body = PatchMeetingByManagerRequestSchema.validateSync(body)
 
     const where = { id };
 

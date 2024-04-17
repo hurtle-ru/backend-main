@@ -43,7 +43,7 @@ export class MeetingScriptProtocolController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptProtocolRequest,
   ): Promise<BasicMeetingScriptProtocol> {
-    CreateMeetingScriptProtocolRequestSchema.validateSync(body)
+    body = CreateMeetingScriptProtocolRequestSchema.validateSync(body)
 
     const meeting = await prisma.meeting.findUnique({
       where: { id: body.meetingId },

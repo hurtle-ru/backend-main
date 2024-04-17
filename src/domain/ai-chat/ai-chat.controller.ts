@@ -40,7 +40,7 @@ export class ApplicantAiChatController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateApplicantAiChatRequest
   ): Promise<BasicApplicantAiChat> {
-    CreateApplicantAiChatRequestSchema.validateSync(body)
+    body = CreateApplicantAiChatRequestSchema.validateSync(body)
 
     if(await prisma.applicantAiChat.exists({ applicantId: body.applicantId, employerId: req.user.id }))
       throw new HttpError(409, "AI Chat already exists");

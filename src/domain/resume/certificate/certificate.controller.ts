@@ -32,7 +32,7 @@ export class ResumeCertificateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeCertificateRequest,
   ): Promise<BasicResumeCertificate> {
-    CreateResumeCertificateRequestSchema.validateSync(body)
+    body = CreateResumeCertificateRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
@@ -55,7 +55,7 @@ export class ResumeCertificateController extends Controller {
     @Path() id: string,
     @Body() body: PatchResumeCertificateRequest,
   ): Promise<void> {
-    PatchResumeCertificateRequestSchema.validateSync(body);
+    body = PatchResumeCertificateRequestSchema.validateSync(body);
 
     const where = {
       id,

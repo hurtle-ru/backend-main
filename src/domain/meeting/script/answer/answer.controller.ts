@@ -42,7 +42,7 @@ export class MeetingScriptAnswerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptAnswerRequest,
   ): Promise<BasicMeetingScriptAnswer> {
-    CreateMeetingScriptAnswerRequestSchema.validateSync(body)
+    body = CreateMeetingScriptAnswerRequestSchema.validateSync(body)
 
     return prisma.meetingScriptAnswer.create({
       data: body,
@@ -88,7 +88,7 @@ export class MeetingScriptAnswerController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingScriptAnswerRequest,
   ): Promise<void> {
-    PatchMeetingScriptAnswerRequestSchema.validateSync(body)
+    body = PatchMeetingScriptAnswerRequestSchema.validateSync(body)
 
     const answer = await prisma.meetingScriptAnswer.findUnique({
       where: { id },

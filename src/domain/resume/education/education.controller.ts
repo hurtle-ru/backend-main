@@ -29,7 +29,7 @@ export class ResumeEducationController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeEducationRequest,
   ): Promise<BasicResumeEducation> {
-    CreateResumeEducationRequestSchema.validateSync(body)
+    body = CreateResumeEducationRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },

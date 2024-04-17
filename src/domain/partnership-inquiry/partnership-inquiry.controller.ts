@@ -43,7 +43,7 @@ export class PartnershipInquiryController extends Controller {
   public async create(
     @Body() body: CreatePartnershipInquiryRequest,
   ): Promise<BasicPartnershipInquiry> {
-    CreatePartnershipInquiryRequestSchema.validateSync(body)
+    body = CreatePartnershipInquiryRequestSchema.validateSync(body)
 
     const partnershipInquiry = await prisma.partnershipInquiry.create({
       data: body,
@@ -80,7 +80,7 @@ export class PartnershipInquiryController extends Controller {
     @Path() id: string,
     @Body() body: PatchByIdPartnershipInquiryStatusRequest,
   ): Promise<BasicPartnershipInquiry> {
-    PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body)
+    body = PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body)
 
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
       where: { id },

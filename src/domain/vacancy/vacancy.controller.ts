@@ -62,7 +62,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    CreateVacancyRequestSchema.validateSync(body)
+    body = CreateVacancyRequestSchema.validateSync(body)
 
     const vacancy = await prisma.vacancy.create({
       data: {
@@ -329,7 +329,7 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
-    validateSyncByAtLeastOneSchema(
+    body = validateSyncByAtLeastOneSchema(
       [
         PatchVacancyRequestFromManagerSchema,
         PatchVacancyRequestFromEmployerSchema,

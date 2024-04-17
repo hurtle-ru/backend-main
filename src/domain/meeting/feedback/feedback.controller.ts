@@ -45,7 +45,7 @@ export class MeetingFeedbackController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingFeedbackRequest,
   ): Promise<BasicMeetingFeedback> {
-    CreateMeetingFeedbackRequestSchema.validateSync(body)
+    body = CreateMeetingFeedbackRequestSchema.validateSync(body)
 
     const meeting = await prisma.meeting.findUnique({
       where: { id: body.meetingId },
@@ -143,7 +143,7 @@ export class MeetingFeedbackController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingFeedbackRequest,
   ): Promise<BasicMeetingFeedback> {
-    PatchMeetingFeedbackRequestSchema.validateSync(body)
+    body = PatchMeetingFeedbackRequestSchema.validateSync(body)
 
     const where = {
       id,

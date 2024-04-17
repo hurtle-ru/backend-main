@@ -14,7 +14,7 @@ export class UniversityController {
   async getAll(
     @Query() search: string,
   ): Promise<BasicUniversity[]> {
-    GetAllUniversitiesRequestSearchSchema.validateSync({ search });
+    search = GetAllUniversitiesRequestSearchSchema.validateSync({ search });
 
     return prisma.university.findMany({
       where: {

@@ -45,7 +45,7 @@ export class ApplicantAiChatMessageController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: CreateApplicantAiChatMessageRequest
   ): Promise<BasicApplicantAiChatMessage> {
-    CreateApplicantAiChatMessageRequestSchema.validateSync(body);
+    body = CreateApplicantAiChatMessageRequestSchema.validateSync(body);
 
     const chat = await prisma.applicantAiChat.findUnique({
       where: { id: body.chatId, employerId: req.user.id },
