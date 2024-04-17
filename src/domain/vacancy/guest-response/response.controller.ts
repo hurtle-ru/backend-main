@@ -19,7 +19,7 @@ import {
   GetGuestVacancyResponseResponse,
 } from "./response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
-import { JwtModel, UserRole } from "../../auth/auth.dto";
+import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { VacancyResponseStatus, VacancyStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client"
@@ -38,34 +38,39 @@ export class GuestVacancyResponseController extends Controller {
 
   @Post("")
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
-  @Response<HttpErrorBody & {"error": "Vacancy is unpublished or hidden" | "Resume is unfilled or does not exist"}>(409)
+  @Response<HttpErrorBody & {"error":
+      | "Vacancy is unpublished or hidden"
+      | "Applicant resume is unfilled or does not exist"
+  }>(409)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateGuestVacancyResponseRequest,
   ): Promise<BasicGuestVacancyResponse> {
-    CreateGuestVacancyResponseRequestSchema.validateSync(body)
+    body = CreateGuestVacancyResponseRequestSchema.validateSync(body);
 
-    const vacancy = await prisma.vacancy.findUnique({ where: { id: body.vacancyId }})
-    if(!vacancy)
-      throw new HttpError(404, "Vacancy does not exist");
+    const vacancy = await prisma.vacancy.findUnique({ where: { id: body.vacancyId } });
+    if(!vacancy) throw new HttpError(404, "Vacancy does not exist");
 
     if (vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) {
       throw new HttpError(409, "Vacancy is unpublished or hidden");
     }
 
-    let {resume, vacancyId, ...bodyData} = body
+    const { resume, vacancyId, ...bodyData} = body;
+    if(!resume || !prisma.resume.isFilled(resume))
+      throw new HttpError(409, "Applicant resume is unfilled or does not exist");
+
 
     return prisma.guestVacancyResponse.create({
       data: {
         ...bodyData,
         vacancy: {
           connect: {
-            id: body.vacancyId
-          }
+            id: body.vacancyId,
+          },
         },
-        resume: resume !== null ? resume: Prisma.JsonNull
+        resume,
       },
-    })
+    });
   }
 
   @Get("my")
@@ -123,31 +128,41 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Get("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
   public async getById(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
     @Query() include?: ("vacancy")[]
   ): Promise<GetGuestVacancyResponseResponse> {
     let where = null;
 
-    switch (req.user.role) {
-      case UserRole.APPLICANT:
-        where = {
-          id,
-          vacancy:{
-            isHidden: false,
-            status: { equals: VacancyStatus.PUBLISHED },
-          },
-        };
-        break;
-      case UserRole.EMPLOYER:
-        where = { id, vacancy: { employerId: req.user.id } };
-        break;
-      case UserRole.MANAGER:
-        where = { id };
-        break;
+    if(req.user) {
+      switch (req.user.role) {
+        case UserRole.APPLICANT:
+          where = {
+            id,
+            vacancy: {
+              isHidden: false,
+              status: { equals: VacancyStatus.PUBLISHED },
+            },
+          };
+          break;
+        case UserRole.EMPLOYER:
+          where = { id, vacancy: { employerId: req.user.id } };
+          break;
+        case UserRole.MANAGER:
+          where = { id };
+          break;
+      }
+    } else {
+      where = {
+        id,
+        vacancy: {
+          isHidden: false,
+          status: { equals: VacancyStatus.PUBLISHED },
+        },
+      };
     }
 
     const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
@@ -157,8 +172,7 @@ export class GuestVacancyResponseController extends Controller {
       },
     });
 
-    if(!guestVacancyResponse) throw new HttpError(404, "guestVacancyResponse not found");
-
-    return guestVacancyResponse
+    if(!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
+    return guestVacancyResponse;
   }
-};
+}

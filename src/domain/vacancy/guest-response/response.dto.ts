@@ -35,7 +35,8 @@ export type CreateGuestVacancyResponseRequestResume = Pick<Resume,
     | "name"
     | "type"
     | "value"
-    | "preferred">[];
+    | "preferred"
+  >[];
   education: Pick<
     BasicResumeEducation,
     | "name"
@@ -70,20 +71,20 @@ const CreateGuestVacancyResponseRequestResumeSchema: yup.ObjectSchema<CreateGues
   certificates: yup.array().of(BasicResumeCertificateSchema.pick([
     "name",
     "description",
-    "year"
+    "year",
   ])).defined(),
   contacts: yup.array().of(BasicResumeContactSchema.pick([
     "name",
     "type",
     "value",
-    "preferred"
-  ])).min(1).defined(),
+    "preferred",
+  ])).defined(),
   education: yup.array().of(BasicResumeEducationSchema.pick([
     "name",
     "description",
     "degree",
     "startYear",
-    "endYear"
+    "endYear",
   ])).defined(),
   experience: yup.array().of(BasicResumeExperienceSchema.pick([
     "description",
@@ -92,29 +93,30 @@ const CreateGuestVacancyResponseRequestResumeSchema: yup.ObjectSchema<CreateGues
     "startYear",
     "startMonth",
     "endYear",
-    "endMonth"
+    "endMonth",
   ])).defined(),
   languages: yup.array().of(BasicResumeLanguageSchema.pick([
     "name",
-    "level"
-  ])).defined()
+    "level",
+  ])).defined(),
 })
 
 const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyResponse> = yup.object({
   id: yup.string().max(36).defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  text: yup.string().trim().defined().max(3000),
+  text: yup.string().defined().trim().max(3000).nullable(),
   status: yupOneOfEnum(VacancyResponseStatus).defined(),
   isViewedByEmployer: yup.boolean().defined(),
   resume: CreateGuestVacancyResponseRequestResumeSchema,
   vacancyId: yup.string().defined().max(36),
 })
 
-export type CreateGuestVacancyResponseRequest = Pick<BasicGuestVacancyResponse,
+export type CreateGuestVacancyResponseRequest = Pick<
+  BasicGuestVacancyResponse,
   | "vacancyId"
   | "text"
-> & {resume: CreateGuestVacancyResponseRequestResume}
+> & { resume: CreateGuestVacancyResponseRequestResume }
 
 export const CreateGuestVacancyResponseRequestSchema: yup.ObjectSchema<CreateGuestVacancyResponseRequest> = BasicGuestVacancyResponseSchema.pick(
   ["vacancyId", "text"]

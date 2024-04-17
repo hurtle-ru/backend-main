@@ -144,6 +144,9 @@ export class ApplicantController extends Controller {
         resume: {
           include: {
             certificates: true,
+            education: true,
+            experience: true,
+            languages: true,
           },
         },
         meetings: true,

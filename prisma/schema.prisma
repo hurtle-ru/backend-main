@@ -125,13 +125,13 @@ model PasswordResetRequest {
 }
 
 model Vacancy {
-  id                       String                @id @default(uuid())
-  createdAt                DateTime              @default(now())
-  updatedAt                DateTime              @updatedAt
-  name                     String                @db.VarChar(50)
+  id                       String                 @id @default(uuid())
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  name                     String                 @db.VarChar(50)
   teamRole                 VacancyTeamRole
-  description              String                @db.VarChar(3000)
-  shortDescription         String?               @db.VarChar(3000)
+  description              String                 @db.VarChar(3000)
+  shortDescription         String?                @db.VarChar(3000)
   uniqueViewerApplicantIds String[]
   uniqueViewerIps          String[]
   salary                   Int
@@ -139,16 +139,16 @@ model Vacancy {
   experience               VacancyExperience
   employmentType           VacancyEmploymentType
   price                    Int?
-  city                     String                @db.VarChar(255)
+  city                     String                 @db.VarChar(255)
   reportingForm            VacancyReportingForm
   workingHours             VacancyWorkingHours
   workplaceModel           VacancyWorkplaceModel
-  status                   VacancyStatus         @default(UNDER_REVIEW)
-  isHidden                 Boolean               @default(false)
-  keySkills                String[]              @db.VarChar(500)
+  status                   VacancyStatus          @default(UNDER_REVIEW)
+  isHidden                 Boolean                @default(false)
+  keySkills                String[]               @db.VarChar(500)
   responses                VacancyResponse[]
   guestResponses           GuestVacancyResponse[]
-  employer                 Employer              @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employer                 Employer               @relation(fields: [employerId], references: [id], onDelete: Cascade)
   employerId               String
 }
 
@@ -382,15 +382,15 @@ model VacancyResponse {
 }
 
 model GuestVacancyResponse {
-  id                              String                @id @default(uuid())
-  createdAt                       DateTime              @default(now())
-  updatedAt                       DateTime              @updatedAt
-  text                            String                @db.VarChar(3000)
-  status                          VacancyResponseStatus @default(NEW_APPLICATION)
-  isViewedByEmployer              Boolean               @default(false)
-  resume                          Json
-  vacancy                         Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
-  vacancyId                       String
+  id                 String                @id @default(uuid())
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  text               String?               @db.VarChar(3000)
+  status             VacancyResponseStatus @default(NEW_APPLICATION)
+  isViewedByEmployer Boolean               @default(false)
+  resume             Json
+  vacancy            Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  vacancyId          String
 }
 
 model ApplicantAiChat {

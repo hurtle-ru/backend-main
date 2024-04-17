@@ -94,6 +94,10 @@ export class VacancyResponseController extends Controller {
       where: { applicantId: candidateId },
       include: {
         contacts: true,
+        certificates: true,
+        education: true,
+        experience: true,
+        languages: true,
       },
     })
 
@@ -257,7 +261,7 @@ export class VacancyResponseController extends Controller {
         _count: {
           select: { responses: true },
         },
-      }
+      },
     })
   }
 
