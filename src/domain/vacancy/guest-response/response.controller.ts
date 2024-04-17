@@ -43,7 +43,7 @@ export class GuestVacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateGuestVacancyResponseRequest,
   ): Promise<BasicGuestVacancyResponse> {
-    CreateGuestVacancyResponseRequestSchema.validateSync(body)
+    body = CreateGuestVacancyResponseRequestSchema.validateSync(body)
 
     const vacancy = await prisma.vacancy.findUnique({ where: { id: body.vacancyId }})
     if(!vacancy)

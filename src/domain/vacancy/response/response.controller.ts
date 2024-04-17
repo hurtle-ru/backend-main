@@ -63,7 +63,7 @@ export class VacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyResponseRequestFromApplicant | CreateVacancyResponseRequestFromManager,
   ): Promise<BasicVacancyResponse> {
-    validateSyncByAtLeastOneSchema(
+    body = validateSyncByAtLeastOneSchema(
       [
         CreateVacancyResponseRequestFromApplicantSchema,
         CreateVacancyResponseRequestFromManagerSchema,
@@ -312,7 +312,7 @@ export class VacancyResponseController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyResponseRequest,
   ): Promise<BasicVacancyResponse> {
-    PatchVacancyResponseRequestSchema.validateSync(body)
+    body = PatchVacancyResponseRequestSchema.validateSync(body)
 
     const where = {
       id,

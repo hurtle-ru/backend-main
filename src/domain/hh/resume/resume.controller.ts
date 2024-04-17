@@ -1,26 +1,19 @@
 import { injectable } from "tsyringe";
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Patch,
-  Path, Post,
-  Put,
-  Query,
+  Path,
+  Post,
   Request,
   Response,
   Route,
   Security,
   Tags,
-  UploadedFile,
 } from "tsoa";
 import { HhAuthService } from "../../../external/hh/auth/auth.service";
-import { HhApplicantService } from "../../../external/hh/applicant/applicant.service";
 import { HhResumeService } from "../../../external/hh/resume/resume.service";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
-import { HhToken } from "@prisma/client";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { GetHhResumeSummaryResponse } from "./resume.dto";
 import { BasicResume } from "../../resume/resume.dto";
