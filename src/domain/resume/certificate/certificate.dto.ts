@@ -12,7 +12,7 @@ export const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertifica
   id: yup.string().defined().length(36),
   name: yup.string().defined().trim().min(0).max(255),
   description: yup.string().defined().trim().min(0).max(255).nullable(),
-  year: yupUint32().max(999).defined().nullable(),
+  year: yupUint32().max(9999).defined().nullable(),
   resumeId: yup.string().defined().length(36),
 })
 
