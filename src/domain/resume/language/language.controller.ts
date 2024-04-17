@@ -29,7 +29,7 @@ export class ResumeLanguageController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeLanguageRequest,
   ): Promise<BasicResumeLanguage> {
-    CreateResumeLanguageRequestSchema.validateSync(body)
+    body = CreateResumeLanguageRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
@@ -52,7 +52,7 @@ export class ResumeLanguageController extends Controller {
     @Path() id: string,
     @Body() body: PatchResumeLanguageRequest,
   ): Promise<void> {
-    PatchResumeLanguageRequestSchema.validateSync(body);
+    body = PatchResumeLanguageRequestSchema.validateSync(body);
 
     const where = {
       id,

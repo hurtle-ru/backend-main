@@ -40,7 +40,7 @@ export class MeetingScriptQuestionController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptQuestionRequest,
   ): Promise<BasicMeetingScriptQuestion> {
-    CreateMeetingScriptQuestionRequestSchema.validateSync(body)
+    body = CreateMeetingScriptQuestionRequestSchema.validateSync(body)
 
     return prisma.meetingScriptQuestion.create({
       data: body,
@@ -55,7 +55,7 @@ export class MeetingScriptQuestionController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingScriptQuestionRequest,
   ): Promise<void> {
-    PatchMeetingScriptQuestionRequestSchema.validateSync(body)
+    body = PatchMeetingScriptQuestionRequestSchema.validateSync(body)
     const question = await prisma.meetingScriptQuestion.findUnique({
       where: { id },
       select: { id: true },

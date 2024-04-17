@@ -83,7 +83,7 @@ export class EmployerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: PatchMeByEmployerRequest
   ): Promise<BasicEmployer> {
-    PatchMeByEmployerRequestSchema.validateSync(body)
+    body = PatchMeByEmployerRequestSchema.validateSync(body)
 
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
@@ -180,7 +180,7 @@ export class EmployerController extends Controller {
     @Path() id: string,
     @Body() body: PatchByIdByEmployerRequest
   ): Promise<BasicEmployer> {
-    PatchByIdByEmployerRequestSchema.validateSync(body)
+    body = PatchByIdByEmployerRequestSchema.validateSync(body)
 
     const where = { id };
     if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");

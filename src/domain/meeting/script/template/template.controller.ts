@@ -43,7 +43,7 @@ export class MeetingScriptTemplateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptTemplateRequest,
   ): Promise<BasicMeetingScriptTemplate> {
-    CreateMeetingScriptTemplateRequestSchema.validateSync(body)
+    body = CreateMeetingScriptTemplateRequestSchema.validateSync(body)
 
     return prisma.meetingScriptTemplate.create({
       data: body,
@@ -84,7 +84,7 @@ export class MeetingScriptTemplateController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingScriptTemplateRequest,
   ): Promise<void> {
-    PatchMeetingScriptTemplateRequestSchema.validateSync(body)
+    body = PatchMeetingScriptTemplateRequestSchema.validateSync(body)
 
     const template = await prisma.meetingScriptTemplate.findUnique({
       where: { id },

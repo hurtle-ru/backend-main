@@ -119,7 +119,7 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Body() body: PatchMeApplicantRequest
   ): Promise<BasicApplicant> {
-    PatchMeApplicantRequestSchema.validateSync(body);
+    body = PatchMeApplicantRequestSchema.validateSync(body);
 
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -144,6 +144,9 @@ export class ApplicantController extends Controller {
         resume: {
           include: {
             certificates: true,
+            education: true,
+            experience: true,
+            languages: true,
           },
         },
         meetings: true,
@@ -287,7 +290,7 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: PatchByIdApplicantRequest
   ): Promise<BasicApplicant> {
-    PatchByIdApplicantRequestSchema.validateSync(body);
+    body = PatchByIdApplicantRequestSchema.validateSync(body);
 
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

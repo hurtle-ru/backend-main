@@ -40,7 +40,7 @@ export class OfferController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateOfferRequest,
   ): Promise<BasicOffer> {
-    CreateOfferRequestSchema.validateSync(body)
+    body = CreateOfferRequestSchema.validateSync(body)
 
     const where = { id: body.vacancyResponseId, vacancy: { employerId: req.user.id } };
 

@@ -67,7 +67,7 @@ export class ManagerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: PatchMeRequestByManager
   ): Promise<BasicManager> {
-    PatchMeRequestByManagerSchema.validateSync(body)
+    body = PatchMeRequestByManagerSchema.validateSync(body)
 
     return prisma.manager.update({
       where: { id: req.user.id },
