@@ -16,7 +16,8 @@ export type BasicGuestVacancyResponse = Omit<
   | "vacancy"
 >;
 
-export type CreateGuestVacancyResponseRequestResume = Pick<Resume,
+export type CreateGuestVacancyResponseRequestResume = Pick<
+  Resume,
   | "title"
   | "summary"
   | "city"
@@ -58,7 +59,7 @@ export type CreateGuestVacancyResponseRequestResume = Pick<Resume,
     | "name"
     | "level"
   >[];
-}
+};
 
 const CreateGuestVacancyResponseRequestResumeSchema: yup.ObjectSchema<CreateGuestVacancyResponseRequestResume> = BasicResumeSchema.pick([
   "title",
@@ -99,7 +100,7 @@ const CreateGuestVacancyResponseRequestResumeSchema: yup.ObjectSchema<CreateGues
     "name",
     "level",
   ])).defined(),
-})
+});
 
 const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyResponse> = yup.object({
   id: yup.string().max(36).defined(),
@@ -110,17 +111,34 @@ const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyRespons
   isViewedByEmployer: yup.boolean().defined(),
   resume: CreateGuestVacancyResponseRequestResumeSchema,
   vacancyId: yup.string().defined().max(36),
+  firstName: yup.string().defined(),
+  lastName: yup.string().defined(),
+  middleName: yup.string().defined().nullable(),
+  isReadyToRelocate: yup.boolean().defined().nullable(),
 })
 
 export type CreateGuestVacancyResponseRequest = Pick<
   BasicGuestVacancyResponse,
   | "vacancyId"
   | "text"
-> & { resume: CreateGuestVacancyResponseRequestResume }
+  | "firstName"
+  | "lastName"
+  | "middleName"
+  | "isReadyToRelocate"
+> & {
+  resume: CreateGuestVacancyResponseRequestResume,
+}
 
-export const CreateGuestVacancyResponseRequestSchema: yup.ObjectSchema<CreateGuestVacancyResponseRequest> = BasicGuestVacancyResponseSchema.pick(
-  ["vacancyId", "text"]
-).shape({ resume: CreateGuestVacancyResponseRequestResumeSchema })
+export const CreateGuestVacancyResponseRequestSchema: yup.ObjectSchema<CreateGuestVacancyResponseRequest> = BasicGuestVacancyResponseSchema.pick([
+  "vacancyId",
+  "text",
+  "firstName",
+  "lastName",
+  "middleName",
+  "isReadyToRelocate",
+]).shape({
+  resume: CreateGuestVacancyResponseRequestResumeSchema,
+});
 
 export type GetGuestVacancyResponseResponse = BasicGuestVacancyResponse & {
   vacancy?: BasicVacancy,

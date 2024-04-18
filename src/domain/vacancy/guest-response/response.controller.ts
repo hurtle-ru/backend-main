@@ -55,19 +55,13 @@ export class GuestVacancyResponseController extends Controller {
       throw new HttpError(409, "Vacancy is unpublished or hidden");
     }
 
-    const { resume, vacancyId, ...bodyData} = body;
+    const { resume, ...bodyData} = body;
     if(!resume || !prisma.resume.isFilled(resume))
       throw new HttpError(409, "Applicant resume is unfilled or does not exist");
-
 
     return prisma.guestVacancyResponse.create({
       data: {
         ...bodyData,
-        vacancy: {
-          connect: {
-            id: body.vacancyId,
-          },
-        },
         resume,
       },
     });
