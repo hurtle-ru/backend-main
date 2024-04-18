@@ -391,6 +391,10 @@ model GuestVacancyResponse {
   resume             Json
   vacancy            Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
   vacancyId          String
+  firstName          String                @db.VarChar(50)
+  lastName           String                @db.VarChar(50)
+  middleName         String?               @db.VarChar(50)
+  isReadyToRelocate  Boolean?
 }
 
 model ApplicantAiChat {
