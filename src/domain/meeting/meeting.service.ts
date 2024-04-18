@@ -61,14 +61,19 @@ export class MeetingService {
 
     text += `\nРоль: <b>${user.role}</b>`;
 
-    text += "\n\n" + this.telegramService.TextFormatter.hyperLink(
-      "Админ-ссылка",
-      this.adminPanelService.getLinkOnMeeting(meeting.id)
-    )
-
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML" },
+      options: {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [{
+              text: "Admin-panel",
+              url: this.adminPanelService.getLinkOnMeeting(meeting.id)
+            }]
+          ]
+        }
+      }
     });
   }
 
