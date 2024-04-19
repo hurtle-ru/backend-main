@@ -19,7 +19,7 @@ export class ResumeOcrWorker extends Worker<ResumeOcrJobData> {
       {
         autorun: false,
         connection: redis,
-        lockDuration: 30000,
+        lockDuration: 2 * 60 * 1000,
         limiter: {
           max: 490,
           duration: 60,
