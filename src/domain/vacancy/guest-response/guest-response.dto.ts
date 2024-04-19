@@ -1,7 +1,7 @@
 import * as yup from "yup"
 
 import { GuestVacancyResponse, Resume, VacancyResponseStatus } from "@prisma/client";
-import { BasicVacancy } from "../vacancy.dto";
+import { BasicVacancy, CreateVacancyRequest, CreateVacancyRequestSchema } from "../vacancy.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 import { BasicResumeSchema } from "../../resume/resume.dto";
 import { BasicResumeCertificate, BasicResumeCertificateSchema } from "../../resume/certificate/certificate.dto";
@@ -143,3 +143,14 @@ export const CreateGuestVacancyResponseRequestSchema: yup.ObjectSchema<CreateGue
 export type GetGuestVacancyResponseResponse = BasicGuestVacancyResponse & {
   vacancy?: BasicVacancy,
 };
+
+export type PatchGuestVacancyResponseRequest = Partial<Pick<
+  BasicGuestVacancyResponse,
+  | "status"
+  | "isViewedByEmployer"
+>>;
+
+export const PatchGuestVacancyResponseRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseRequest> = BasicGuestVacancyResponseSchema.pick([
+  "status",
+  "isViewedByEmployer",
+]).partial();

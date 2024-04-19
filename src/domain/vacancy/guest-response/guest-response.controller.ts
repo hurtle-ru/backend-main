@@ -1,8 +1,8 @@
 import { injectable } from "tsyringe";
 import {
   Body,
-  Controller,
-  Get,
+  Controller, Delete,
+  Get, Patch,
   Path,
   Post,
   Query,
@@ -16,8 +16,8 @@ import {
   BasicGuestVacancyResponse,
   CreateGuestVacancyResponseRequest,
   CreateGuestVacancyResponseRequestSchema,
-  GetGuestVacancyResponseResponse,
-} from "./response.dto";
+  GetGuestVacancyResponseResponse, PatchGuestVacancyResponseRequest, PatchGuestVacancyResponseRequestSchema,
+} from "./guest-response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
@@ -26,6 +26,11 @@ import { Prisma } from "@prisma/client"
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
+import {
+  BasicVacancyResponse,
+  PatchVacancyResponseRequest,
+  PatchVacancyResponseRequestSchema,
+} from "../response/response.dto";
 
 
 @injectable()
@@ -103,12 +108,12 @@ export class GuestVacancyResponseController extends Controller {
       where = { ...where, vacancy: { employerId: req.user.id } };
     }
 
-    const [vacancyResponses, vacancyResponsesCount] = await Promise.all([
+    const [guestVacancyResponses, guestVacancyResponsesCount] = await Promise.all([
       prisma.guestVacancyResponse.findMany({
         skip: (page - 1) * size,
         take: size,
         where: where!,
-        orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
+        orderBy: parseSortBy<Prisma.GuestVacancyResponseOrderByWithRelationInput>(sortBy),
         include: {
           vacancy: include?.includes("vacancy.employer")
             ? { include: { employer: true } }
@@ -118,7 +123,7 @@ export class GuestVacancyResponseController extends Controller {
       prisma.guestVacancyResponse.count({ where: where! }),
     ]);
 
-    return new PageResponse(vacancyResponses, page, size, vacancyResponsesCount);
+    return new PageResponse(guestVacancyResponses, page, size, guestVacancyResponsesCount);
   }
 
   @Get("{id}")
@@ -168,5 +173,56 @@ export class GuestVacancyResponseController extends Controller {
 
     if(!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
     return guestVacancyResponse;
+  }
+
+  @Patch("{id}")
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
+  public async patchById(
+    @Request() req: JwtModel,
+    @Path() id: string,
+    @Body() body: PatchGuestVacancyResponseRequest,
+  ): Promise<BasicGuestVacancyResponse> {
+    body = PatchGuestVacancyResponseRequestSchema.validateSync(body)
+
+    const where = {
+      id,
+      ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
+    }
+
+    const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
+      where: where,
+      select: {
+        vacancy: {
+          select: {
+            employerId: true,
+          },
+        },
+      },
+    });
+
+    if(!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
+
+    return prisma.guestVacancyResponse.update({
+      where: where,
+      data: body,
+    });
+  }
+
+  @Delete("{id}")
+  @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  public async deleteById(
+    @Path() id: string,
+    @Request() req: JwtModel,
+  ): Promise<void> {
+    const where: Prisma.GuestVacancyResponseWhereUniqueInput = {
+      id,
+      ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
+    }
+
+    if(!await prisma.guestVacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
+
+    await prisma.guestVacancyResponse.delete({ where });
   }
 }
