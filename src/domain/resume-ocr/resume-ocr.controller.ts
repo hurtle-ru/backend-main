@@ -1,17 +1,12 @@
 import { injectable } from "tsyringe";
 import {
-  Body,
   Controller,
-  Delete,
   Get, Middlewares,
-  Patch,
-  Path, Post,
   Put,
   Query,
   Request,
   Response,
   Route,
-  Security,
   Tags,
   UploadedFile,
 } from "tsoa";
@@ -19,8 +14,9 @@ import { ResumeOcrService } from "./resume-ocr.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import { artifactConfig } from "../../external/artifact/artifact.config";
 import { ArtifactService } from "../../external/artifact/artifact.service";
+import { ResumeOcrJobInfo } from "./resume-ocr.dto";
 
 
 const PDF_MIME_TYPE = "application/pdf";
@@ -37,14 +33,30 @@ export class ResumeOcrController extends Controller {
   }
 
   @Put("pdf")
-  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
+  @Middlewares(rateLimit({limit: 499999999, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async recognizePdf(
     @Request() req: JwtModel,
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<void> {
+  ): Promise<{jobId: string}> {
     await this.artifactService.validateFileAttributes(file, [PDF_MIME_TYPE], artifactConfig.MAX_IMAGE_FILE_SIZE);
-    return await this.resumeOcrService.recognizePdf(file);
+
+    return {jobId: await this.resumeOcrService.enqueueRecognizingPdf({ file })};
   }
+
+  @Get("pdf")
+  @Response<HttpErrorBody & {"error": "Job not found"}>(404)
+  public async getRecognizePdfInfo(
+    @Query() jobId: string,
+  ): Promise<ResumeOcrJobInfo> {
+    const info = await this.resumeOcrService.getResumeOcrJobInfo(jobId);
+
+    if (!info) {
+      throw new HttpError(404, "Job not found")
+    }
+
+    return info
+  }
+
 }
