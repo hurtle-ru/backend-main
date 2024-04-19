@@ -33,7 +33,7 @@ export class ResumeOcrController extends Controller {
   }
 
   @Put("pdf")
-  @Middlewares(rateLimit({limit: 499999999, interval: 3600 * 24}))
+  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async recognizePdf(
