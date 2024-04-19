@@ -31,8 +31,6 @@ export class ResumeOcrQueue {
 
     if (!job) return
 
-    this.getSimpleJobStatus(job)
-
     return {
       status: await this.getSimpleJobStatus(job),
       resume: job.returnvalue,
