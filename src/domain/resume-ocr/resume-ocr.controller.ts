@@ -2,6 +2,7 @@ import { injectable } from "tsyringe";
 import {
   Controller,
   Get, Middlewares,
+  Path,
   Put,
   Query,
   Request,
@@ -45,12 +46,12 @@ export class ResumeOcrController extends Controller {
     return {jobId: await this.resumeOcrService.enqueueRecognizingPdf({ file })};
   }
 
-  @Get("pdf")
+  @Get("pdf/{id}")
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getRecognizePdfInfo(
-    @Query() jobId: string,
+    @Path() id: string,
   ): Promise<ResumeOcrJobInfo> {
-    const info = await this.resumeOcrService.getResumeOcrJobInfo(jobId);
+    const info = await this.resumeOcrService.getResumeOcrJobInfo(id);
 
     if (!info) {
       throw new HttpError(404, "Job not found")
