@@ -7,6 +7,7 @@ import { TextContentBlock } from "openai/src/resources/beta/threads/messages/mes
 import { ResumeOcrJobData, ResumeOcrJobInfo } from "./resume-ocr.dto";
 import { JobsOptions } from "bullmq";
 import { ResumeOcrQueue } from "./mq/resume-ocr.queue";
+import { randomUUID } from "crypto";
 
 
 @injectable()
@@ -22,7 +23,7 @@ export class ResumeOcrService {
   ) {}
 
   async enqueueRecognizingPdf( data: ResumeOcrJobData, opts?: JobsOptions ): Promise<string> {
-    return await this.queue.enqueueResumeOcr(data, opts)
+    return await this.queue.enqueueResumeOcr(data, {...opts, jobId: randomUUID()})
   }
 
   async recognizePdf({ file }: ResumeOcrJobData) {
