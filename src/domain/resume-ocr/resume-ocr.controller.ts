@@ -46,12 +46,12 @@ export class ResumeOcrController extends Controller {
     return {jobId: await this.resumeOcrService.enqueueRecognizingPdf({ file })};
   }
 
-  @Get("pdf/{id}")
+  @Get("{jobId}")
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getRecognizePdfInfo(
-    @Path() id: string,
+    @Path() jobId: string,
   ): Promise<ResumeOcrJobInfo> {
-    const info = await this.resumeOcrService.getResumeOcrJobInfo(id);
+    const info = await this.resumeOcrService.getResumeOcrJobInfo(jobId);
 
     if (!info) {
       throw new HttpError(404, "Job not found")
