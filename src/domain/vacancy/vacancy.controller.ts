@@ -159,6 +159,9 @@ export class VacancyController extends Controller {
           responses: includeResponses,
           guestResponses: includeGuestResponses,
         },
+        orderBy: {
+          createdAt: "desc",
+        },
       }),
       prisma.vacancy.count({ where: where! }),
     ]);
@@ -232,6 +235,9 @@ export class VacancyController extends Controller {
           employer: include?.includes("employer"),
           responses: includeResponses,
           guestResponses: includeGuestResponses,
+        },
+        orderBy: {
+          createdAt: "desc",
         },
       }),
       prisma.vacancy.count({ where: where! }),
