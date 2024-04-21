@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Delete,
+  Exception,
   Get,
   Middlewares, Patch,
   Path,
@@ -22,7 +23,7 @@ import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
   CreateMeetingGuestRequest,
-  GetMeetingResponse, PatchMeetingByManagerRequest, ExportAllResponse, CreateMeetingByApplicantOrEmployerRequest, CreateMeetingRequestSchema, CreateMeetingByApplicantRequestSchema, CreateMeetingByEmployerRequestSchema, PatchMeetingByManagerRequestSchema,
+  GetMeetingResponse, PatchMeetingByManagerRequest, ExportAllResponse, CreateMeetingByApplicantOrEmployerRequest, CreateMeetingRequestSchema, CreateMeetingByApplicantRequestSchema, CreateMeetingByEmployerRequestSchema, PatchMeetingByManagerRequestSchema, MeetingCreator,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -38,6 +39,8 @@ import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.con
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus } from "@prisma/client";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+import { AxiosError } from "axios";
+import { logger } from "../../infrastructure/logger/logger";
 
 
 @injectable()
@@ -57,17 +60,18 @@ export class MeetingController extends Controller {
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error":
-      | "MeetingSlot already booked"
-      | "Meeting requires MeetingPayment with SUCCESS status"
-      | "Invalid MeetingPayment success code"
-      | "Paid meeting type and passed type from request body dont match"
-  }>(409)
-  @Response<HttpErrorBody & { "error":
       | "Invalid body request for applicant"
       | "Invalid body request for employer"
       | "Invalid body request for guest"
       | "User does not have access to this MeetingSlot type"
   }>(403)
+  @Response<HttpErrorBody & { "error":
+      | "MeetingSlot already booked"
+      | "Meeting requires MeetingPayment with SUCCESS status"
+      | "Invalid MeetingPayment success code"
+      | "Paid meeting type and passed type from request body dont match"
+      | "Related service not available, retry later"
+  }>(409)
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
     @Request() req: ExpressRequest & JwtModel,
@@ -78,6 +82,41 @@ export class MeetingController extends Controller {
       CreateMeetingByApplicantRequestSchema,
       CreateMeetingByEmployerRequestSchema,
     ], body)
+
+    this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
+      {_type: "guest", email: "guestExample@gmail.com", id: "12345678910"},
+      {
+        _requester: "GUEST",
+        name: "Name",
+        description: "LALLALALALALALALALALALA",
+        slotId: body.slotId,
+        successCode: "1234",
+        type: "INTERVIEW",
+      },
+      new AxiosError("Some axios error"),
+    )
+    this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
+      {_type: "user", email: "applicantExample@gmail.com", id: "12345678910", firstName: "Alexey", lastName: "Zaliznuak"},
+      {
+        _requester: "APPLICANT",
+        name: "Name",
+        description: "LALLALALALALALALALALALA",
+        slotId: body.slotId,
+        type: "INTERVIEW",
+      },
+      new AxiosError("Some axios error"),
+    )
+    this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
+      {_type: "user", email: "employerExample@gmail.com", id: "12345678910", firstName: "Alexey", lastName: "Zaliznuak"},
+      {
+        _requester: "EMPLOYER",
+        name: "Name",
+        description: "LALLALALALALALALALALALA",
+        slotId: body.slotId,
+        type: "INTERVIEW",
+      },
+      new AxiosError("Some axios error"),
+    )
 
     const { _requester, ...bodyData } = body;
 
@@ -132,9 +171,7 @@ export class MeetingController extends Controller {
         throw new HttpError(409, "Paid meeting type and passed type from request body dont match");
     }
 
-    let user: { _type: "user", firstName: string, lastName: string, email: string }
-      | { _type: "guest"; email: string }
-      | null = null;
+    let user: MeetingCreator | null = null;
 
     const findArgs = {
       where: { id: req.user.id },
@@ -145,8 +182,18 @@ export class MeetingController extends Controller {
     if(req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
     else if(req.user.role === GUEST_ROLE) user = { _type: "guest", email: req.user.id }
 
-    // TODO: description должен браться из bodyData.description
-    const roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
+    let roomUrl = ''
+    try {
+      roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
+    }
+    catch (error) {
+      logger.error("Can not create Sber jazz room, error: " + error)
+
+      this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({...user!, id: req.user.id}, body, error)
+
+      throw new HttpError(409, "Related service not available, retry later")
+    }
+
     let description = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
         + "\n Также, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
         + "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
