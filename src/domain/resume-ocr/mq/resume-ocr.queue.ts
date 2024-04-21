@@ -21,7 +21,7 @@ export class ResumeOcrQueue {
   async enqueueResumeOcr(data: ResumeOcrJobData, opts?: JobsOptions): Promise<string> {
     const job = await this.queue.add(RESUME_OCR_JOB_NAME, data, opts);
 
-    logger.info({ jobId: job.id }, "Enqueued email job");
+    logger.info({ jobId: job.id }, "Enqueued resume-ocr job");
 
     return job.id!
   }
