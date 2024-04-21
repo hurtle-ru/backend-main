@@ -83,41 +83,6 @@ export class MeetingController extends Controller {
       CreateMeetingByEmployerRequestSchema,
     ], body)
 
-    this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
-      {_type: "guest", email: "guestExample@gmail.com", id: "12345678910"},
-      {
-        _requester: "GUEST",
-        name: "Name",
-        description: "LALLALALALALALALALALALA",
-        slotId: body.slotId,
-        successCode: "1234",
-        type: "INTERVIEW",
-      },
-      new AxiosError("Some axios error"),
-    )
-    this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
-      {_type: "user", email: "applicantExample@gmail.com", id: "12345678910", firstName: "Alexey", lastName: "Zaliznuak"},
-      {
-        _requester: "APPLICANT",
-        name: "Name",
-        description: "LALLALALALALALALALALALA",
-        slotId: body.slotId,
-        type: "INTERVIEW",
-      },
-      new AxiosError("Some axios error"),
-    )
-    this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
-      {_type: "user", email: "employerExample@gmail.com", id: "12345678910", firstName: "Alexey", lastName: "Zaliznuak"},
-      {
-        _requester: "EMPLOYER",
-        name: "Name",
-        description: "LALLALALALALALALALALALA",
-        slotId: body.slotId,
-        type: "INTERVIEW",
-      },
-      new AxiosError("Some axios error"),
-    )
-
     const { _requester, ...bodyData } = body;
 
     if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
