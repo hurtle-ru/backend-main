@@ -6,15 +6,23 @@ import {
   RegisterEmployerRequest,
   RegisterApplicantHhToken,
   RegisterApplicantWithHhRequest,
+  UserRole,
 } from "./auth.dto";
 import { authConfig } from "./auth.config";
 import * as bcrypt from "bcryptjs";
 import { singleton } from "tsyringe";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { TokenPayload } from "google-auth-library/build/src/auth/loginticket";
+import { APPLICANT, EMPLOYER } from "../../infrastructure/controller/requester/requester.dto";
+import otpGenerator from "otp-generator";
+import { EmailService } from "../../external/email/email.service";
+import { appConfig } from "../../infrastructure/app.config";
+
 
 @singleton()
 export class AuthService {
+  constructor(private readonly emailService: EmailService) {}
+
   createToken(payload: Omit<JwtModel["user"], "iat">): string {
     return jwt.sign({
       ...payload,
@@ -107,5 +115,41 @@ export class AuthService {
     })
 
     return applicant
+  }
+
+  async sendAuthByEmailCodeRequest(role: APPLICANT | EMPLOYER, email: string, name: string) {
+    const authByEmailCodeRequest = await prisma.authByEmailCode.upsert({
+      where: { email_role: { role, email } },
+      create: {
+        role,
+        email,
+        code: this.generateCode(),
+      },
+      update: {
+        code: this.generateCode(),
+      }
+    })
+
+    await this.sendAuthByEmailCodeEmail(role, email, name, authByEmailCodeRequest.code)
+  }
+
+  private generateCode(): string {
+    return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+  }
+
+  private async sendAuthByEmailCodeEmail(role: APPLICANT | EMPLOYER, email: string, name: string, code: string) {
+    const encodedEmail = encodeURIComponent(email);
+    const encodedCode = encodeURIComponent(code);
+
+    const link = appConfig.DOMAIN + `/auth/byEmail?role=${role}&email=${encodedEmail}&code=${encodedCode}`;
+
+    await this.emailService.enqueueEmail({
+      to: email,
+      subject: "Вход Hurtle",
+      template: {
+        name: "auth_by_email_code",
+        context: { name, code, link },
+      },
+    });
   }
 }
