@@ -17,7 +17,7 @@ import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/r
 @Route("api/v1/managers")
 @Tags("Manager")
 export class ManagerController extends Controller {
-  constructor(private readonly ArtifactService: ArtifactService) {
+  constructor(private readonly artifactService: ArtifactService) {
     super();
   }
 
@@ -88,14 +88,14 @@ export class ManagerController extends Controller {
 
       if (!manager) throw new HttpError(404, "Manager not found");
 
-      const fileName = await this.ArtifactService.getFullFileName(`manager/${id}/`, "avatar");
+      const fileName = await this.artifactService.getFullFileName(`manager/${id}/`, "avatar");
       const filePath = `manager/${id}/${fileName}`;
 
       if(fileName == null) throw new HttpError(404, "File not found");
 
       const response = req.res;
       if (response) {
-        const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
+        const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
         if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
         response.setHeader("Content-Length", fileOptions.size.toString());
@@ -129,10 +129,10 @@ export class ManagerController extends Controller {
     const avatarDirectory = `manager/${id}/`;
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.artifactService.getFullFileName(avatarDirectory, "avatar");
 
-    if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
-    await this.ArtifactService.saveImageFile(file, avatarPath);
+    if (oldAvatarFileName !== null) this.artifactService.deleteFile(avatarDirectory + oldAvatarFileName);
+    await this.artifactService.saveImageFile(file, avatarPath);
   }
 }

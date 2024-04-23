@@ -3,7 +3,7 @@ import axios from "axios";
 import { HttpError } from "../../../infrastructure/error/http.error";
 import { BasicApplicant, ExtendedApplicant } from "./applicant.dto";
 import { HhResumeService } from "../resume/resume.service";
-import camelize from "../../../util/camelize";
+import { camelize } from "../../../util/string.utils";
 
 
 @singleton()

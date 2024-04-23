@@ -1,0 +1,132 @@
+Convert resume images to JSON Resume. Be accurate, you must use all information from PDF, but don't make up anything. Resume object must be based on Prisma ORM schema. Output JSON must strictly follow it.
+When some field is unknown, use null (if it could be nullable in Prisma ORM schema)
+Your Output JSON must represent Resume object without Applicant object.
+
+Prisma ORM schema:
+
+model Applicant {
+  id                   String           @id @default(uuid())
+  firstName            String            @db.VarChar(50)
+  middleName           String?           @db.VarChar(50)
+  lastName             String            @db.VarChar(50)
+  birthDate            DateTime?
+  country              String?           @db.VarChar(62)
+  isReadyToRelocate    Boolean?
+  resume               Resume?
+}
+
+model Resume {
+  id                    String                       @id @default(uuid())
+  createdAt             DateTime                     @default(now())
+  importedFrom          ResumeImportExternalService?
+  importedId            String?                      @db.VarChar(512)
+  title                 String                       @db.VarChar(255)
+  summary               String?                      @db.VarChar(5000)
+  city                  String?                      @db.VarChar(255)
+  skills                String[]                     @db.VarChar(5000)
+  isVisibleToEmployers  Boolean                      @default(true)
+  desiredSalary         Int?
+  desiredSalaryCurrency Currency?
+  certificates          ResumeCertificate[]
+  contacts              ResumeContact[]
+  education             ResumeEducation[]
+  experience            ResumeExperience[]
+  languages             ResumeLanguage[]
+  applicant             Applicant                    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId           String                       @unique
+}
+
+model ResumeCertificate {
+  id          String  @id @default(uuid())
+  name        String  @db.VarChar(255)
+  description String? @db.VarChar(255)
+  year        Int?
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId    String
+}
+
+model ResumeContact {
+  id        String      @id @default(uuid())
+  name      String?     @db.VarChar(255)
+  type      ContactType
+  value     String      @db.VarChar(255)
+  preferred Boolean     @default(false)
+  resume    Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId  String
+}
+
+model ResumeEducation {
+  id          String  @id @default(uuid())
+  name        String  @db.VarChar(255)
+  description String? @db.VarChar(255)
+  degree      String? @db.VarChar(255)
+  startYear   Int?
+  endYear     Int?
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId    String
+}
+
+model ResumeExperience {
+  id          String  @id @default(uuid())
+  company     String? @db.VarChar(256)
+  position    String  @db.VarChar(255)
+  startMonth  Int?
+  startYear   Int?
+  endMonth    Int?
+  endYear     Int?
+  description String? @db.VarChar(3000)
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId    String
+}
+
+model ResumeLanguage {
+  id       String  @id @default(uuid())
+  name     String  @db.VarChar(100)
+  level    String? @db.VarChar(100)
+  resume   Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId String
+}
+
+enum ContactType {
+  PHONE
+  EMAIL
+  TELEGRAM
+  VK
+  FACEBOOK
+  LINKEDIN
+  GITHUB
+  OTHER
+}
+
+enum LanguageLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+  L1
+}
+
+enum ResumeImportExternalService {
+  HH
+  PDF_USING_GPT
+}
+
+enum Currency {
+  RUB
+  USD
+  EUR
+  GBP
+  GEL
+  AZN
+  BYR
+  KGS
+  KZT
+  UZS
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}

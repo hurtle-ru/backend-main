@@ -443,6 +443,7 @@ enum LanguageLevel {
 
 enum ResumeImportExternalService {
   HH
+  PDF_USING_GPT
 }
 
 enum Currency {

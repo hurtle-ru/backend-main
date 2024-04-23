@@ -1,6 +1,6 @@
 import camelCase from "camelcase";
 
-export default function camelize(obj: any): any {
+export function camelize(obj: any): any {
     if (Array.isArray(obj)) {
         return obj.map(camelize);
     } else if (obj !== null && typeof obj === "object") {

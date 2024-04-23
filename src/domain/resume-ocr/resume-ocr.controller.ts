@@ -15,12 +15,10 @@ import { ResumeOcrService } from "./resume-ocr.service";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { artifactConfig } from "../../external/artifact/artifact.config";
+import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { ArtifactService } from "../../external/artifact/artifact.service";
-import { ResumeOcrJobInfo } from "./resume-ocr.dto";
+import { GetResumeOcrJobResponse } from "./resume-ocr.dto";
 
-
-const PDF_MIME_TYPE = "application/pdf";
 
 @injectable()
 @Route("api/v1/resumes-ocr")
@@ -39,25 +37,29 @@ export class ResumeOcrController extends Controller {
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async recognizePdf(
     @Request() req: JwtModel,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<{jobId: string}> {
-    await this.artifactService.validateFileAttributes(file, [PDF_MIME_TYPE], artifactConfig.MAX_IMAGE_FILE_SIZE);
+    @UploadedFile("file") multerFile: Express.Multer.File,
+  ): Promise<{ jobId: string }> {
+    throw new HttpError(501, "Method temporarily disabled");
 
-    return {jobId: await this.resumeOcrService.enqueueRecognizingPdf({ file })};
+    // await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
+    //
+    // const fileName = await this.resumeOcrService.savePdf(multerFile);
+    // const jobId = await this.resumeOcrService.enqueueRecognizePdf({ fileName });
+    //
+    // return { jobId };
   }
 
   @Get("{jobId}")
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
-  public async getRecognizePdfInfo(
+  public async getResumeOcrJobById(
     @Path() jobId: string,
-  ): Promise<ResumeOcrJobInfo> {
-    const info = await this.resumeOcrService.getResumeOcrJobInfo(jobId);
+  ): Promise<GetResumeOcrJobResponse> {
+    throw new HttpError(501, "Method temporarily disabled");
 
-    if (!info) {
-      throw new HttpError(404, "Job not found")
-    }
-
-    return info
+    // const job = await this.resumeOcrService.getResumeOcrJob(jobId);
+    //
+    // if (!job) throw new HttpError(404, "Job not found")
+    //
+    // return job
   }
-
 }

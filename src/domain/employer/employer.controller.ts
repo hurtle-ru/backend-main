@@ -4,10 +4,33 @@ import { Readable } from "stream";
 
 import {Request as ExpressRequest} from "express";
 
-import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Put, Query, Request, Response, Route, Security, Tags, UploadedFile } from "tsoa";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Middlewares,
+  Patch,
+  Path,
+  Put,
+  Query,
+  Request,
+  Response,
+  Route,
+  Security,
+  Tags,
+  UploadedFile,
+} from "tsoa";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { BasicEmployer, GetEmployerResponse, PatchByIdByEmployerRequest, PatchByIdByEmployerRequestSchema, PatchMeByEmployerRequest, PatchMeByEmployerRequestSchema } from "./employer.dto";
+import {
+  BasicEmployer,
+  GetEmployerResponse,
+  PatchByIdByEmployerRequest,
+  PatchByIdByEmployerRequestSchema,
+  PatchMeByEmployerRequest,
+  PatchMeByEmployerRequestSchema,
+} from "./employer.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
@@ -20,7 +43,7 @@ import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/r
 @Route("api/v1/employers")
 @Tags("Employer")
 export class EmployerController extends Controller {
-  constructor(private readonly ArtifactService: ArtifactService) {
+  constructor(private readonly artifactService: ArtifactService) {
     super();
   }
 
@@ -106,14 +129,14 @@ export class EmployerController extends Controller {
 
     if (!employer) throw new HttpError(404, "Employer not found");
 
-    const fileName = await this.ArtifactService.getFullFileName(`employer/${id}/`, "avatar");
+    const fileName = await this.artifactService.getFullFileName(`employer/${id}/`, "avatar");
     const filePath = `employer/${id}/${fileName}`;
 
     if(fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
-      const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
@@ -148,13 +171,13 @@ export class EmployerController extends Controller {
     const avatarDirectory = `employer/${id}/`;
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.artifactService.getFullFileName(avatarDirectory, "avatar");
 
     if (oldAvatarFileName !== null)
-      this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
+      this.artifactService.deleteFile(avatarDirectory + oldAvatarFileName);
 
-    await this.ArtifactService.saveImageFile(file, avatarPath);
+    await this.artifactService.saveImageFile(file, avatarPath);
   }
 
   @Delete("{id}")
