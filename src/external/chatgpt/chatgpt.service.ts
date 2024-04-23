@@ -83,8 +83,11 @@ export class ChatGPTService {
       },
     );
 
+    const vectorStoreIds = receivedThread.tool_resources?.file_search?.vector_store_ids;
+
     await this.openai.files.del(fileResponse.id);
     await this.openai.beta.threads.del(threadRun.thread_id);
+    if(vectorStoreIds && vectorStoreIds.length > 0) await this.openai.beta.vectorStores.del(vectorStoreIds[0]);
 
     logger.debug({
       usage: {
