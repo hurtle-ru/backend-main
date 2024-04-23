@@ -96,7 +96,7 @@ export class AuthController extends Controller {
     @Request() req: ExpressRequest,
     @Body() body: CreateGuestAccessTokenRequest,
   ): Promise<CreateAccessTokenResponse> {
-    CreateGuestAccessTokenRequestSchema.validateSync(body);
+    body = CreateGuestAccessTokenRequestSchema.validateSync(body);
 
     const token = this.authService.createToken({
       id: body.email,
@@ -110,7 +110,7 @@ export class AuthController extends Controller {
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   public async registerApplicant(@Body() body: RegisterApplicantRequest): Promise<void> {
-    RegisterApplicantRequestSchema.validateSync(body);
+    body = RegisterApplicantRequestSchema.validateSync(body);
 
     const existingApplicant = await prisma.applicant.findUnique({ where: { email: body.email } });
     if(existingApplicant) throw new HttpError(409, "User with this email already exists");
@@ -122,7 +122,7 @@ export class AuthController extends Controller {
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
-    RegisterEmployerRequestSchema.validateSync(body);
+    body = RegisterEmployerRequestSchema.validateSync(body);
 
     const existingWithSameEmailEmployer = await prisma.employer.exists( { email: body.email } );
     if(existingWithSameEmailEmployer) throw new HttpError(409, "User with this email already exists");
@@ -190,7 +190,7 @@ export class AuthController extends Controller {
   public async registerApplicantWithGoogle(
     @Body() body: RegisterApplicantWithGoogleRequest
   ): Promise<CreateAccessTokenResponse> {
-    RegisterApplicantWithGoogleRequestSchema.validateSync(body);
+    body = RegisterApplicantWithGoogleRequestSchema.validateSync(body);
 
     let googleToken;
     try {
@@ -239,7 +239,7 @@ export class AuthController extends Controller {
 
     const { _authBy, ...bodyWithOutAuthBy } = body;
 
-    validateSyncByAtLeastOneSchema(
+    const bodyData = validateSyncByAtLeastOneSchema(
       [
         RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy"]),
         RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy"])
@@ -247,7 +247,7 @@ export class AuthController extends Controller {
       bodyWithOutAuthBy,
     )
 
-    const existingApplicant = await prisma.applicant.exists({ email: body.email } );
+    const existingApplicant = await prisma.applicant.exists({ email: bodyData.email } );
     if(existingApplicant) throw new HttpError(409, "User with this email already exists");
 
     if (body._authBy === HH_AUTHORIZATION_CODE) {
@@ -261,7 +261,7 @@ export class AuthController extends Controller {
       throw new HttpError(409, "User with this hh account already exists")
     }
 
-    const applicant = await this.authService.registerApplicantWithHh(body, {...hhToken!, hhApplicantId: hhApplicant.id });
+    const applicant = await this.authService.registerApplicantWithHh(bodyData, {...hhToken!, hhApplicantId: hhApplicant.id });
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
@@ -279,7 +279,7 @@ export class AuthController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: AuthWithHhRequest,
   ): Promise<AuthWithHhUserResponse> {
-    AuthWithHhRequestSchema.validateSync(body)
+    body = AuthWithHhRequestSchema.validateSync(body)
 
     const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
     const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);

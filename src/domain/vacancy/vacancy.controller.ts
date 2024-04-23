@@ -62,7 +62,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    CreateVacancyRequestSchema.validateSync(body)
+    body = CreateVacancyRequestSchema.validateSync(body)
 
     const vacancy = await prisma.vacancy.create({
       data: {
@@ -88,7 +88,7 @@ export class VacancyController extends Controller {
   @Response<HttpErrorBody & {"error": "User must be authorized to see vacancy responses"}>(401)
   public async getAll(
     @Request() req: JwtModel | { user: null },
-    @Query() include?: ("employer" | "responses")[],
+    @Query() include?: ("employer" | "responses" | "guestResponses")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() nameOrEmployerName?: string,
@@ -110,17 +110,20 @@ export class VacancyController extends Controller {
 
     let where: Prisma.VacancyWhereInput = {};
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs | null = include?.includes("responses") ?? false;
+    let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs | null = include?.includes("guestResponses") ?? false;
 
     if(req.user) {
       switch(req.user.role) {
         case UserRole.APPLICANT:
-          if(includeResponses) includeResponses = includeResponses = { where: { candidateId: req.user.id } };
+          if(includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+          includeGuestResponses = false
+
           status = VacancyStatus.PUBLISHED;
           isHidden = false
           break;
       }
     } else {
-      if(includeResponses) throw new HttpError(401, "User must be authorized to see vacancy responses")
+      if(includeResponses || includeGuestResponses) throw new HttpError(401, "User must be authorized to see vacancy responses")
       status = VacancyStatus.PUBLISHED;
       isHidden = false;
     }
@@ -154,6 +157,10 @@ export class VacancyController extends Controller {
         include: {
           employer: include?.includes("employer"),
           responses: includeResponses,
+          guestResponses: includeGuestResponses,
+        },
+        orderBy: {
+          createdAt: "desc",
         },
         orderBy: {
           createdAt: "desc",
@@ -178,12 +185,13 @@ export class VacancyController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("employer" | "responses" | "responses.candidate" | "responses.candidate.resume")[],
+    @Query() include?: ("employer" | "guestResponses" | "responses" | "responses.candidate" | "responses.candidate.resume")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponse>> {
     let where = null;
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+    let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs = include?.includes("guestResponses") ?? false;
 
     if(req.user.role === UserRole.EMPLOYER) {
       where = { employerId: req.user.id };
@@ -218,6 +226,7 @@ export class VacancyController extends Controller {
           where: { candidateId: req.user.id },
         };
       }
+      includeGuestResponses = false
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -228,6 +237,10 @@ export class VacancyController extends Controller {
         include: {
           employer: include?.includes("employer"),
           responses: includeResponses,
+          guestResponses: includeGuestResponses,
+        },
+        orderBy: {
+          createdAt: "desc",
         },
         orderBy: {
           createdAt: "desc",
@@ -328,7 +341,7 @@ export class VacancyController extends Controller {
     @Path() id: string,
     @Body() body: PatchVacancyRequestFromEmployer | PatchVacancyRequestFromManager,
   ): Promise<void> {
-    validateSyncByAtLeastOneSchema(
+    body = validateSyncByAtLeastOneSchema(
       [
         PatchVacancyRequestFromManagerSchema,
         PatchVacancyRequestFromEmployerSchema,
@@ -361,9 +374,10 @@ export class VacancyController extends Controller {
   public async getById(
     @Request() req: JwtModel | { user: null },
     @Path() id: string,
-    @Query() include?: ("employer" | "responses" | "responses.candidate")[]
+    @Query() include?: ("employer" | "guestResponses" | "responses" | "responses.candidate")[]
   ): Promise<GetVacancyResponse> {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+    let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs = include?.includes("guestResponses") ?? false;
     let where: Prisma.VacancyWhereUniqueInput = { id };
 
     if(req.user) {
@@ -375,6 +389,7 @@ export class VacancyController extends Controller {
             status: VacancyStatus.PUBLISHED,
             isHidden: false,
           }
+          includeGuestResponses = false
           break;
         case UserRole.EMPLOYER:
           if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
@@ -384,7 +399,7 @@ export class VacancyController extends Controller {
           break;
       }
     } else {
-      if(includeResponses) throw new HttpError(401, "User must be authorized to see responses")
+      if(includeResponses || includeGuestResponses) throw new HttpError(401, "User must be authorized to see responses")
     }
 
     const vacancy = await prisma.vacancy.findUnique({
@@ -392,6 +407,7 @@ export class VacancyController extends Controller {
       include: {
         employer: include?.includes("employer"),
         responses: includeResponses,
+        guestResponses: includeGuestResponses,
       },
     });
 

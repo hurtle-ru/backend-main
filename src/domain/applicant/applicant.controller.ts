@@ -40,7 +40,7 @@ import { Prisma } from "@prisma/client";
 @Route("api/v1/applicants")
 @Tags("Applicant")
 export class ApplicantController extends Controller {
-  constructor(private readonly ArtifactService: ArtifactService) {
+  constructor(private readonly artifactService: ArtifactService) {
     super();
   }
 
@@ -119,7 +119,7 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Body() body: PatchMeApplicantRequest
   ): Promise<BasicApplicant> {
-    PatchMeApplicantRequestSchema.validateSync(body);
+    body = PatchMeApplicantRequestSchema.validateSync(body);
 
     return prisma.applicant.update({
       where: { id: req.user.id },
@@ -176,7 +176,7 @@ export class ApplicantController extends Controller {
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
 
-    const fileName = await this.ArtifactService.getFullFileName(`applicant/${id}/`, "avatar");
+    const fileName = await this.artifactService.getFullFileName(`applicant/${id}/`, "avatar");
     const filePath = `applicant/${id}/${fileName}`;
 
     if(fileName == null) throw new HttpError(404, "File not found");
@@ -184,7 +184,7 @@ export class ApplicantController extends Controller {
     const response = req.res;
     if (response) {
       req.log.trace("File path: ", filePath);
-      const [stream, fileOptions] = await this.ArtifactService.loadFile(filePath);
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
       if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
       response.setHeader("Content-Length", fileOptions.size.toString());
@@ -216,12 +216,12 @@ export class ApplicantController extends Controller {
     const avatarDirectory = `applicant/${id}/`;
     const avatarPath = avatarDirectory + `avatar${avatarExtension}`;
 
-    await this.ArtifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
-    const oldAvatarFileName = await this.ArtifactService.getFullFileName(avatarDirectory, "avatar");
+    await this.artifactService.validateFileAttributes(file, AVAILABLE_IMAGE_FILE_MIME_TYPES, artifactConfig.MAX_IMAGE_FILE_SIZE);
+    const oldAvatarFileName = await this.artifactService.getFullFileName(avatarDirectory, "avatar");
 
-    if (oldAvatarFileName !== null) this.ArtifactService.deleteFile(avatarDirectory + oldAvatarFileName);
+    if (oldAvatarFileName !== null) this.artifactService.deleteFile(avatarDirectory + oldAvatarFileName);
 
-    await this.ArtifactService.saveImageFile(file, avatarPath);
+    await this.artifactService.saveImageFile(file, avatarPath);
   }
 
   @Delete("{id}")
@@ -290,7 +290,7 @@ export class ApplicantController extends Controller {
     @Path() id: string,
     @Body() body: PatchByIdApplicantRequest
   ): Promise<BasicApplicant> {
-    PatchByIdApplicantRequestSchema.validateSync(body);
+    body = PatchByIdApplicantRequestSchema.validateSync(body);
 
     const where = { id };
     if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");

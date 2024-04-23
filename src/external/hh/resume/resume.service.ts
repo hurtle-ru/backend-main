@@ -3,7 +3,7 @@ import axios from "axios";
 import { HttpError } from "../../../infrastructure/error/http.error";
 import { GetMineResumeResponse } from "./resume.dto";
 import { hh } from "../hh.dto";
-import camelize from "../../../util/camelize";
+import { camelize } from "../../../util/string.utils";
 
 @singleton()
 export class HhResumeService {

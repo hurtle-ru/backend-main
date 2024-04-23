@@ -32,7 +32,7 @@ export class ResumeContactController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeContactRequest,
   ): Promise<BasicResumeContact> {
-    CreateResumeContactRequestSchema.validateSync(body)
+    body = CreateResumeContactRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },

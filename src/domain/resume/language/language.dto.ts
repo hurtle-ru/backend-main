@@ -8,7 +8,7 @@ export type BasicResumeLanguage = Omit<
 >;
 
 
-const BasicResumeLanguageSchema: yup.ObjectSchema<BasicResumeLanguage> = yup.object({
+export const BasicResumeLanguageSchema: yup.ObjectSchema<BasicResumeLanguage> = yup.object({
   id: yup.string().defined().length(36),
   name: yup.string().defined().trim().max(100),
   level: yup.string().defined().trim().max(100).nullable(),

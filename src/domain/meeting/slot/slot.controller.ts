@@ -44,7 +44,7 @@ export class MeetingSlotController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingSlotRequest,
   ): Promise<BasicMeetingSlot> {
-    CreateMeetingSlotRequestSchema.validateSync(body)
+    body = CreateMeetingSlotRequestSchema.validateSync(body)
 
     return prisma.meetingSlot.create({
       data: {
@@ -219,7 +219,7 @@ export class MeetingSlotController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingSlotRequest,
   ): Promise<BasicMeetingSlot> {
-    PatchMeetingSlotRequestSchema.validateSync(body)
+    body = PatchMeetingSlotRequestSchema.validateSync(body)
 
     const where = {
       id,

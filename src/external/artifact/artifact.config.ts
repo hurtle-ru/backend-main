@@ -18,12 +18,14 @@ export const AVAILABLE_IMAGE_FILE_MIME_TYPES = [
   "image/png",
   "image/webp",
 ]
+
 export const AVAILABLE_VIDEO_FILE_MIME_TYPES = [
   "video/mpeg",
   "video/mp4",
   "video/webm",
   "video/x-msvideo",
 ]
+
 export const AVAILABLE_DOCUMENT_FILE_MIME_TYPES = [
   "application/pdf",
   "application/msword",

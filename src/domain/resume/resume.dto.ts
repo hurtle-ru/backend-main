@@ -26,7 +26,7 @@ export type BasicResume = Pick<
   | "applicantId"
 >;
 
-const BasicResumeSchema: yup.ObjectSchema<BasicResume> = yup.object({
+export const BasicResumeSchema: yup.ObjectSchema<BasicResume> = yup.object({
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   importedFrom: yupOneOfEnum(ResumeImportExternalService).defined().nullable(),

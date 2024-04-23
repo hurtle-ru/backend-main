@@ -61,7 +61,7 @@ export class MeetingPaymentController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingPaymentRequest,
   ): Promise<BasicMeetingPayment> {
-    CreateMeetingPaymentRequestSchema.validateSync(body)
+    body = CreateMeetingPaymentRequestSchema.validateSync(body)
 
     const slot = await prisma.meetingSlot.findUnique({
       where: {
@@ -164,7 +164,7 @@ export class MeetingPaymentController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingPaymentRequest
   ): Promise<BasicMeetingPayment> {
-    PatchMeetingPaymentRequestSchema.validateSync(body)
+    body = PatchMeetingPaymentRequestSchema.validateSync(body)
 
     const where = { id, guestEmail: req.user.id };
     const payment = await prisma.meetingPayment.findUnique({ where });

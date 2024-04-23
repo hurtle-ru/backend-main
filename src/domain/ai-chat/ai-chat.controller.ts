@@ -2,25 +2,21 @@ import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  Middlewares,
   Path,
   Post,
-  Put,
   Query,
   Request,
   Response,
   Route,
   Security,
   Tags,
-  UploadedFile,
 } from "tsoa";
-import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
+import { JwtModel, UserRole } from "../auth/auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { ApplicantAiChatService } from "./ai-chat.service";
-import { BasicApplicantAiChat, CreateApplicantAiChatRequest, GetApplicantAiChatResponse } from "./ai-chat.dto";
+import { BasicApplicantAiChat, CreateApplicantAiChatRequest, CreateApplicantAiChatRequestSchema, GetApplicantAiChatResponse } from "./ai-chat.dto";
 import { MeetingStatus, MeetingType } from "@prisma/client";
 
 
@@ -44,6 +40,8 @@ export class ApplicantAiChatController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateApplicantAiChatRequest
   ): Promise<BasicApplicantAiChat> {
+    body = CreateApplicantAiChatRequestSchema.validateSync(body)
+
     if(await prisma.applicantAiChat.exists({ applicantId: body.applicantId, employerId: req.user.id }))
       throw new HttpError(409, "AI Chat already exists");
 

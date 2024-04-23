@@ -41,19 +41,21 @@ export class VacancyService {
       `\nРаботодатель (ФИО): <b>${employer.lastName} ${employer.firstName} ${employer.middleName}</b>` +
       `\nID: <code>${vacancy.id}</code>` +
       `\nКонтакт: <b>${employer.contact}</b>` +
-      `\nEmail: <b>${employer.email}</b>` +
-      "\n"
-
-      if (appConfig.NODE_ENV === 'production') {
-        text += "\n\n" + this.telegramService.TextFormatter.hyperLink(
-          "Админ-ссылка",
-          this.adminPanelService.getLinkOnVacancy(vacancy.id)
-        )
-      }
+      `\nEmail: <b>${employer.email}</b>`
 
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML" },
+      options: {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [{
+              text: "Admin-panel",
+              url: this.adminPanelService.getLinkOnVacancy(vacancy.id)
+            }]
+          ]
+        }
+      },
     });
   }
 }

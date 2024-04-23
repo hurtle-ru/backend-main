@@ -44,6 +44,13 @@ export const BasicMeetingSchema: yup.ObjectSchema<BasicMeeting> = yup.object({
   employerId: yup.string().defined().length(36).nullable(),
 })
 
+
+export type UserMeetingCreator = { _type: "user", firstName: string, lastName: string, email: string }
+export type GuestMeetingCreator = { _type: "guest"; email: string }
+
+export type MeetingCreator = UserMeetingCreator | GuestMeetingCreator
+
+
 export type GetMeetingResponse = BasicMeeting & {
   feedback?: BasicMeetingFeedback[],
   scriptProtocols?: BasicMeetingScriptProtocol[],

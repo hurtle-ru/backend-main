@@ -10,6 +10,8 @@ import { EmailService } from "../../external/email/email.service";
 import { MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
+import { CreateMeetingByApplicantOrEmployerRequest, CreateMeetingGuestRequest, UserMeetingCreator, MeetingCreator } from "./meeting.dto";
+import { HtmlFormatter } from "../../external/telegram/telegram.service.text-formatter";
 
 
 @injectable()
@@ -18,6 +20,7 @@ export class MeetingService {
   constructor(
     private readonly jazzService: SberJazzService,
     private readonly telegramService: TelegramService,
+    private readonly formatter: HtmlFormatter,
     private readonly emailService: EmailService,
     private readonly adminPanelService: AdminPanelService,
   ) {}
@@ -61,14 +64,19 @@ export class MeetingService {
 
     text += `\nРоль: <b>${user.role}</b>`;
 
-    text += "\n\n" + this.telegramService.TextFormatter.hyperLink(
-      "Админ-ссылка",
-      this.adminPanelService.getLinkOnMeeting(meeting.id)
-    )
-
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML" },
+      options: {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [{
+              text: "Admin-panel",
+              url: this.adminPanelService.getLinkOnMeeting(meeting.id)
+            }]
+          ]
+        }
+      }
     });
   }
 
@@ -144,6 +152,46 @@ export class MeetingService {
     }
   }
 
+  async sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
+    user: MeetingCreator & { id: string },
+    body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
+    error: any
+  ) {
+    let text = "Ошибка во время попытки создать комнату в Sber Jazz:" + "\n\n"
+
+    let formatter = new HtmlFormatter()
+    text += [
+      "Слот: " + formatter.bold(formatter.code(body.slotId)),
+      "Тип встречи: " + formatter.bold(body.type),
+      "",
+      "Информация о пользователе: ",
+      this.getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage(user, body),
+      "",
+      "Ошибка: ",
+      formatter.code(error),
+    ].join("\n")
+
+    const reply_markup = body._requester !== "GUEST" ? {
+      inline_keyboard: [
+        [{
+          text: "Admin-panel",
+          url: {
+            "APPLICANT": this.adminPanelService.getLinkOnApplicant(user.id),
+            "EMPLOYER":  this.adminPanelService.getLinkOnEmployer(user.id),
+          }[body._requester]
+        }]
+      ]
+    } : undefined
+
+    await this.telegramService.enqueueAdminNotification({
+      text,
+      options: {
+        parse_mode: "HTML",
+        reply_markup: reply_markup,
+      }
+    });
+  }
+
   // TODO: replace roomUrl with meeting id
   async removeMeetingReminderToEmail(
     logger: pino.Logger,
@@ -174,5 +222,25 @@ export class MeetingService {
   calculateReminderDelay(meetingDateTime: Date, minutesBefore: number): number {
     const reminderTime = new Date(meetingDateTime.getTime() - minutesBefore * 60 * 1000); // 60000 ms in a minute
     return reminderTime.getTime() - new Date().getTime();
+  }
+
+  private getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage(
+    user: MeetingCreator & { id: string },
+    body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest
+  ): string {
+    let message = [
+      "ID: " + this.formatter.code(user.id),
+      "Роль: "  + body._requester,
+      "Почта: " + this.formatter.code(user.email),
+    ].join("\n")
+
+    message += user._type === "user" ?
+    "\n" + [
+      "Имя: " + this.formatter.bold(user.firstName),
+      "Фамилия: " + this.formatter.bold(user.lastName),
+    ].join("\n")
+    : ""
+
+    return message
   }
 }

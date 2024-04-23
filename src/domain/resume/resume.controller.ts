@@ -44,7 +44,7 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
-    CreateResumeRequestSchema.validateSync(body)
+    body = CreateResumeRequestSchema.validateSync(body)
 
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
@@ -150,7 +150,7 @@ export class ResumeController extends Controller {
     @Path() id: string,
     @Body() body: PatchByIdResumeRequest,
   ): Promise<PatchResumeResponse> {
-    PatchByIdResumeRequestSchema.validateSync(body);
+    body = PatchByIdResumeRequestSchema.validateSync(body);
 
     const where = {
       id,
