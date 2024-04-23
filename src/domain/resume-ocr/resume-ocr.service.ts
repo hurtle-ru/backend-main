@@ -9,7 +9,6 @@ import { injectable, singleton } from "tsyringe";
 import { ChatGPTService } from "../../external/chatgpt/chatgpt.service";
 import { resumeOcrConfig } from "./resume-ocr.config";
 import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
-import { TextContentBlock } from "openai/src/resources/beta/threads/messages/messages";
 import { GetResumeOcrJobResponse, ResumeOcrJobData } from "./resume-ocr.dto";
 import { JobsOptions } from "bullmq";
 import { ResumeOcrQueue } from "./mq/resume-ocr.queue";
@@ -19,6 +18,8 @@ import * as path from 'path';
 import * as streamConsumers from "node:stream/consumers";
 import { jsonrepair } from "jsonrepair";
 import { logger } from "../../infrastructure/logger/logger";
+import { Threads } from "openai/resources/beta";
+import TextContentBlock = Threads.TextContentBlock;
 
 
 @injectable()
@@ -63,7 +64,7 @@ export class ResumeOcrService {
 
     const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
     const buffer = await streamConsumers.arrayBuffer(stream);
-    const file = this.bufferToFile(buffer, fullFileName, fileOptions.mimeType);
+    const file = this.bufferToFile(buffer, fullFileName, fileOptions.mimeType, "CV.pdf");
 
     const renderedPrompt = this.templateRendererService.renderTemplate(
       ResumeOcrService.TEMPLATE_TYPE,
@@ -98,8 +99,12 @@ export class ResumeOcrService {
     return await readPdfText({ data: buffer });
   }
 
-  private bufferToFile(buffer: ArrayBuffer, originalName: string, mimeType: string | null): File {
-    return new File([buffer], originalName, { type: mimeType ?? undefined });
+  private bufferToFile(buffer: ArrayBuffer, originalName: string, mimeType: string | null, newName?: string): File {
+    return new File(
+      [buffer],
+      newName ? newName : originalName,
+      { type: mimeType ?? undefined }
+    );
   }
 
   private cleanUpCompletion(completion: string): string {

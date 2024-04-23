@@ -1,5 +1,9 @@
 import { injectable, singleton } from "tsyringe";
-import { GetRecognizedResumeResponse, GetResumeOcrJobResponse, RawRecognizedResume } from "./resume-ocr.dto";
+import {
+  GetRecognizedResumeResponse,
+  RawRecognizedResume,
+  UnknownDeepRawRecognizedResume,
+} from "./resume-ocr.dto";
 import { ContactType, Currency } from "@prisma/client";
 
 
@@ -8,7 +12,10 @@ import { ContactType, Currency } from "@prisma/client";
 export class ResumeOcrMapper {
   constructor() {}
 
-  public mapResume(raw: RawRecognizedResume, jobId: string | null): GetRecognizedResumeResponse {
+  // "Unknown deep" - довольный костыльный концепт, но работает стабильно
+  public mapResume(unknownDeepRawResume: UnknownDeepRawRecognizedResume, jobId: string | null): GetRecognizedResumeResponse {
+    const raw: RawRecognizedResume = this.findResumeData(unknownDeepRawResume)!;
+
     return {
       createdAt: new Date(),
       importedFrom: "PDF_USING_GPT",
@@ -17,10 +24,10 @@ export class ResumeOcrMapper {
       middleName: raw.middleName ?? null,
       lastName: raw.lastName ?? "",
       birthDate: null,
-      title: raw.lastName ?? "",
-      summary: raw.lastName ?? null,
-      city: raw.lastName ?? null,
-      country: raw.lastName ?? null,
+      title: raw.title ?? "",
+      summary: raw.summary ?? null,
+      city: raw.city ?? null,
+      country: raw.country ?? null,
       isReadyToRelocate: raw.isReadyToRelocate ?? null,
       skills: this.mapSkills(raw.skills),
       desiredSalary: raw.desiredSalary ?? null,
@@ -46,10 +53,12 @@ export class ResumeOcrMapper {
 
   private mapDesiredSalaryCurrency(desiredSalaryCurrency: RawRecognizedResume["desiredSalaryCurrency"]): Currency | null {
     if(desiredSalaryCurrency === null || desiredSalaryCurrency === undefined) return null;
-    if(desiredSalaryCurrency as Currency & "RUR" === "RUR") return "RUB";
-    if (!Object.values(Currency).includes(desiredSalaryCurrency as keyof typeof Currency)) return null;
+    const upperDesiredSalaryCurrency = desiredSalaryCurrency.toUpperCase();
 
-    return desiredSalaryCurrency as Currency;
+    if(upperDesiredSalaryCurrency as Currency & "RUR" === "RUR") return "RUB";
+    if (!Object.values(Currency).includes(upperDesiredSalaryCurrency as keyof typeof Currency)) return null;
+
+    return upperDesiredSalaryCurrency as Currency;
   }
 
   private mapCertificates(certificates: RawRecognizedResume["certificates"]): GetRecognizedResumeResponse["certificates"] {
@@ -77,13 +86,18 @@ export class ResumeOcrMapper {
     if(contacts === null || contacts === undefined) return [];
     const mappedContacts: GetRecognizedResumeResponse["contacts"] = [];
 
-    for (const contact of contacts) {
+    for (let i = 0; i < contacts.length; i++){
+      const contact = contacts[i];
+
       if(!contact) continue;
 
-      const mappedName = contact.name ?? null;
-      const mappedType = Object.values(ContactType).includes(contact.type as keyof typeof ContactType) ? contact.type as ContactType : null;
+      const mappedName = null; // Игнорируем
       const mappedValue = contact.value ?? null;
-      const mappedPreferred = contact.preferred ?? false;
+      const mappedPreferred = false; // Игнорируем
+
+      const rawType = contact.type ? contact.type.toUpperCase() : null;
+      let mappedType = null;
+      if(rawType) mappedType = Object.values(ContactType).includes(rawType as keyof typeof ContactType) ? rawType as ContactType : null;
 
       if(mappedType !== null && mappedValue !== null) {
         mappedContacts.push({
@@ -156,8 +170,8 @@ export class ResumeOcrMapper {
       const mappedName = language.name ?? null;
       let mappedLevel = null;
       if(language.level) {
-        const lowerCaseLevel = language.level.toLowerCase();
-        if(lowerCaseLevel.includes("nat")) mappedLevel = "L1";
+        mappedLevel = language.level.toUpperCase();
+        if(mappedLevel.includes("NAT")) mappedLevel = "L1";
       }
 
       if (mappedName !== null) {
@@ -169,5 +183,21 @@ export class ResumeOcrMapper {
     }
 
     return mappedLanguages;
+  }
+
+  private findResumeData(object: any): RawRecognizedResume | null {
+    if (object !== null && typeof object === "object") {
+      if (object.firstName !== undefined) {
+        return object;
+      }
+
+      for (let i = 0; i < Object.keys(object).length; i++){
+        const key: any = Object.keys(object)[i];
+        const possibleResume = this.findResumeData(object[key]);
+        if (possibleResume) return possibleResume;
+      }
+    }
+
+    return null;
   }
 }

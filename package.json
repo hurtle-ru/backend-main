@@ -44,7 +44,7 @@
     "node-cache": "^5.1.2",
     "node-telegram-bot-api": "^0.64.0",
     "nodemailer": "^6.9.7",
-    "openai": "^4.33.0",
+    "openai": "^4.38.3",
     "otp-generator": "^4.0.1",
     "pdf-text-reader": "^4.0.1",
     "pdfjs-dist": "^4.1.392",

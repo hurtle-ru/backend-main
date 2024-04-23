@@ -17,6 +17,12 @@ export const enum ResumeOcrJobStatus {
   FAILED = "FAILED",
 }
 
+export type UnknownDeepRawRecognizedResume = RawRecognizedResume | DeepNestedRawRecognizedResume;
+
+interface DeepNestedRawRecognizedResume {
+  [key: string]: UnknownDeepRawRecognizedResume;
+}
+
 export type RawRecognizedResume = DeepPartial<
   DeepNullable<
     Omit<
@@ -24,10 +30,10 @@ export type RawRecognizedResume = DeepPartial<
       | "createdAt"
       | "importedFrom"
       | "importedId"
-      | "birthDate"
+      | "birthDate" // ignore birthDate
     >
   >
->
+>;
 
 export type GetRecognizedResumeResponse = {
   createdAt: Date,

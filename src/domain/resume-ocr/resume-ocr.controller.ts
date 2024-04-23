@@ -39,14 +39,12 @@ export class ResumeOcrController extends Controller {
     @Request() req: JwtModel,
     @UploadedFile("file") multerFile: Express.Multer.File,
   ): Promise<{ jobId: string }> {
-    throw new HttpError(501, "Method temporarily disabled");
+    await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
 
-    // await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
-    //
-    // const fileName = await this.resumeOcrService.savePdf(multerFile);
-    // const jobId = await this.resumeOcrService.enqueueRecognizePdf({ fileName });
-    //
-    // return { jobId };
+    const fileName = await this.resumeOcrService.savePdf(multerFile);
+    const jobId = await this.resumeOcrService.enqueueRecognizePdf({ fileName });
+
+    return { jobId };
   }
 
   @Get("{jobId}")
@@ -54,12 +52,10 @@ export class ResumeOcrController extends Controller {
   public async getResumeOcrJobById(
     @Path() jobId: string,
   ): Promise<GetResumeOcrJobResponse> {
-    throw new HttpError(501, "Method temporarily disabled");
+    const job = await this.resumeOcrService.getResumeOcrJob(jobId);
 
-    // const job = await this.resumeOcrService.getResumeOcrJob(jobId);
-    //
-    // if (!job) throw new HttpError(404, "Job not found")
-    //
-    // return job
+    if (!job) throw new HttpError(404, "Job not found");
+
+    return job;
   }
 }

@@ -4,11 +4,10 @@ import { chatGptConfig } from "./chatgpt.config";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import { ChatCompletionMessageParam } from "openai/resources";
 import { Uploadable } from "openai/src/uploads";
-import { MessageContent } from "openai/src/resources/beta/threads/messages/messages";
 import { logger } from "../../infrastructure/logger/logger";
-import * as AssistantsAPI from "openai/src/resources/beta/assistants/assistants";
 import { Assistants } from "openai/resources/beta";
-import RetrievalTool = Assistants.RetrievalTool;
+import { MessageContent } from "openai/resources/beta/threads";
+import { th } from "yup-locales";
 
 
 @singleton()
@@ -50,19 +49,34 @@ export class ChatGPTService {
     const fileResponse = await this.openai.files.create({
       file,
       purpose: "assistants",
-    })
-
-    prompt += `\n[File Search: Retrieve full content of file with id for this request: ${fileResponse.id}]`
+    });
 
     const threadRun = await this.openai.beta.threads.createAndRun({
       assistant_id: assistantId,
+      tool_choice: { type: "file_search" },
       thread: {
-        messages: [{ role: "user", content: prompt, file_ids: [fileResponse.id] }],
+        messages: [{
+          role: "user",
+          content: prompt,
+          attachments: [{
+            file_id: fileResponse.id,
+            tools: [{ type: "file_search" }],
+          }],
+        }],
+        tool_resources: {
+          file_search: {
+            vector_stores: [{
+              file_ids: [fileResponse.id],
+            }],
+          },
+        },
       },
-      tools: [{ "type": "retrieval" }],
+      tools: [{ type: "file_search" }],
     });
 
     const terminatedRun = await this.openai.beta.threads.runs.poll(threadRun.thread_id, threadRun.id);
+    const receivedThread = await this.openai.beta.threads.retrieve(threadRun.thread_id);
+
     const messages = await this.openai.beta.threads.messages.list(
       threadRun.thread_id, {
         order: "desc",
