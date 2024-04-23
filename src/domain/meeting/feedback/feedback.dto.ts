@@ -1,7 +1,7 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 
-import { MeetingFeedback, MeetingType } from "@prisma/client";
-import { BasicMeeting } from "../meeting.dto";
+import { MeetingFeedback, MeetingType, } from "@prisma/client";
+import { BasicMeeting, } from "../meeting.dto";
 
 
 export type BasicMeetingFeedback = Omit<
@@ -13,10 +13,10 @@ export const BasicMeetingFeedbackSchema: yup.ObjectSchema<BasicMeetingFeedback> 
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  name: yup.string().defined().min(0).max(1000),
-  text: yup.string().defined().min(0).max(1000),
-  meetingId: yup.string().defined().length(36),
-})
+  name: yup.string().defined().min(0,).max(1000,),
+  text: yup.string().defined().min(0,).max(1000,),
+  meetingId: yup.string().defined().length(36,),
+},);
 
 export type CreateMeetingFeedbackRequest = Pick<
   MeetingFeedback,
@@ -28,7 +28,7 @@ export const CreateMeetingFeedbackRequestSchema: yup.ObjectSchema<CreateMeetingF
   "name",
   "text",
   "meetingId",
-])
+],);
 
 export type PatchMeetingFeedbackRequest = Partial<Pick<
   MeetingFeedback,
@@ -40,7 +40,7 @@ export const PatchMeetingFeedbackRequestSchema: yup.ObjectSchema<PatchMeetingFee
   "name",
   "text",
   "meetingId",
-]).partial()
+],).partial();
 
 export type GetMeetingFeedbackResponse = BasicMeetingFeedback & {
   meeting?: BasicMeeting,

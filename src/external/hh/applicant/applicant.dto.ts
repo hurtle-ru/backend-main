@@ -1,4 +1,4 @@
-import { hh } from "../hh.dto";
+import { hh, } from "../hh.dto";
 
 export type BasicApplicant = {
   id: string;

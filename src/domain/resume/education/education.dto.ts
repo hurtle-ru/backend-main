@@ -1,5 +1,5 @@
-import * as yup from "yup"
-import { ResumeEducation } from "@prisma/client";
+import * as yup from "yup";
+import { ResumeEducation, } from "@prisma/client";
 
 
 export type BasicResumeEducation = Omit<
@@ -8,14 +8,14 @@ export type BasicResumeEducation = Omit<
 >;
 
 export const BasicResumeEducationSchema: yup.ObjectSchema<BasicResumeEducation> = yup.object({
-  id: yup.string().defined().length(36),
-  name: yup.string().defined().trim().min(0).max(255),
-  description: yup.string().defined().trim().min(0).max(255).nullable(),
-  degree: yup.string().defined().trim().min(0).max(255).nullable(),
-  startYear: yup.number().defined().max(9999).nullable(),
-  endYear: yup.number().defined().max(9999).nullable(),
-  resumeId: yup.string().defined().length(36),
-})
+  id: yup.string().defined().length(36,),
+  name: yup.string().defined().trim().min(0,).max(255,),
+  description: yup.string().defined().trim().min(0,).max(255,).nullable(),
+  degree: yup.string().defined().trim().min(0,).max(255,).nullable(),
+  startYear: yup.number().defined().max(9999,).nullable(),
+  endYear: yup.number().defined().max(9999,).nullable(),
+  resumeId: yup.string().defined().length(36,),
+},);
 
 
 export type CreateResumeEducationRequest = Pick<BasicResumeEducation,
@@ -34,7 +34,7 @@ export const CreateResumeEducationRequestSchema: yup.ObjectSchema<CreateResumeEd
   "startYear",
   "endYear",
   "resumeId",
-])
+],);
 
 
 export type PatchResumeEducationRequest = Partial<Pick<BasicResumeEducation,
@@ -51,4 +51,4 @@ export const PatchResumeEducationRequestSchema: yup.ObjectSchema<PatchResumeEduc
   "degree",
   "startYear",
   "endYear",
-]).partial()
+],).partial();

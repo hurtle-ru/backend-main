@@ -1,4 +1,4 @@
-import { injectable, singleton } from "tsyringe";
+import { injectable, singleton, } from "tsyringe";
 
 
 @injectable()

@@ -1,7 +1,7 @@
 import axios from "axios";
-import { singleton } from "tsyringe";
-import { tinkoffConfig } from "./tinkoff.config";
-import { tinkoff } from "./tinkoff.dto";
+import { singleton, } from "tsyringe";
+import { tinkoffConfig, } from "./tinkoff.config";
+import { tinkoff, } from "./tinkoff.dto";
 import crypto from "crypto";
 
 
@@ -41,13 +41,13 @@ export class TinkoffPaymentService {
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(
       "https://securepay.tinkoff.ru/v2/Init",
-      { ...requestBody, Token: this.makeToken(requestBody) }
+      { ...requestBody, Token: this.makeToken(requestBody,), },
     );
 
     return response.data;
   }
 
-  async getPaymentState(paymentId: string): Promise<tinkoff.GetStandardPaymentStateResponse> {
+  async getPaymentState(paymentId: string,): Promise<tinkoff.GetStandardPaymentStateResponse> {
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
       PaymentId: paymentId,
@@ -55,25 +55,25 @@ export class TinkoffPaymentService {
 
     const response = await axios.post<tinkoff.GetStandardPaymentStateResponse>(
       "https://securepay.tinkoff.ru/v2/GetState",
-      { ...requestBody, Token: this.makeToken(requestBody) }
+      { ...requestBody, Token: this.makeToken(requestBody,), },
     );
 
     return response.data;
   }
 
-  makeToken(requestData: Record<string, any | number | undefined>): string {
+  makeToken(requestData: Record<string, any | number | undefined>,): string {
     const dataWithCredentials: Record<string, any | number> = {
-      ...Object.fromEntries(Object.entries(requestData).filter(([_, value]) => value !== undefined)),
+      ...Object.fromEntries(Object.entries(requestData,).filter(([_, value,],) => value !== undefined,),),
       Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
     };
 
-    const sortedKeys = Object.keys(dataWithCredentials).sort();
-    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join("");
+    const sortedKeys = Object.keys(dataWithCredentials,).sort();
+    const concatenatedValues = sortedKeys.map((key,) => String(dataWithCredentials[key],),).join("",);
 
-    return this.sha256(concatenatedValues).toString();
+    return this.sha256(concatenatedValues,).toString();
   }
 
-  sha256(input: string): string {
-    return crypto.createHash("sha256").update(input).digest("hex");
+  sha256(input: string,): string {
+    return crypto.createHash("sha256",).update(input,).digest("hex",);
   }
 }

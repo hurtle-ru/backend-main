@@ -1,9 +1,9 @@
-import { Request } from "express";
+import { Request, } from "express";
 import jwt from "jsonwebtoken";
-import { GUEST_ROLE, JwtModel, PUBLIC_SCOPE, UserRole } from "./auth.dto";
-import { HttpError } from "../../infrastructure/error/http.error";
-import { authConfig } from "./auth.config";
-import { prisma } from "../../infrastructure/database/prisma.provider";
+import { GUEST_ROLE, JwtModel, PUBLIC_SCOPE, UserRole, } from "./auth.dto";
+import { HttpError, } from "../../infrastructure/error/http.error";
+import { authConfig, } from "./auth.config";
+import { prisma, } from "../../infrastructure/database/prisma.provider";
 
 
 /**
@@ -13,26 +13,26 @@ import { prisma } from "../../infrastructure/database/prisma.provider";
  * @throws {HttpError} 403: Forbidden due to inappropriate role. Your role: {role}
  * @throws {HttpError} 401: User does not exist
  */
-export const expressAuthentication = async (request: Request, securityName: string, scopes?: string[]): Promise<any> => {
-  const token = request.header("Authorization");
+export const expressAuthentication = async (request: Request, securityName: string, scopes?: string[],): Promise<any> => {
+  const token = request.header("Authorization",);
 
-  if (securityName !== "jwt") throw new Error("Invalid security name");
+  if (securityName !== "jwt") throw new Error("Invalid security name",);
 
   if (!token) {
-    if(scopes && scopes.includes(PUBLIC_SCOPE)) return null;
-    throw new HttpError(401, "No token provided");
+    if (scopes && scopes.includes(PUBLIC_SCOPE,)) return null;
+    throw new HttpError(401, "No token provided",);
   }
 
   let decoded: JwtModel["user"];
   try {
-    decoded = jwt.verify(token, authConfig.JWT_SECRET_KEY) as JwtModel["user"];
+    decoded = jwt.verify(token, authConfig.JWT_SECRET_KEY,) as JwtModel["user"];
   } catch {
-    if(scopes && scopes.includes(PUBLIC_SCOPE)) return null;
-    throw new HttpError(401, "Token is invalid");
+    if (scopes && scopes.includes(PUBLIC_SCOPE,)) return null;
+    throw new HttpError(401, "Token is invalid",);
   }
 
-  if (scopes && !scopes.includes(decoded.role)) {
-    throw new HttpError(403, "Forbidden due to inappropriate role. Your role: " + decoded.role);
+  if (scopes && !scopes.includes(decoded.role,)) {
+    throw new HttpError(403, "Forbidden due to inappropriate role. Your role: " + decoded.role,);
   }
 
   if (decoded.role === GUEST_ROLE) return decoded;
@@ -42,7 +42,7 @@ export const expressAuthentication = async (request: Request, securityName: stri
   else if (decoded.role === UserRole.EMPLOYER) model = prisma.employer;
   else if (decoded.role === UserRole.MANAGER) model = prisma.manager;
 
-  if (!await model!.exists({ id: decoded.id })) throw new HttpError(401, "User does not exist");
+  if (!await model!.exists({ id: decoded.id, },)) throw new HttpError(401, "User does not exist",);
 
   return decoded;
 };

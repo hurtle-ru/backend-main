@@ -1,19 +1,19 @@
-import { Job, Queue, Worker } from "bullmq";
+import { Job, Queue, Worker, } from "bullmq";
 import redis from "../../../infrastructure/mq/redis.provider";
-import { injectable, singleton } from "tsyringe";
-import { RESUME_OCR_QUEUE_NAME, ResumeOcrJobData } from "../resume-ocr.dto";
-import { ResumeOcrService } from "../resume-ocr.service";
+import { injectable, singleton, } from "tsyringe";
+import { RESUME_OCR_QUEUE_NAME, ResumeOcrJobData, } from "../resume-ocr.dto";
+import { ResumeOcrService, } from "../resume-ocr.service";
 
 
 @injectable()
 @singleton()
 export class ResumeOcrWorker extends Worker<ResumeOcrJobData> {
-  constructor(private readonly resumeOcrService: ResumeOcrService) {
+  constructor(private readonly resumeOcrService: ResumeOcrService,) {
     super(
       RESUME_OCR_QUEUE_NAME,
 
-      async (job: Job<ResumeOcrJobData>) => {
-        return await this.resumeOcrService.recognizePdf(job.data);
+      async (job: Job<ResumeOcrJobData>,) => {
+        return await this.resumeOcrService.recognizePdf(job.data,);
       },
 
       {
@@ -30,7 +30,7 @@ export class ResumeOcrWorker extends Worker<ResumeOcrJobData> {
         removeOnComplete: {
           count: 1000,
         },
-      }
+      },
     );
   }
 }

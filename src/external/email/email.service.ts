@@ -1,12 +1,12 @@
-import nodemailer, { Transporter } from "nodemailer";
-import { emailConfig } from "./email.config";
-import { injectable, singleton } from "tsyringe";
-import { TemplateRendererService } from "../template-renderer/template-renderer.service";
-import { logger } from "../../infrastructure/logger/logger";
-import { EmailQueue } from "./mq/email.queue";
-import { EmailJobData } from "./email.dto";
-import { JobsOptions } from "bullmq/dist/esm/types";
-import { Job } from "bullmq";
+import nodemailer, { Transporter, } from "nodemailer";
+import { emailConfig, } from "./email.config";
+import { injectable, singleton, } from "tsyringe";
+import { TemplateRendererService, } from "../template-renderer/template-renderer.service";
+import { logger, } from "../../infrastructure/logger/logger";
+import { EmailQueue, } from "./mq/email.queue";
+import { EmailJobData, } from "./email.dto";
+import { JobsOptions, } from "bullmq/dist/esm/types";
+import { Job, } from "bullmq";
 
 
 @injectable()
@@ -16,7 +16,7 @@ export class EmailService {
 
   constructor(
     private readonly queue: EmailQueue,
-    private readonly templateRendererService: TemplateRendererService
+    private readonly templateRendererService: TemplateRendererService,
   ) {
     this.transporter = nodemailer.createTransport({
       host: emailConfig.MAIL_HOST,
@@ -26,23 +26,23 @@ export class EmailService {
         user: emailConfig.MAIL_AUTH_USER,
         pass: emailConfig.MAIL_AUTH_PASS,
       },
-    });
+    },);
   }
 
-  async enqueueEmail(data: EmailJobData, opts?: JobsOptions) {
-    await this.queue.enqueueEmail(data, opts);
+  async enqueueEmail(data: EmailJobData, opts?: JobsOptions,) {
+    await this.queue.enqueueEmail(data, opts,);
   }
 
-  async removeJob(jobId: string) {
-    await this.queue.removeJob(jobId);
+  async removeJob(jobId: string,) {
+    await this.queue.removeJob(jobId,);
   }
 
   // TODO: refactor
-  async findIncompleteJobsByEmailAndLink(email: string, link: string): Promise<Job<EmailJobData>[]> {
-    return await this.queue.findIncompleteJobsByEmailAndLink(email, link);
+  async findIncompleteJobsByEmailAndLink(email: string, link: string,): Promise<Job<EmailJobData>[]> {
+    return await this.queue.findIncompleteJobsByEmailAndLink(email, link,);
   }
 
-  async sendEmail({ to, subject, template }: EmailJobData): Promise<boolean> {
+  async sendEmail({ to, subject, template, }: EmailJobData,): Promise<boolean> {
     try {
       const emailOptions = {
         to,
@@ -56,16 +56,16 @@ export class EmailService {
           template.name,
           "html",
           template.context,
-          true
+          true,
         ),
       };
 
-      const info = await this.transporter.sendMail(emailOptions);
-      logger.info("Email sent: %s", info.messageId);
+      const info = await this.transporter.sendMail(emailOptions,);
+      logger.info("Email sent: %s", info.messageId,);
 
       return true;
     } catch (error) {
-      logger.error("Error occurred during sending email: %s", error);
+      logger.error("Error occurred during sending email: %s", error,);
       throw error;
     }
   }

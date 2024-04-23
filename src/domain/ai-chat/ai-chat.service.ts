@@ -1,17 +1,18 @@
-import { injectable, singleton } from "tsyringe";
-import { ChatGPTService } from "../../external/chatgpt/chatgpt.service";
-import { BasicApplicantAiChatMessage } from "./message/message.dto";
-import { prisma } from "../../infrastructure/database/prisma.provider";
-import { ApplicantAiChatMessage, Meeting, Resume } from "@prisma/client";
-import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
-import { ChatCompletionMessageParam } from "openai/resources";
-import { BasicApplicant } from "../applicant/applicant.dto";
+import { injectable, singleton, } from "tsyringe";
+import { ChatGPTService, } from "../../external/chatgpt/chatgpt.service";
+import { BasicApplicantAiChatMessage, } from "./message/message.dto";
+import { prisma, } from "../../infrastructure/database/prisma.provider";
+import { ApplicantAiChatMessage, Meeting, Resume, } from "@prisma/client";
+import { TemplateRendererService, } from "../../external/template-renderer/template-renderer.service";
+import { ChatCompletionMessageParam, } from "openai/resources";
+import { BasicApplicant, } from "../applicant/applicant.dto";
 
 
 @injectable()
 @singleton()
 export class ApplicantAiChatService {
   TEMPLATE_TYPE = "prompt-templates";
+
   TEMPLATE_EXTENSION = "txt";
 
   constructor(
@@ -25,13 +26,13 @@ export class ApplicantAiChatService {
     chat: {
       id: string,
       history: ApplicantAiChatMessage[],
-    }
+    },
   ): Promise<BasicApplicantAiChatMessage> {
     const completion = await this.chatgptService.generateChatCompletion(
       question, [
-        { content: systemPrompt, role: "system" },
-        ...this.mapHistory(chat.history),
-      ]
+        { content: systemPrompt, role: "system", },
+        ...this.mapHistory(chat.history,),
+      ],
     );
 
     return prisma.applicantAiChatMessage.create({
@@ -42,7 +43,7 @@ export class ApplicantAiChatService {
         promptTokens: completion.usage!.prompt_tokens,
         completionTokens: completion.usage!.completion_tokens,
       },
-    });
+    },);
   }
 
   getSystemPrompt(
@@ -55,27 +56,27 @@ export class ApplicantAiChatService {
       this.TEMPLATE_TYPE, "resume", this.TEMPLATE_EXTENSION, {
         applicant,
         resume: applicant.resume,
-      }, true
+      }, true,
     );
 
     const renderedInterviews = this.templateRendererService.renderTemplate(
       this.TEMPLATE_TYPE, "interviews", this.TEMPLATE_EXTENSION, {
         interviews: applicant.interviews,
-      }, true
+      }, true,
     );
 
     return this.templateRendererService.renderTemplate(
       this.TEMPLATE_TYPE, "applicant-ai-chat-question", this.TEMPLATE_EXTENSION, {
         resume: renderedResume,
         interviews: renderedInterviews,
-      }, true
+      }, true,
     );
   }
 
-  private mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
-    return history.flatMap(message => [
-      { content: message.prompt, role: "user" },
-      { content: message.response, role: "assistant" },
-    ]);
+  private mapHistory(history: ApplicantAiChatMessage[],): ChatCompletionMessageParam[] {
+    return history.flatMap((message,) => [
+      { content: message.prompt, role: "user", },
+      { content: message.response, role: "assistant", },
+    ],);
   }
 }

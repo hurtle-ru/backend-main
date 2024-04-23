@@ -1,22 +1,22 @@
 import otpGenerator from "otp-generator";
-import { appConfig } from "../../../infrastructure/app.config";
-import { injectable, singleton } from "tsyringe";
-import { EmailService } from "../../../external/email/email.service";
+import { appConfig, } from "../../../infrastructure/app.config";
+import { injectable, singleton, } from "tsyringe";
+import { EmailService, } from "../../../external/email/email.service";
 import pino from "pino";
 
 
 @injectable()
 @singleton()
 export class EmailVerificationService {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(private readonly emailService: EmailService,) {}
 
   generateCode(): string {
-    return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+    return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false, },);
   }
 
-  async sendEmail(logger: pino.Logger, name: string, email: string, code: string) {
-    const encodedEmail = encodeURIComponent(email);
-    const encodedCode = encodeURIComponent(code);
+  async sendEmail(logger: pino.Logger, name: string, email: string, code: string,) {
+    const encodedEmail = encodeURIComponent(email,);
+    const encodedCode = encodeURIComponent(code,);
 
     const link = appConfig.DOMAIN + `/auth/verify-email?email=${encodedEmail}&code=${encodedCode}`;
 
@@ -25,8 +25,8 @@ export class EmailVerificationService {
       subject: "Подтверждение почты",
       template: {
         name: "verify_email",
-        context: { name, code, link },
+        context: { name, code, link, },
       },
-    });
+    },);
   }
 }

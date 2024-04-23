@@ -1,14 +1,14 @@
-import * as yup from "yup"
+import * as yup from "yup";
 
-import { GuestVacancyResponse, Resume, VacancyResponseStatus } from "@prisma/client";
-import { BasicVacancy, CreateVacancyRequest, CreateVacancyRequestSchema } from "../vacancy.dto";
-import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
-import { BasicResumeSchema } from "../../resume/resume.dto";
-import { BasicResumeCertificate, BasicResumeCertificateSchema } from "../../resume/certificate/certificate.dto";
-import { BasicResumeContact, BasicResumeContactSchema } from "../../resume/contact/contact.dto";
-import { BasicResumeEducation, BasicResumeEducationSchema } from "../../resume/education/education.dto";
-import { BasicResumeExperience, BasicResumeExperienceSchema } from "../../resume/experience/experience.dto";
-import { BasicResumeLanguage, BasicResumeLanguageSchema } from "../../resume/language/language.dto";
+import { GuestVacancyResponse, Resume, VacancyResponseStatus, } from "@prisma/client";
+import { BasicVacancy, CreateVacancyRequest, CreateVacancyRequestSchema, } from "../vacancy.dto";
+import { yupOneOfEnum, } from "../../../infrastructure/validation/requests/enum.yup";
+import { BasicResumeSchema, } from "../../resume/resume.dto";
+import { BasicResumeCertificate, BasicResumeCertificateSchema, } from "../../resume/certificate/certificate.dto";
+import { BasicResumeContact, BasicResumeContactSchema, } from "../../resume/contact/contact.dto";
+import { BasicResumeEducation, BasicResumeEducationSchema, } from "../../resume/education/education.dto";
+import { BasicResumeExperience, BasicResumeExperienceSchema, } from "../../resume/experience/experience.dto";
+import { BasicResumeLanguage, BasicResumeLanguageSchema, } from "../../resume/language/language.dto";
 
 
 export type BasicGuestVacancyResponse = Omit<
@@ -68,25 +68,25 @@ const CreateGuestVacancyResponseRequestResumeSchema: yup.ObjectSchema<CreateGues
   "skills",
   "desiredSalary",
   "desiredSalaryCurrency",
-]).shape({
+],).shape({
   certificates: yup.array().of(BasicResumeCertificateSchema.pick([
     "name",
     "description",
     "year",
-  ])).defined(),
+  ],),).defined(),
   contacts: yup.array().of(BasicResumeContactSchema.pick([
     "name",
     "type",
     "value",
     "preferred",
-  ])).defined(),
+  ],),).defined(),
   education: yup.array().of(BasicResumeEducationSchema.pick([
     "name",
     "description",
     "degree",
     "startYear",
     "endYear",
-  ])).defined(),
+  ],),).defined(),
   experience: yup.array().of(BasicResumeExperienceSchema.pick([
     "description",
     "company",
@@ -95,27 +95,27 @@ const CreateGuestVacancyResponseRequestResumeSchema: yup.ObjectSchema<CreateGues
     "startMonth",
     "endYear",
     "endMonth",
-  ])).defined(),
+  ],),).defined(),
   languages: yup.array().of(BasicResumeLanguageSchema.pick([
     "name",
     "level",
-  ])).defined(),
-});
+  ],),).defined(),
+},);
 
 const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyResponse> = yup.object({
-  id: yup.string().max(36).defined(),
+  id: yup.string().max(36,).defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  text: yup.string().defined().trim().max(3000).nullable(),
-  status: yupOneOfEnum(VacancyResponseStatus).defined(),
+  text: yup.string().defined().trim().max(3000,).nullable(),
+  status: yupOneOfEnum(VacancyResponseStatus,).defined(),
   isViewedByEmployer: yup.boolean().defined(),
   resume: CreateGuestVacancyResponseRequestResumeSchema,
-  vacancyId: yup.string().defined().max(36),
+  vacancyId: yup.string().defined().max(36,),
   firstName: yup.string().defined(),
   lastName: yup.string().defined(),
   middleName: yup.string().defined().nullable(),
   isReadyToRelocate: yup.boolean().defined().nullable(),
-})
+},);
 
 export type CreateGuestVacancyResponseRequest = Pick<
   BasicGuestVacancyResponse,
@@ -136,9 +136,9 @@ export const CreateGuestVacancyResponseRequestSchema: yup.ObjectSchema<CreateGue
   "lastName",
   "middleName",
   "isReadyToRelocate",
-]).shape({
+],).shape({
   resume: CreateGuestVacancyResponseRequestResumeSchema,
-});
+},);
 
 export type GetGuestVacancyResponseResponse = BasicGuestVacancyResponse & {
   vacancy?: BasicVacancy,
@@ -153,4 +153,4 @@ export type PatchGuestVacancyResponseRequest = Partial<Pick<
 export const PatchGuestVacancyResponseRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseRequest> = BasicGuestVacancyResponseSchema.pick([
   "status",
   "isViewedByEmployer",
-]).partial();
+],).partial();

@@ -1,8 +1,7 @@
-import { injectable, singleton } from "tsyringe";
+import { injectable, singleton, } from "tsyringe";
 
 @injectable()
 @singleton()
 export class OfferService {
   constructor() {}
-
 }

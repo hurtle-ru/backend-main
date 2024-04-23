@@ -20,91 +20,91 @@ import {
   PatchByIdPartnershipInquiryStatusRequest,
   PatchByIdPartnershipInquiryStatusRequestSchema,
 } from "./partnership-inquiry.dto";
-import { UserRole } from "../auth/auth.dto";
-import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
-import { injectable } from "tsyringe";
-import { PartnershipInquiryService } from "./partnership-inquiry.service";
-import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { prisma } from "../../infrastructure/database/prisma.provider";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { UserRole, } from "../auth/auth.dto";
+import { PageResponse, } from "../../infrastructure/controller/pagination/page.response";
+import { injectable, } from "tsyringe";
+import { PartnershipInquiryService, } from "./partnership-inquiry.service";
+import { PageNumber, PageSizeNumber, } from "../../infrastructure/controller/pagination/page.dto";
+import { HttpError, HttpErrorBody, } from "../../infrastructure/error/http.error";
+import { prisma, } from "../../infrastructure/database/prisma.provider";
+import { routeRateLimit as rateLimit, } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 
 
 @injectable()
-@Route("api/v1/partnershipInquiries")
-@Tags("Partnership Inquiry")
+@Route("api/v1/partnershipInquiries",)
+@Tags("Partnership Inquiry",)
 export class PartnershipInquiryController extends Controller {
-  constructor(private readonly partnershipInquiryService: PartnershipInquiryService) {
+  constructor(private readonly partnershipInquiryService: PartnershipInquiryService,) {
     super();
   }
 
-  @Post("")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Post("",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
   public async create(
     @Body() body: CreatePartnershipInquiryRequest,
   ): Promise<BasicPartnershipInquiry> {
-    body = CreatePartnershipInquiryRequestSchema.validateSync(body)
+    body = CreatePartnershipInquiryRequestSchema.validateSync(body,);
 
     const partnershipInquiry = await prisma.partnershipInquiry.create({
       data: body,
-    });
+    },);
 
-    await this.partnershipInquiryService.sendToAdminGroup(partnershipInquiry);
+    await this.partnershipInquiryService.sendToAdminGroup(partnershipInquiry,);
     return partnershipInquiry;
   }
 
-  @Get("")
-  @Security("jwt", [UserRole.MANAGER])
+  @Get("",)
+  @Security("jwt", [UserRole.MANAGER,],)
   public async getAll(
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<BasicPartnershipInquiry>> {
     const where = {};
 
-    const [partnershipInquiries, partnershipInquiriesCount] = await Promise.all([
+    const [partnershipInquiries, partnershipInquiriesCount,] = await Promise.all([
       prisma.partnershipInquiry.findMany({
         skip: (page - 1) * size,
         take: size,
         where,
-      }),
-      prisma.partnershipInquiry.count({ where }),
-    ]);
+      },),
+      prisma.partnershipInquiry.count({ where, },),
+    ],);
 
-    return new PageResponse(partnershipInquiries, page, size, partnershipInquiriesCount);
+    return new PageResponse(partnershipInquiries, page, size, partnershipInquiriesCount,);
   }
 
-  @Patch("{id}/status")
-  @Security("jwt", [UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
+  @Patch("{id}/status",)
+  @Security("jwt", [UserRole.MANAGER,],)
+  @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404,)
   public async patchStatusById(
     @Path() id: string,
     @Body() body: PatchByIdPartnershipInquiryStatusRequest,
   ): Promise<BasicPartnershipInquiry> {
-    body = PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body)
+    body = PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body,);
 
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
-      where: { id },
-    });
+      where: { id, },
+    },);
 
-    if (!partnershipInquiry) throw new HttpError(404, "PartnershipInquiry not found");
+    if (!partnershipInquiry) throw new HttpError(404, "PartnershipInquiry not found",);
 
     return prisma.partnershipInquiry.update({
-      where: { id },
-      data: { status: body.status },
-    });
+      where: { id, },
+      data: { status: body.status, },
+    },);
   }
 
-  @Get("{id}")
-  @Security("jwt", [UserRole.MANAGER])
-  @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404)
+  @Get("{id}",)
+  @Security("jwt", [UserRole.MANAGER,],)
+  @Response<HttpErrorBody & {"error": "PartnershipInquiry not found"}>(404,)
   public async getById(
     @Path() id: string,
   ): Promise<BasicPartnershipInquiry> {
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
-      where: { id },
-    });
+      where: { id, },
+    },);
 
-    if(!partnershipInquiry) throw new HttpError(404, "PartnershipInquiry not found");
+    if (!partnershipInquiry) throw new HttpError(404, "PartnershipInquiry not found",);
 
     return partnershipInquiry;
   }

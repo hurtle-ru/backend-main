@@ -1,4 +1,4 @@
-import { SendMessageOptions } from "node-telegram-bot-api";
+import { SendMessageOptions, } from "node-telegram-bot-api";
 
 
 export const TELEGRAM_JOB_NAME = "sendAdminNotification";

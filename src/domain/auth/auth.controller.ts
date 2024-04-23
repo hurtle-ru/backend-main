@@ -1,4 +1,4 @@
-import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags} from "tsoa";
+import { Body, Controller,  Patch, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags,} from "tsoa";
 import {
   CreateAccessTokenRequest,
   CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE, JwtModel,
@@ -19,23 +19,23 @@ import {
   CreateGuestAccessTokenRequestSchema,
   RegisterEmployerRequestSchema,
 } from "./auth.dto";
-import { prisma } from "../../infrastructure/database/prisma.provider";
-import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { AuthService } from "./auth.service";
-import { injectable } from "tsyringe";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
-import { Request as ExpressRequest } from "express";
-import { AuthWithGoogleRequest, AuthWithGoogleUserResponse } from "../../external/google/auth/auth.dto";
-import { GoogleAuthService } from "../../external/google/auth/auth.service";
-import { HhAuthService } from "../../external/hh/auth/auth.service";
-import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
-import { BasicHhToken } from "../../external/hh/auth/auth.dto";
-import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+import { prisma, } from "../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody, } from "../../infrastructure/error/http.error";
+import { AuthService, } from "./auth.service";
+import { injectable, } from "tsyringe";
+import { routeRateLimit as rateLimit, } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
+import { Request as ExpressRequest, } from "express";
+import { AuthWithGoogleRequest, AuthWithGoogleUserResponse, } from "../../external/google/auth/auth.dto";
+import { GoogleAuthService, } from "../../external/google/auth/auth.service";
+import { HhAuthService, } from "../../external/hh/auth/auth.service";
+import { HhApplicantService, } from "../../external/hh/applicant/applicant.service";
+import { BasicHhToken,} from "../../external/hh/auth/auth.dto";
+import { validateSyncByAtLeastOneSchema, } from "../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
-@Route("api/v1/auth")
-@Tags("Auth: вход и регистрация")
+@Route("api/v1/auth",)
+@Tags("Auth: вход и регистрация",)
 export class AuthController extends Controller {
   constructor(
     private readonly authService: AuthService,
@@ -46,21 +46,21 @@ export class AuthController extends Controller {
     super();
   }
 
-  @Post("accessToken")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Post("accessToken",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
   @Response<HttpErrorBody & {"error":
       | "Invalid login or password"
       | "User does not have a password"
-  }>(401)
+  }>(401,)
   public async createAccessToken(
     @Body() body: CreateAccessTokenRequest,
     @Query() role: UserRole,
   ): Promise<CreateAccessTokenResponse> {
-    const { login, password } = body;
+    const { login, password, } = body;
 
-    let user: { id: string, password: { hash: string } | null } | null = null;
+    let user: { id: string, password: { hash: string, } | null } | null = null;
     const findQuery = {
-      where: { login },
+      where: { login, },
       select: {
         id: true,
         password: {
@@ -69,101 +69,101 @@ export class AuthController extends Controller {
           },
         },
       },
+    };
+
+    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery,);
+    if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findQuery,);
+    if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery,);
+
+    if (user && !user.password) {
+      throw new HttpError(401, "User does not have password",);
     }
 
-    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique(findQuery);
-    if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique(findQuery);
-    if (role === UserRole.MANAGER) user = await prisma.manager.findUnique(findQuery);
-
-    if(user && !user.password) {
-      throw new HttpError(401, "User does not have password");
-    }
-
-    if (!user || !(await this.authService.comparePasswords(password, user.password!.hash.trim()))) {
-      throw new HttpError(401, "Invalid login or password");
+    if (!user || !(await this.authService.comparePasswords(password, user.password!.hash.trim(),))) {
+      throw new HttpError(401, "Invalid login or password",);
     }
 
     const token = this.authService.createToken({
       id: user!.id,
       role: role,
-    });
+    },);
 
-    return { token };
+    return { token, };
   }
 
-  @Post("guest/accessToken")
-  public async createGuestAccessToken(
+  @Post("guest/accessToken",)
+  public createGuestAccessToken(
     @Request() req: ExpressRequest,
     @Body() body: CreateGuestAccessTokenRequest,
-  ): Promise<CreateAccessTokenResponse> {
-    body = CreateGuestAccessTokenRequestSchema.validateSync(body);
+  ): CreateAccessTokenResponse {
+    body = CreateGuestAccessTokenRequestSchema.validateSync(body,);
 
     const token = this.authService.createToken({
       id: body.email,
       role: GUEST_ROLE,
-    });
+    },);
 
-    return { token };
+    return { token, };
   }
 
-  @Post("applicant")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
-  public async registerApplicant(@Body() body: RegisterApplicantRequest): Promise<void> {
-    body = RegisterApplicantRequestSchema.validateSync(body);
+  @Post("applicant",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
+  @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409,)
+  public async registerApplicant(@Body() body: RegisterApplicantRequest,): Promise<void> {
+    body = RegisterApplicantRequestSchema.validateSync(body,);
 
-    const existingApplicant = await prisma.applicant.findUnique({ where: { email: body.email } });
-    if(existingApplicant) throw new HttpError(409, "User with this email already exists");
+    const existingApplicant = await prisma.applicant.findUnique({ where: { email: body.email, }, },);
+    if (existingApplicant) throw new HttpError(409, "User with this email already exists",);
 
-    await this.authService.registerApplicant(body);
+    await this.authService.registerApplicant(body,);
   }
 
-  @Post("employer")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
-  public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
-    body = RegisterEmployerRequestSchema.validateSync(body);
+  @Post("employer",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
+  @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409,)
+  public async registerEmployer(@Body() body: RegisterEmployerRequest,): Promise<void> {
+    body = RegisterEmployerRequestSchema.validateSync(body,);
 
-    const existingWithSameEmailEmployer = await prisma.employer.exists( { email: body.email } );
-    if(existingWithSameEmailEmployer) throw new HttpError(409, "User with this email already exists");
+    const existingWithSameEmailEmployer = await prisma.employer.exists( { email: body.email, }, );
+    if (existingWithSameEmailEmployer) throw new HttpError(409, "User with this email already exists",);
 
-    await this.authService.registerEmployer(body);
+    await this.authService.registerEmployer(body,);
   }
 
-  @Post("withGoogle")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Invalid Google token"}>(401)
+  @Post("withGoogle",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
+  @Response<HttpErrorBody & {"error": "Invalid Google token"}>(401,)
   public async authWithGoogle(
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: AuthWithGoogleRequest,
   ): Promise<AuthWithGoogleUserResponse> {
     let googleToken;
     try {
-      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken);
-    } catch(e) {
-      throw new HttpError(401, "Invalid Google token");
+      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken,);
+    } catch (e) {
+      throw new HttpError(401, "Invalid Google token",);
     }
 
-    const applicantByGoogleToken = await prisma.applicant.findUnique({ where: { googleTokenSub: googleToken.sub } });
-    if(applicantByGoogleToken) {
+    const applicantByGoogleToken = await prisma.applicant.findUnique({ where: { googleTokenSub: googleToken.sub, }, },);
+    if (applicantByGoogleToken) {
       const accessToken = this.authService.createToken({
         id: applicantByGoogleToken.id,
         role: UserRole.APPLICANT,
-      });
+      },);
 
-      return { token: accessToken };
+      return { token: accessToken, };
     }
 
-    const applicantByGoogleEmail = await prisma.applicant.findUnique({ where: { email: googleToken.email } });
-    if(applicantByGoogleEmail) {
-      await this.googleAuthService.linkAccountToGoogle(googleToken);
+    const applicantByGoogleEmail = await prisma.applicant.findUnique({ where: { email: googleToken.email, }, },);
+    if (applicantByGoogleEmail) {
+      await this.googleAuthService.linkAccountToGoogle(googleToken,);
 
       const accessToken = this.authService.createToken({
         id: applicantByGoogleEmail.id,
         role: UserRole.APPLICANT,
-      });
+      },);
 
-      return { token: accessToken };
+      return { token: accessToken, };
     }
 
     return {
@@ -179,59 +179,59 @@ export class AuthController extends Controller {
     };
   }
 
-  @Post("withGoogle/applicant")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Invalid Google token"}>(401)
+  @Post("withGoogle/applicant",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
+  @Response<HttpErrorBody & {"error": "Invalid Google token"}>(401,)
   @Response<HttpErrorBody & {"error":
       | "User with this email already exists"
       | "User with this Google account already exists"
       | "Need verified google email or provide it"
-  }>(409)
+  }>(409,)
   public async registerApplicantWithGoogle(
-    @Body() body: RegisterApplicantWithGoogleRequest
+    @Body() body: RegisterApplicantWithGoogleRequest,
   ): Promise<CreateAccessTokenResponse> {
-    body = RegisterApplicantWithGoogleRequestSchema.validateSync(body);
+    body = RegisterApplicantWithGoogleRequestSchema.validateSync(body,);
 
     let googleToken;
     try {
-      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken);
-    } catch(e) {
-      throw new HttpError(401, "Invalid Google token");
+      googleToken = await this.googleAuthService.verifyGoogleToken(body.googleToken,);
+    } catch (e) {
+      throw new HttpError(401, "Invalid Google token",);
     }
 
-    let email = ( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email
-    if (!email) throw new HttpError(409, "Need verified google email or provide it")
+    const email = ( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email;
+    if (!email) throw new HttpError(409, "Need verified google email or provide it",);
 
-    const existingApplicantByEmail = await prisma.applicant.exists({ email });
-    if(existingApplicantByEmail) throw new HttpError(409, "User with this email already exists");
+    const existingApplicantByEmail = await prisma.applicant.exists({ email, },);
+    if (existingApplicantByEmail) throw new HttpError(409, "User with this email already exists",);
 
-    const existingApplicantByGoogleToken = await prisma.applicant.exists({ googleTokenSub: googleToken.sub });
-    if(existingApplicantByGoogleToken) throw new HttpError(409, "User with this Google account already exists");
+    const existingApplicantByGoogleToken = await prisma.applicant.exists({ googleTokenSub: googleToken.sub, },);
+    if (existingApplicantByGoogleToken) throw new HttpError(409, "User with this Google account already exists",);
 
-    const applicant = await this.authService.registerApplicantWithGoogle(body, googleToken, email);
+    const applicant = await this.authService.registerApplicantWithGoogle(body, googleToken, email,);
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
       role: UserRole.APPLICANT,
-    });
+    },);
 
-    return { token: accessToken };
+    return { token: accessToken, };
   }
 
-  @Get("HhAuthorizeUrl")
-  @Example<string>("https://hh.ru/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI")
-  public async getHHAuthorizeUrl(): Promise<string> {
+  @Get("HhAuthorizeUrl",)
+  @Example<string>("https://hh.ru/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI",)
+  public getHHAuthorizeUrl(): string {
     return this.hhAuthService.getAuthorizeUrl();
   }
 
-  @Post("withHh/applicant")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
-  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
+  @Post("withHh/applicant",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401,)
+  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403,)
   @Response<HttpErrorBody & {"error":
     | "User with this hh account already exists"
     | "User with this email already exists"
-  }>(409)
+  }>(409,)
   public async registerApplicantWithHh(
     @Body() body: RegisterApplicantWithHhByHhTokenRequest | RegisterApplicantWithHhByAuthCodeRequest,
   ): Promise<CreateAccessTokenResponse> {
@@ -241,76 +241,75 @@ export class AuthController extends Controller {
 
     const bodyData = validateSyncByAtLeastOneSchema(
       [
-        RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy"]),
-        RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy"])
+        RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy",],),
+        RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy",],),
       ],
       bodyWithOutAuthBy,
-    )
+    );
 
-    const existingApplicant = await prisma.applicant.exists({ email: bodyData.email } );
-    if(existingApplicant) throw new HttpError(409, "User with this email already exists");
+    const existingApplicant = await prisma.applicant.exists({ email: bodyData.email, }, );
+    if (existingApplicant) throw new HttpError(409, "User with this email already exists",);
 
     if (body._authBy === HH_AUTHORIZATION_CODE) {
-      hhToken = await this.hhAuthService.createToken(body.authorizationCode);
+      hhToken = await this.hhAuthService.createToken(body.authorizationCode,);
+    } else if (body._authBy === HH_TOKEN) hhToken = body.hhToken;
+
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken!.accessToken,);
+
+    if (await prisma.hhToken.exists({ hhApplicantId: hhApplicant.id, },)) {
+      throw new HttpError(409, "User with this hh account already exists",);
     }
-    else if (body._authBy === HH_TOKEN) hhToken = body.hhToken;
 
-    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken!.accessToken);
-
-    if (await prisma.hhToken.exists({ hhApplicantId: hhApplicant.id })) {
-      throw new HttpError(409, "User with this hh account already exists")
-    }
-
-    const applicant = await this.authService.registerApplicantWithHh(bodyData, {...hhToken!, hhApplicantId: hhApplicant.id });
+    const applicant = await this.authService.registerApplicantWithHh(bodyData, {...hhToken!, hhApplicantId: hhApplicant.id, },);
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
       role: UserRole.APPLICANT,
-    });
+    },);
 
-    return { token: accessToken };
+    return { token: accessToken, };
   }
 
-  @Post("withHh")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
-  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
+  @Post("withHh",)
+  @Middlewares(rateLimit({limit: 10, interval: 60,},),)
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401,)
+  @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403,)
   public async authWithHH(
     @Request() req: ExpressRequest & JwtModel,
     @Body() body: AuthWithHhRequest,
   ): Promise<AuthWithHhUserResponse> {
-    body = AuthWithHhRequestSchema.validateSync(body)
+    body = AuthWithHhRequestSchema.validateSync(body,);
 
-    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
-    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+    const hhToken = await this.hhAuthService.createToken(body.authorizationCode,);
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken,);
 
-    const applicantHhToken = await prisma.hhToken.findUnique({ where: { hhApplicantId: hhApplicant.id } });
+    const applicantHhToken = await prisma.hhToken.findUnique({ where: { hhApplicantId: hhApplicant.id, }, },);
 
     if ( applicantHhToken ) {
       const accessToken = this.authService.createToken({
         id: applicantHhToken.applicantId,
         role: UserRole.APPLICANT,
-      });
+      },);
 
-      return { token: accessToken };
+      return { token: accessToken, };
     }
 
-    if (hhApplicant.email){
-      const applicantByEmail = await prisma.applicant.findUnique({ where: { email: hhApplicant.email } })
+    if (hhApplicant.email) {
+      const applicantByEmail = await prisma.applicant.findUnique({ where: { email: hhApplicant.email, }, },);
 
       if ( applicantByEmail ) {
         await prisma.hhToken.create({data: {
           ...hhToken,
-          applicant: { connect: { id: applicantByEmail.id} },
+          applicant: { connect: { id: applicantByEmail.id,}, },
           hhApplicantId: hhApplicant.id,
-        }})
+        },},);
 
         const accessToken = this.authService.createToken({
           id: applicantByEmail.id,
           role: UserRole.APPLICANT,
-        });
+        },);
 
-        return { token: accessToken };
+        return { token: accessToken, };
       }
     }
 

@@ -1,15 +1,15 @@
-import { NextFunction, Request, Response } from "express";
-import { ValidateError } from "@tsoa/runtime";
-import { HttpError, HttpErrorBody } from "./http.error";
-import { ValidationError } from "yup";
+import { NextFunction, Request, Response, } from "express";
+import { ValidateError, } from "@tsoa/runtime";
+import { HttpError, HttpErrorBody, } from "./http.error";
+import { ValidationError, } from "yup";
 
-export default (err: any, req: Request, res: Response, next: NextFunction) => {
+export default (err: any, req: Request, res: Response, next: NextFunction,) => {
   let errorResponse: { status: number, body: any } | null = null;
 
   if (err instanceof SyntaxError) {
     errorResponse = {
       status: 400,
-      body: { error: "Request syntax error", details: err },
+      body: { error: "Request syntax error", details: err, },
     };
   } else if (err instanceof ValidateError) {
     errorResponse = {
@@ -41,18 +41,18 @@ export default (err: any, req: Request, res: Response, next: NextFunction) => {
     };
   }
 
-  if(!errorResponse) {
+  if (!errorResponse) {
     errorResponse = {
       status: 500,
-      body: { error: "Internal Server Error" },
+      body: { error: "Internal Server Error", },
     };
   }
 
-  const logObject = { "errorResponse": errorResponse.body };
+  const logObject = { "errorResponse": errorResponse.body, };
   const logMsg = `HTTP Error ${errorResponse.status}`;
 
-  if(errorResponse.status >= 500) req.log.error({ ...logObject, err }, logMsg);
-  else req.log.warn(logObject, logMsg);
+  if (errorResponse.status >= 500) req.log.error({ ...logObject, err, }, logMsg,);
+  else req.log.warn(logObject, logMsg,);
 
-  return res.status(errorResponse.status).json(errorResponse.body);
+  return res.status(errorResponse.status,).json(errorResponse.body,);
 };
