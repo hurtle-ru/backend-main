@@ -10,7 +10,7 @@ import { ResumeOcrWorker } from "../../domain/resume-ocr/mq/resume-ocr.worker";
 export class MqManager {
   private workers: Worker[] = [];
 
-  // The workers initialization is put in the run method because the initialization of them requires a redis connection, which may cause an error
+  // Инициализация рабочих помещена в метод run, потому что для их инициализации требуется подключение к redis, что может привести к ошибке
   constructor() {}
 
   public run() {
