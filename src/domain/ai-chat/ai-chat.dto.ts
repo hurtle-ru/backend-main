@@ -23,8 +23,11 @@ export const BasicApplicantAiChatSchema: yup.ObjectSchema<ApplicantAiChat> = yup
 export type CreateApplicantAiChatRequest = Pick<
   ApplicantAiChat,
   | "applicantId"
->
-export const CreateApplicantAiChatRequestSchema = BasicApplicantAiChatSchema.pick(["applicantId"])
+>;
+
+export const CreateApplicantAiChatRequestSchema = BasicApplicantAiChatSchema.pick([
+  "applicantId",
+]);
 
 export type GetApplicantAiChatResponse = BasicApplicantAiChat & {
   applicant?: BasicApplicant,
