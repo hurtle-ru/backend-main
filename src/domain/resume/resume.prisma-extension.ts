@@ -1,5 +1,4 @@
-import { Resume, Prisma } from "@prisma/client";
-import { GetResumeResponse } from "./resume.dto";
+import { Prisma } from "@prisma/client";
 
 
 export type ResumeToCheckIsFilled = {
