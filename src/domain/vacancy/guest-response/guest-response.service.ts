@@ -132,17 +132,27 @@ export class GuestResponseService {
 
     if(overwriteResumeFields) {
       const metadata = data.metadata as MetadataCreateGuestVacancyResponse;
+      const guestResponseId = metadata.guestResponseId;
+      const updatedResume = overwriteResumeFields && data.mappedResume
+        ? this.createOverwrittenResume(overwriteResumeFields, data.mappedResume)
+        : null;
 
       await this.resumeOcrService.patchJobData(id, {
         metadata: {
           ...metadata,
           overwriteResumeFields,
         },
-        ...(overwriteResumeFields && data.mappedResume
-            ? { mappedResume: this.createOverwrittenResume(overwriteResumeFields, data.mappedResume) }
-            : {}
-        ),
+        ...(updatedResume ? { mappedResume: updatedResume } : {}),
       });
+
+      if(guestResponseId) {
+        await prisma.guestVacancyResponse.update({
+          where: { id: guestResponseId },
+          data: {
+            ...(updatedResume ? { resume: updatedResume } : {}),
+          },
+        })
+      }
     }
   }
 
