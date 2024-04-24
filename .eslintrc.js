@@ -19,11 +19,6 @@ module.exports = {
   },
   ignorePatterns: [".eslintrc.js", "dist", "node_modules", "src/infrastructure/openapi/postProcessSwagger.js"],
   rules: {
-    // "no-unused-vars": "off",
-    // "@typescript-eslint/no-unused-vars": "error",
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "off",
-
     "@typescript-eslint/restrict-plus-operands": "error",
     "@typescript-eslint/promise-function-async": "error",
     "@typescript-eslint/prefer-string-starts-ends-with": "error",
@@ -72,5 +67,9 @@ module.exports = {
     // "@typescript-eslint/no-misused-promises": "error",
     // "@typescript-eslint/no-unnecessary-condition": "error",
     // "@typescript-eslint/no-unsafe-enum-comparison": "error",
+    // "no-unused-vars": "off",
+    // "@typescript-eslint/no-unused-vars": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
   },
 }
