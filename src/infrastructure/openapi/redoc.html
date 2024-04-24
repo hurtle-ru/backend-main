@@ -4,10 +4,51 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/redoc-try-it-out/dist/try-it-out.min.js"></script>
 <div id="redoc_container"></div>
 <script>
-  RedocTryItOut.init(
-    `${window.location.href.split("redoc")[0]}swagger.json`,
-    { title: "Хартл" },
-    document.getElementById("redoc_container")
-  )
+  function initRedoc() {
+    RedocTryItOut.init(
+      `${window.location.href.split("redoc")[0]}swagger.json`,
+      { title: "Хартл" },
+      document.getElementById("redoc_container")
+    );
+  }
+
+  function shortenOperations() {
+    // Select the node that will be observed for mutations
+    const targetNode = document.body; // You can choose a more specific parent if known
+
+// Options for the observer (which mutations to observe)
+    const config = { childList: true, subtree: true };
+
+// Callback function to execute when mutations are observed
+    const callback = function(mutationsList, observer) {
+      for (let mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(node => {
+            // Check if the added node matches the desired selector
+            if (node.nodeType === 1 && node.matches('.sc-dkQUaI.jZIJIY')) {
+              const operationText = node.innerText;
+              node.innerText = operationText.substring(operationText.indexOf("_") + 1);
+            }
+            // Also handle child nodes of the added node
+            node.querySelectorAll('.sc-dkQUaI.jZIJIY').forEach(operation => {
+              const operationText = operation.innerText;
+              operation.innerText = operationText.substring(operationText.indexOf("_") + 1);
+            });
+          });
+        }
+      }
+    };
+
+      // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+  // Start observing the target node for configured mutations
+    observer.observe(targetNode, config);
+
+    console.log("Observer set up to modify elements once they appear.");
+  }
+
+  initRedoc();
+  shortenOperations();
 </script>
 </body>
