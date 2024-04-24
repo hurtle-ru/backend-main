@@ -2,7 +2,7 @@ import { injectable } from "tsyringe";
 import {
   Body,
   Controller, Delete,
-  Get, Patch,
+  Get, Middlewares, Patch,
   Path,
   Post,
   Query,
@@ -10,13 +10,17 @@ import {
   Response,
   Route,
   Security,
-  Tags,
+  Tags, UploadedFile,
 } from "tsoa";
 import {
   BasicGuestVacancyResponse,
   CreateGuestVacancyResponseRequest,
   CreateGuestVacancyResponseRequestSchema,
-  GetGuestVacancyResponseResponse, PatchGuestVacancyResponseRequest, PatchGuestVacancyResponseRequestSchema,
+  CreateQueuedWithOcrGuestVacancyResponseResponse,
+  GetGuestVacancyResponseResponse, PatchGuestVacancyResponseQueuedWithOcrRequest,
+  PatchGuestVacancyResponseQueuedWithOcrRequestSchema,
+  PatchGuestVacancyResponseRequest,
+  PatchGuestVacancyResponseRequestSchema,
 } from "./guest-response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
@@ -26,19 +30,72 @@ import { Prisma } from "@prisma/client"
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
-import {
-  BasicVacancyResponse,
-  PatchVacancyResponseRequest,
-  PatchVacancyResponseRequestSchema,
-} from "../response/response.dto";
+import { GuestResponseService } from "./guest-response.service";
+import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
+import { ArtifactService } from "../../../external/artifact/artifact.service";
+import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
 
 
 @injectable()
 @Route("api/v1/guestVacancyResponses")
 @Tags("Guest Vacancy Response")
 export class GuestVacancyResponseController extends Controller {
-  constructor() {
+  constructor(
+    private readonly artifactService: ArtifactService,
+    private readonly guestResponseService: GuestResponseService,
+  ) {
     super();
+  }
+
+  @Post("queuedWithOcr")
+  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
+  @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
+  @Response<HttpErrorBody & {"error":
+      | "Vacancy is unpublished or hidden"
+      | "Applicant resume is unfilled or does not exist"
+  }>(409)
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
+  public async createQueuedWithOcr(
+    @Request() req: JwtModel,
+    @UploadedFile("file") multerFile: Express.Multer.File,
+    @Query() vacancyId: string,
+  ): Promise<CreateQueuedWithOcrGuestVacancyResponseResponse> {
+    await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
+    await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
+
+    const { id } = await this.guestResponseService.enqueueCreationWithOcr(multerFile, vacancyId);
+    return { jobId: id! }
+  }
+
+  @Patch("queuedWithOcr/{jobId}/resume")
+  @Middlewares(rateLimit({limit: 100, interval: 3600 * 24}))
+  @Response<HttpErrorBody & {"error": "Job not found"}>(404)
+  public async patchQueuedWithOcrById(
+    @Request() req: JwtModel,
+    @Path() jobId: string,
+    @Body() body: PatchGuestVacancyResponseQueuedWithOcrRequest,
+  ) {
+    body = PatchGuestVacancyResponseQueuedWithOcrRequestSchema.validateSync(body)
+
+    const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    if (!job) throw new HttpError(404, "Job not found");
+
+    await this.guestResponseService.patchQueuedWithOcrJob(job, body);
+  }
+
+  @Get("queuedWithOcr/{jobId}")
+  @Middlewares(rateLimit({limit: 1200, interval: 3600 * 24}))
+  @Response<HttpErrorBody & {"error": "Job not found"}>(404)
+  public async getQueuedWithOcrById(
+    @Request() req: JwtModel,
+    @Path() jobId: string,
+  ) {
+    const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+
+    if (!job) throw new HttpError(404, "Job not found");
+
+    return job;
   }
 
   @Post("")
@@ -53,16 +110,10 @@ export class GuestVacancyResponseController extends Controller {
   ): Promise<BasicGuestVacancyResponse> {
     body = CreateGuestVacancyResponseRequestSchema.validateSync(body);
 
-    const vacancy = await prisma.vacancy.findUnique({ where: { id: body.vacancyId } });
-    if(!vacancy) throw new HttpError(404, "Vacancy does not exist");
-
-    if (vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) {
-      throw new HttpError(409, "Vacancy is unpublished or hidden");
-    }
-
+    await this.guestResponseService.validateVacancyBeforeCreation(body.vacancyId);
     const { resume, ...bodyData} = body;
-    if(!resume || !prisma.resume.isFilled(resume))
-      throw new HttpError(409, "Applicant resume is unfilled or does not exist");
+    await this.guestResponseService.validateResumeBeforeCreation(resume);
+
 
     return prisma.guestVacancyResponse.create({
       data: {

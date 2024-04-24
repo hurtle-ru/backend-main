@@ -1,6 +1,9 @@
-import { DeepPartial, Nullable } from "tsdef";
+import { DeepPartial } from "tsdef";
 import { Currency } from "@prisma/client";
 import { ContactType } from ".prisma/client";
+import { DeepNullable } from "../../util/typescript.utils";
+import { MetadataCreateGuestVacancyResponse } from "../vacancy/guest-response/guest-response.dto";
+import { MetadataImportAsApplicantResume } from "../auth/auth.dto";
 
 export const RESUME_OCR_JOB_NAME = "recognizePdfWithResumeOcr";
 export const RESUME_OCR_QUEUE_NAME = "resumeOcr";
@@ -9,6 +12,7 @@ export interface ResumeOcrJobData {
   fileName: string,
   recognizedResume?: string,
   mappedResume?: GetRecognizedResumeResponse,
+  metadata?: MetadataCreateGuestVacancyResponse | MetadataImportAsApplicantResume,
 }
 
 export const enum ResumeOcrJobStatus {
@@ -85,8 +89,12 @@ export type GetRecognizedResumeResponse = {
 };
 
 export type GetResumeOcrJobResponse = {
+  id: string,
   status: ResumeOcrJobStatus,
-  resume: GetRecognizedResumeResponse | null,
   createdAt: number,
   finishedAt: number | undefined,
+  data: {
+    metadata: ResumeOcrJobData["metadata"],
+    mappedResume: ResumeOcrJobData["mappedResume"] | null,
+  }
 }

@@ -26,12 +26,10 @@ export class ResumeOcrWorker extends BaseWorker<ResumeOcrJobData> {
           ...data,
           recognizedResume,
           mappedResume,
-        })
+        });
 
         return mappedResume;
-      },
-
-      {
+      }, {
         autorun: false,
         connection: redis,
         lockDuration: 2 * 60 * 1000,

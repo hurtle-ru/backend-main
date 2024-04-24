@@ -142,6 +142,12 @@ export type AuthWithHhRequest = {
 } & HhAuthorizationCodeRequest
 
 export const AuthWithHhRequestSchema: yup.ObjectSchema<AuthWithHhRequest> = HhAuthorizationCodeRequestSchema.shape({
-  role: APPLICANT_SCHEMA
+  role: APPLICANT_SCHEMA,
 })
+
 export { HH_AUTHORIZATION_CODE, HH_TOKEN };
+
+export type MetadataImportAsApplicantResume = {
+  callback: "import-as-applicant-resume"
+  applicantId: string,
+};

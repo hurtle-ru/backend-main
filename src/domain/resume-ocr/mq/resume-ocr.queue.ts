@@ -1,4 +1,4 @@
-import { Job, Queue } from "bullmq";
+import { Job, Queue, QueueEvents } from "bullmq";
 import redis from "../../../infrastructure/mq/redis.provider";
 import { JobsOptions } from "bullmq/dist/esm/types";
 import { logger } from "../../../infrastructure/logger/logger";
@@ -10,12 +10,14 @@ import {
   ResumeOcrJobData,
   ResumeOcrJobStatus,
 } from "../resume-ocr.dto";
+import { GuestResponseService } from "../../vacancy/guest-response/guest-response.service";
+import { randomUUID } from "crypto";
 
 
 @injectable()
 @singleton()
 export class ResumeOcrQueue {
-  private queue: Queue<ResumeOcrJobData>;
+  private readonly queue: Queue<ResumeOcrJobData>;
 
   constructor() {
     this.queue = new Queue(RESUME_OCR_QUEUE_NAME, {
@@ -24,12 +26,13 @@ export class ResumeOcrQueue {
     );
   }
 
-  async enqueueRecognizePdf(data: ResumeOcrJobData, opts?: JobsOptions): Promise<string> {
-    const job = await this.queue.add(RESUME_OCR_JOB_NAME, data, opts);
+  async enqueueRecognizePdf(data: ResumeOcrJobData): Promise<Job<ResumeOcrJobData>> {
+    const jobId = randomUUID();
+    const job = await this.queue.add(RESUME_OCR_JOB_NAME, data, { jobId });
 
     logger.info({ jobId: job.id }, "Enqueued resume-ocr job");
 
-    return job.id!;
+    return job;
   }
 
   async getJob(jobId: string): Promise<GetResumeOcrJobResponse | null> {
@@ -37,10 +40,27 @@ export class ResumeOcrQueue {
     if (!job) return null;
 
     return {
+      id: jobId,
       status: await this.mapJobStatus(job),
-      resume: job.returnvalue,
       createdAt: job.timestamp,
       finishedAt: job.finishedOn,
+      data: {
+        metadata: job.data.metadata,
+        mappedResume: job.data.mappedResume ?? null,
+      },
+    }
+  }
+
+  async patchJobData(jobId: string, newFields: Partial<ResumeOcrJobData>) {
+    const job = await Job.fromId<ResumeOcrJobData, any, any>(this.queue, jobId);
+
+    if(job) {
+      const data = job?.data;
+
+      await job?.updateData({
+        ...data,
+        ...newFields,
+      });
     }
   }
 

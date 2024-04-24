@@ -1,8 +1,9 @@
 import { injectable } from "tsyringe";
 import {
+  Body,
   Controller,
   Get, Middlewares,
-  Path,
+  Path, Post,
   Put,
   Query,
   Request,
@@ -31,7 +32,7 @@ export class ResumeOcrController extends Controller {
     super();
   }
 
-  @Put("pdf")
+  @Put("recognize")
   @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -42,9 +43,25 @@ export class ResumeOcrController extends Controller {
     await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
 
     const fileName = await this.resumeOcrService.savePdf(multerFile);
-    const jobId = await this.resumeOcrService.enqueueRecognizePdf({ fileName });
+    const { id } = await this.resumeOcrService.enqueueRecognizePdf({ fileName });
 
-    return { jobId };
+    return { jobId: id! };
+  }
+
+  @Post("recognizeAndImport")
+  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
+  public async recognizeAndImport(
+    @Request() req: JwtModel,
+    @UploadedFile("file") multerFile: Express.Multer.File,
+  ): Promise<{ jobId: string }> {
+    await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
+
+    const fileName = await this.resumeOcrService.savePdf(multerFile);
+    const { id } = await this.resumeOcrService.enqueueRecognizePdf({ fileName });
+
+    return { jobId: id! };
   }
 
   @Get("{jobId}")
@@ -52,8 +69,7 @@ export class ResumeOcrController extends Controller {
   public async getResumeOcrJobById(
     @Path() jobId: string,
   ): Promise<GetResumeOcrJobResponse> {
-    const job = await this.resumeOcrService.getResumeOcrJob(jobId);
-
+    const job = await this.resumeOcrService.getJob(jobId);
     if (!job) throw new HttpError(404, "Job not found");
 
     return job;

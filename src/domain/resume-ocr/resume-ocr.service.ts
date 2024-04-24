@@ -10,7 +10,7 @@ import { ChatGPTService } from "../../external/chatgpt/chatgpt.service";
 import { resumeOcrConfig } from "./resume-ocr.config";
 import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
 import { GetResumeOcrJobResponse, ResumeOcrJobData } from "./resume-ocr.dto";
-import { JobsOptions } from "bullmq";
+import { Job, JobsOptions } from "bullmq";
 import { ResumeOcrQueue } from "./mq/resume-ocr.queue";
 import { randomUUID } from "crypto";
 import {readPdfText} from 'pdf-text-reader';
@@ -47,15 +47,9 @@ export class ResumeOcrService {
   }
 
   async enqueueRecognizePdf(
-    { fileName }: ResumeOcrJobData,
-    opts?: JobsOptions
-  ): Promise<string> {
-    return await this.queue.enqueueRecognizePdf({
-      fileName,
-    }, {
-      ...opts,
-      jobId: fileName,
-    });
+    jobData: ResumeOcrJobData,
+  ): Promise<Job<ResumeOcrJobData>> {
+    return await this.queue.enqueueRecognizePdf(jobData);
   }
 
   async recognizePdf({ fileName }: ResumeOcrJobData) {
@@ -69,9 +63,9 @@ export class ResumeOcrService {
     const renderedPrompt = this.templateRendererService.renderTemplate(
       ResumeOcrService.TEMPLATE_TYPE,
       ResumeOcrService.TEMPLATE_RECOGNIZE_PDF_NAME,
-      ResumeOcrService.TEMPLATE_EXTENSION, {
-        // plainTextFromPdf: await this.recognizePlainTextFromPdf(buffer),
-      }, true
+      ResumeOcrService.TEMPLATE_EXTENSION,
+      {},
+      true
     );
 
     const response = await this.chatgptService.generatePromptCompletionWithFile(
@@ -91,7 +85,11 @@ export class ResumeOcrService {
     }
   }
 
-  async getResumeOcrJob(jobId: string): Promise<GetResumeOcrJobResponse | null> {
+  async patchJobData(jobId: string, data: Partial<ResumeOcrJobData>) {
+    return this.queue.patchJobData(jobId, data);
+  }
+
+  async getJob(jobId: string): Promise<GetResumeOcrJobResponse | null> {
     return this.queue.getJob(jobId);
   }
 
