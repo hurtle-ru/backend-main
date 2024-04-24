@@ -4,7 +4,7 @@ import { Job, Worker, Queue } from "bullmq";
 import { EmailWorker } from "../../external/email/mq/email.worker";
 import redis from "./redis.provider";
 import { TelegramWorker } from "../../external/telegram/mq/telegram.worker";
-import { ResumeOcrWorker } from "../../domain/resume-ocr/mq/resume-ocr.worker";
+import { ResumeOcrWorker } from "../../external/resume-ocr/mq/resume-ocr.worker";
 
 
 export class MqManager {

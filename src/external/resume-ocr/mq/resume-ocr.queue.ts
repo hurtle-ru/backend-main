@@ -10,7 +10,7 @@ import {
   ResumeOcrJobData,
   ResumeOcrJobStatus,
 } from "../resume-ocr.dto";
-import { GuestResponseService } from "../../vacancy/guest-response/guest-response.service";
+import { GuestResponseService } from "../../../domain/vacancy/guest-response/guest-response.service";
 import { randomUUID } from "crypto";
 
 

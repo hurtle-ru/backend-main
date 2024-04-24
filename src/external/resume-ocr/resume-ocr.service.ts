@@ -1,4 +1,4 @@
-import { ArtifactService } from "../../external/artifact/artifact.service";
+import { ArtifactService } from "../artifact/artifact.service";
 
 // Hack to fix lib "pdf-text-reader"
 declare global {
@@ -6,9 +6,9 @@ declare global {
 }
 
 import { injectable, singleton } from "tsyringe";
-import { ChatGPTService } from "../../external/chatgpt/chatgpt.service";
+import { ChatGPTService } from "../chatgpt/chatgpt.service";
 import { resumeOcrConfig } from "./resume-ocr.config";
-import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
+import { TemplateRendererService } from "../template-renderer/template-renderer.service";
 import { GetResumeOcrJobResponse, ResumeOcrJobData } from "./resume-ocr.dto";
 import { Job, JobsOptions } from "bullmq";
 import { ResumeOcrQueue } from "./mq/resume-ocr.queue";

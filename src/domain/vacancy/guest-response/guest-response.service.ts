@@ -3,12 +3,12 @@ import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError } from "../../../infrastructure/error/http.error";
 import { VacancyStatus } from "@prisma/client";
 import { ResumeToCheckIsFilled } from "../../resume/resume.prisma-extension";
-import { ResumeOcrService } from "../../resume-ocr/resume-ocr.service";
+import { ResumeOcrService } from "../../../external/resume-ocr/resume-ocr.service";
 import {
   GetRecognizedResumeResponse,
   GetResumeOcrJobResponse,
   RESUME_OCR_QUEUE_NAME,
-} from "../../resume-ocr/resume-ocr.dto";
+} from "../../../external/resume-ocr/resume-ocr.dto";
 import {
   MetadataCreateGuestVacancyResponse,
   PatchGuestVacancyResponseQueuedWithOcrRequest,

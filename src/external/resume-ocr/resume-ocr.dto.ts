@@ -2,8 +2,8 @@ import { DeepPartial } from "tsdef";
 import { Currency } from "@prisma/client";
 import { ContactType } from ".prisma/client";
 import { DeepNullable } from "../../util/typescript.utils";
-import { MetadataCreateGuestVacancyResponse } from "../vacancy/guest-response/guest-response.dto";
-import { MetadataImportAsApplicantResume } from "../auth/auth.dto";
+import { MetadataCreateGuestVacancyResponse } from "../../domain/vacancy/guest-response/guest-response.dto";
+import { MetadataImportAsApplicantResume } from "../../domain/auth/auth.dto";
 
 export const RESUME_OCR_JOB_NAME = "recognizePdfWithResumeOcr";
 export const RESUME_OCR_QUEUE_NAME = "resumeOcr";
