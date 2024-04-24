@@ -15,6 +15,8 @@ import { TokenPayload, } from "google-auth-library/build/src/auth/loginticket";
 
 @singleton()
 export class AuthService {
+  constructor() {}
+
   createToken(payload: Omit<JwtModel["user"], "iat">,): string {
     return jwt.sign({
       ...payload,
