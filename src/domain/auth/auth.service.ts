@@ -34,7 +34,7 @@ export class AuthService {
   }
 
   async registerApplicant(body: RegisterApplicantRequest,) {
-    await prisma.applicant.extendedCreate(
+    await prisma.applicant.create(
       {
         data: {
           login: body.email,
@@ -49,9 +49,11 @@ export class AuthService {
           contact: body.contact,
           email: body.email,
           birthDate: body.birthDate,
+          resume: {
+            create: {},
+          },
         },
       },
-      { create_empty_resume: true, },
     );
   }
 
@@ -78,7 +80,7 @@ export class AuthService {
   * @param {string | undefined} email inputted by user email for not email verified google accounts
   */
   async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined,) {
-    return await prisma.applicant.extendedCreate(
+    return await prisma.applicant.create(
       {
         data: {
           login: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
@@ -89,14 +91,16 @@ export class AuthService {
           email: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
           birthDate: body.birthDate,
           googleTokenSub: googleToken.sub,
+          resume: {
+            create: {},
+          },
         },
       },
-      { create_empty_resume: true, },
     );
   }
 
   async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: RegisterApplicantHhToken,) {
-    const applicant = await prisma.applicant.extendedCreate(
+    const applicant = await prisma.applicant.create(
       {
         data: {
           login: body.email,
@@ -106,9 +110,11 @@ export class AuthService {
           contact: body.contact,
           email: body.email,
           birthDate: body.birthDate,
+          resume: {
+            create: {},
+          },
         },
       },
-      { create_empty_resume: true, },
     );
 
     await prisma.hhToken.create({

@@ -1,11 +1,6 @@
-import { Applicant, Prisma, } from "@prisma/client";
+import { Prisma, } from "@prisma/client";
 import { prisma, } from "../../infrastructure/database/prisma.provider";
 import { HttpError, } from "../../infrastructure/error/http.error";
-
-
-type ApplicantCreateExtendedArgs = {
-  create_empty_resume: boolean;
-}
 
 
 export const applicantPrismaExtension = Prisma.defineExtension({
@@ -64,26 +59,6 @@ export const applicantPrismaExtension = Prisma.defineExtension({
             originalId: applicant.id,
             payload: applicant,
           },
-        },);
-      },
-      async extendedCreate(
-        args: Prisma.ApplicantCreateArgs,
-        extended_params: ApplicantCreateExtendedArgs = {
-          create_empty_resume: false,
-        },
-      ): Promise<Applicant> {
-        const data: Prisma.ApplicantCreateInput = { ...args.data, };
-
-        if (extended_params.create_empty_resume) {
-          data.resume = data.resume || {
-            create: {}, // TODO create 'createEmpty' resume method if need
-          };
-        }
-
-        return await prisma.applicant.create({
-          include: args.include,
-          select: args.select,
-          data,
         },);
       },
     },
