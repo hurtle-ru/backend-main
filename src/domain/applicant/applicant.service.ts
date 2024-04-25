@@ -6,15 +6,13 @@ import { injectable, singleton } from "tsyringe";
 export class ApplicantService {
   public readonly DEFAULT_SCALAR_SEARCH_FIELDS = ["firstName", "lastName", "login", "nickname"]
 
-  getApplicantSearchByDefaultSearchFields = (search: string | undefined) => ({
+  getApplicantSearchByDefaultSearchFields = (search: string | undefined, skillSearch: string[] | undefined,) => ({
     OR: [
-      ...this.DEFAULT_SCALAR_SEARCH_FIELDS.map(fieldName => ({ [fieldName]: { search } })),
+      ...this.DEFAULT_SCALAR_SEARCH_FIELDS.map(fieldName => ({ [fieldName]: { search, mode: 'insensitive' } })),
       {
         resume: {
-          OR: [
-            { title: { search } },
-            { skills: { has: search } },
-          ]
+          title: search,
+          skills: { hasSome: skillSearch },
         }
       }
     ]

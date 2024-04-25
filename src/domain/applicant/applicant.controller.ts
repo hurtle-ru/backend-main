@@ -36,6 +36,7 @@ import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/r
 import { Prisma } from "@prisma/client";
 import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 import { ApplicantService } from "./applicant.service";
+import { some } from "lodash";
 
 
 @injectable()
@@ -75,12 +76,13 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Query() nickname?: string,
     @Query() search?: string,
+    @Query() searchSkills?: string[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
     @Query() has?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
-    const searchFilter = req.user.role === UserRole.MANAGER ? this.applicantService.getApplicantSearchByDefaultSearchFields(search) : undefined
+    const searchFilter = req.user.role === UserRole.MANAGER ? this.applicantService.getApplicantSearchByDefaultSearchFields(search, searchSkills) : undefined
 
     const where: Prisma.ApplicantFindManyArgs["where"] = {
       nickname,
@@ -97,7 +99,7 @@ export class ApplicantController extends Controller {
     if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
       includeResume = { where: { isVisibleToEmployers: true } };
 
-    const [applicants, applicantsCount] = await Promise.all([
+    let [applicants, applicantsCount] = await Promise.all([
       prisma.applicant.findMany({
         skip: (page - 1) * size,
         take: size,
