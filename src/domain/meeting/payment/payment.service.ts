@@ -36,7 +36,7 @@ export class MeetingPaymentService {
       successUrl.toString(),
       failUrl.toString(),
       paymentConfig.MEETING_PAYMENT_NOTIFICATION_URL,
-      dueDate
+      dueDate,
     );
 
     return {
@@ -54,7 +54,7 @@ export class MeetingPaymentService {
     return otpGenerator.generate(16, { specialChars: false });
   }
 
-  async verifyToken(body: MeetingPaymentTinkoffNotificationRequest) {
+  verifyToken(body: MeetingPaymentTinkoffNotificationRequest) {
     const { Token, ...bodyWithoutToken } = body;
 
     return Token != null && body.Token === this.tinkoffPaymentService.makeToken(bodyWithoutToken);

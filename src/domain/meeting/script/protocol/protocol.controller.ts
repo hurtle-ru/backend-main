@@ -43,14 +43,14 @@ export class MeetingScriptProtocolController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptProtocolRequest,
   ): Promise<BasicMeetingScriptProtocol> {
-    body = CreateMeetingScriptProtocolRequestSchema.validateSync(body)
+    body = CreateMeetingScriptProtocolRequestSchema.validateSync(body);
 
     const meeting = await prisma.meeting.findUnique({
       where: { id: body.meetingId },
       select: { id: true },
-    })
+    });
 
-    if(!meeting) throw new HttpError(404, "Meeting not found");
+    if (!meeting) throw new HttpError(404, "Meeting not found");
 
     return prisma.meetingScriptProtocol.create({
       data: body,
@@ -70,7 +70,7 @@ export class MeetingScriptProtocolController extends Controller {
     const where = {
       meetingId: meetingId ?? undefined,
       templateId: templateId ?? undefined,
-    }
+    };
     const [protocols, protocolsCount] = await Promise.all([
       prisma.meetingScriptProtocol.findMany({
         skip: (page - 1) * size,
@@ -85,7 +85,7 @@ export class MeetingScriptProtocolController extends Controller {
         },
       }),
       prisma.meetingScriptProtocol.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(protocols, page, size, protocolsCount);
   }
@@ -107,7 +107,7 @@ export class MeetingScriptProtocolController extends Controller {
     await Promise.all([
       prisma.meetingScriptAnswer.deleteMany({ where: { protocolId: id } }),
       prisma.meetingScriptProtocol.delete({ where: { id } }),
-    ])
+    ]);
   }
 
   @Get("{id}")
@@ -116,7 +116,7 @@ export class MeetingScriptProtocolController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("template" | "answers" | "meeting" | "meeting.slot")[]
+    @Query() include?: ("template" | "answers" | "meeting" | "meeting.slot")[],
   ): Promise<GetMeetingScriptProtocolResponse> {
     const protocol = await prisma.meetingScriptProtocol.findUnique({
       where: { id },

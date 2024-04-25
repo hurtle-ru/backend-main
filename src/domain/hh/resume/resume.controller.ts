@@ -46,7 +46,7 @@ export class HhResumeController extends Controller {
     hhToken = await this.hhAuthService.refreshTokenAndSaveIfNeed(hhToken);
     const hhResumes = await this.hhResumeService.getMine(hhToken.accessToken);
 
-    return hhResumes.map(resume => ({
+    return hhResumes.map((resume) => ({
       id: resume.id,
       title: resume.title,
       createdAt: resume.createdAt,
@@ -65,7 +65,7 @@ export class HhResumeController extends Controller {
     @Path() id: string,
   ): Promise<BasicResume> {
     const resume = await prisma.resume.findUnique({ where: { applicantId: req.user.id } });
-    if(resume) throw new HttpError(409, "Resume already exists");
+    if (resume) throw new HttpError(409, "Resume already exists");
 
     const hhToken = await prisma.hhToken.findUnique({ where: { applicantId: req.user.id } });
     if (!hhToken) throw new HttpError(401, "Not authorized in hh.ru");

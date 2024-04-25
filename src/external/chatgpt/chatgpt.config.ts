@@ -18,9 +18,9 @@ export async function validateChatGptConfig() {
 }
 
 async function validateProxy(agent: SocksProxyAgent) {
-  if(!chatGptConfig.CHATGPT_USE_PROXY) return;
+  if (!chatGptConfig.CHATGPT_USE_PROXY) return;
   const response = await axios.get("https://httpbin.org/ip", { httpsAgent: agent });
-  if(response.data.origin !== chatGptConfig.CHATGPT_PROXY_URL.split("@")[1].split(":")[0]) {
+  if (response.data.origin !== chatGptConfig.CHATGPT_PROXY_URL.split("@")[1].split(":")[0]) {
     throw new Error("ChatGPT proxy doesnt work");
   }
 

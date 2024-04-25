@@ -18,8 +18,8 @@ export class HhApplicantService {
     });
     const data = camelize(response.data);
 
-    if(response.status !== 200) throw new Error("Invalid hh.ru accessToken or service is unavailable");
-    if(!data.isApplicant) throw new HttpError(403, "hh.ru user is not applicant");
+    if (response.status !== 200) throw new Error("Invalid hh.ru accessToken or service is unavailable");
+    if (!data.isApplicant) throw new HttpError(403, "hh.ru user is not applicant");
 
     return data;
   }

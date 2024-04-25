@@ -16,7 +16,6 @@ import { logger } from "../../infrastructure/logger/logger";
 
 
 export const ARTIFACT_ROOT_DIR = "data/";
-
 const statPromisified = promisify(syncFs.stat);
 
 @singleton()

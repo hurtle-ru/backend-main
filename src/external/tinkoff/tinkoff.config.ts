@@ -6,6 +6,6 @@ export const tinkoffConfig = {
     {
       TINKOFF_TERMINAL_ID: str(),
       TINKOFF_TERMINAL_PASSWORD: str(),
-    }
+    },
   ),
 };

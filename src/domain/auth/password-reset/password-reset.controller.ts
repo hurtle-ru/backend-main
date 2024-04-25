@@ -25,10 +25,10 @@ export class PasswordResetController extends Controller {
     @Query() role: "APPLICANT" | "EMPLOYER",
   ): Promise<void> {
     let user: Applicant | Employer | null = null;
-    if(role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { email } });
-    if(role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { email } });
+    if (role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { email } });
+    if (role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { email } });
 
-    if(!user) throw new HttpError(404, "User not found");
+    if (!user) throw new HttpError(404, "User not found");
 
     const code = this.passwordResetService.generateCode();
     try {
@@ -53,32 +53,32 @@ export class PasswordResetController extends Controller {
       email: body.email,
     };
 
-    if(!await prisma.passwordResetRequest.exists(where)) throw new HttpError(404, "Invalid email or code");
+    if (!await prisma.passwordResetRequest.exists(where)) throw new HttpError(404, "Invalid email or code");
 
     const passwordResetRequest = await prisma.passwordResetRequest.delete({ where });
     const passwordHash = await this.authService.generatePasswordHash(body.password);
 
     let userRoleWithId: { applicantId: string } | { employerId: string } | null = null;
 
-    if(passwordResetRequest.role === UserRole.APPLICANT) {
+    if (passwordResetRequest.role === UserRole.APPLICANT) {
       const applicant = await prisma.applicant.findUnique({
         where: { email: passwordResetRequest.email },
         select: { id: true },
       });
 
-      if(applicant) userRoleWithId = { applicantId: applicant.id };
+      if (applicant) userRoleWithId = { applicantId: applicant.id };
     }
 
-    if(passwordResetRequest.role === UserRole.EMPLOYER) {
+    if (passwordResetRequest.role === UserRole.EMPLOYER) {
       const employer = await prisma.employer.findUnique({
         where: { email: passwordResetRequest.email },
         select: { id: true },
       });
 
-      if(employer) userRoleWithId = { employerId: employer.id };
+      if (employer) userRoleWithId = { employerId: employer.id };
     }
 
-    if(!userRoleWithId) throw new HttpError(404, "Invalid email or code");
+    if (!userRoleWithId) throw new HttpError(404, "Invalid email or code");
 
     await prisma.password.upsert({
       where: userRoleWithId,

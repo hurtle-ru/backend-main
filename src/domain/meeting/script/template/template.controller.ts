@@ -43,7 +43,7 @@ export class MeetingScriptTemplateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptTemplateRequest,
   ): Promise<BasicMeetingScriptTemplate> {
-    body = CreateMeetingScriptTemplateRequestSchema.validateSync(body)
+    body = CreateMeetingScriptTemplateRequestSchema.validateSync(body);
 
     return prisma.meetingScriptTemplate.create({
       data: body,
@@ -58,7 +58,7 @@ export class MeetingScriptTemplateController extends Controller {
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("protocols" | "questions")[],
   ): Promise<PageResponse<GetMeetingScriptTemplateResponse>> {
-    const where = {}
+    const where = {};
 
     const [templates, templatesCount] = await Promise.all([
       prisma.meetingScriptTemplate.findMany({
@@ -71,7 +71,7 @@ export class MeetingScriptTemplateController extends Controller {
         },
       }),
       prisma.meetingScriptTemplate.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(templates, page, size, templatesCount);
   }
@@ -84,7 +84,7 @@ export class MeetingScriptTemplateController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingScriptTemplateRequest,
   ): Promise<void> {
-    body = PatchMeetingScriptTemplateRequestSchema.validateSync(body)
+    body = PatchMeetingScriptTemplateRequestSchema.validateSync(body);
 
     const template = await prisma.meetingScriptTemplate.findUnique({
       where: { id },
@@ -112,13 +112,13 @@ export class MeetingScriptTemplateController extends Controller {
       select: { id: true },
     });
 
-    if(!template) throw new HttpError(404, "MeetingScriptTemplate not found");
+    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found");
 
     const usesCount = await prisma.meetingScriptProtocol.count({
       where: { templateId: id },
     });
 
-    if(usesCount > 0) throw new HttpError(409, "MeetingScriptTemplate is in use by some protocols");
+    if (usesCount > 0) throw new HttpError(409, "MeetingScriptTemplate is in use by some protocols");
 
     await prisma.meetingScriptTemplate.delete({
       where: { id },
@@ -131,7 +131,7 @@ export class MeetingScriptTemplateController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("protocols" | "questions")[]
+    @Query() include?: ("protocols" | "questions")[],
   ): Promise<GetMeetingScriptTemplateResponse> {
     const template = await prisma.meetingScriptTemplate.findUnique({
       where: { id },

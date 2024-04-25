@@ -40,7 +40,7 @@ export class OfferController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateOfferRequest,
   ): Promise<BasicOffer> {
-    body = CreateOfferRequestSchema.validateSync(body)
+    body = CreateOfferRequestSchema.validateSync(body);
 
     const where = { id: body.vacancyResponseId, vacancy: { employerId: req.user.id } };
 
@@ -55,8 +55,8 @@ export class OfferController extends Controller {
       },
     });
 
-    if(!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
-    if(vacancyResponse.offer) throw new HttpError(409, "VacancyResponse already has offer");
+    if (!vacancyResponse) throw new HttpError(404, "VacancyResponse not found");
+    if (vacancyResponse.offer) throw new HttpError(409, "VacancyResponse already has offer");
 
     const offer = await prisma.offer.create({
       data: {
@@ -70,7 +70,7 @@ export class OfferController extends Controller {
       data: {
         status: VacancyResponseStatus.OFFER_MADE,
       },
-    })
+    });
 
     return offer;
   }
@@ -84,8 +84,8 @@ export class OfferController extends Controller {
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetOfferResponse>> {
     let where;
-    if(req.user.role === UserRole.APPLICANT) where = { vacancyResponse: { candidateId: req.user.id } };
-    else if(req.user.role === UserRole.EMPLOYER) where = { vacancyResponse: { vacancy: { employerId: req.user.id } } };
+    if (req.user.role === UserRole.APPLICANT) where = { vacancyResponse: { candidateId: req.user.id } };
+    else if (req.user.role === UserRole.EMPLOYER) where = { vacancyResponse: { vacancy: { employerId: req.user.id } } };
 
     const [offers, offersCount] = await Promise.all([
       prisma.offer.findMany({
@@ -94,14 +94,14 @@ export class OfferController extends Controller {
         where,
         include: {
           vacancyResponse: include?.includes("vacancyResponse.vacancy") || include?.includes("vacancyResponse.vacancy.employer")
-          ? {
-            include: {
-              vacancy: include?.includes("vacancyResponse.vacancy.employer")
-              ? { include: { employer: true } }
-              : include?.includes("vacancyResponse.vacancy")
+            ? {
+              include: {
+                vacancy: include.includes("vacancyResponse.vacancy.employer")
+                  ? { include: { employer: true } }
+                  : include.includes("vacancyResponse.vacancy"),
+              },
             }
-          }
-          : include?.includes("vacancyResponse"),
+            : include?.includes("vacancyResponse"),
         },
       }),
       prisma.offer.count({ where }),
@@ -124,7 +124,7 @@ export class OfferController extends Controller {
       vacancyId: vacancyId ?? undefined,
       vacancyResponseId: vacancyResponseId ?? undefined,
       vacancy: { employerId: employerId ?? undefined },
-    }
+    };
 
     const [offers, offersCount] = await Promise.all([
       prisma.offer.findMany({
@@ -133,8 +133,8 @@ export class OfferController extends Controller {
         where,
         include: {
           vacancyResponse: include?.includes("vacancyResponse.vacancy")
-          ? { include: { vacancy: true }}
-          : include?.includes("vacancyResponse"),
+            ? { include: { vacancy: true }}
+            : include?.includes("vacancyResponse"),
         },
       }),
       prisma.offer.count({ where }),
@@ -155,7 +155,7 @@ export class OfferController extends Controller {
       where: { id, vacancyResponse: { candidateId: req.user.id } },
     });
 
-    if(!offer) throw new HttpError(404, "Offer not found");
+    if (!offer) throw new HttpError(404, "Offer not found");
 
     return prisma.offer.update({
       where: { id },
@@ -171,17 +171,17 @@ export class OfferController extends Controller {
     @Path() id: string,
     @Body() body: PatchOfferRequest,
   ): Promise<BasicOffer> {
-    PatchOfferRequestSchema.validateSync(body)
+    PatchOfferRequestSchema.validateSync(body);
 
     let where = null;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id} } };
+    if (req.user.role === UserRole.MANAGER) where = { id };
+    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id} } };
 
     const offer = await prisma.offer.findUnique({
       where: where!,
     });
 
-    if(!offer) throw new HttpError(404, "Offer not found");
+    if (!offer) throw new HttpError(404, "Offer not found");
 
     return prisma.offer.update({
       where: where!,
@@ -198,20 +198,20 @@ export class OfferController extends Controller {
     @Query() include?: ("vacancyResponse" | "vacancyResponse.vacancy")[],
   ): Promise<GetOfferResponse> {
     let where = null;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, vacancyResponse: { candidateId: req.user.id } };
+    if (req.user.role === UserRole.MANAGER) where = { id };
+    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
+    else if (req.user.role === UserRole.APPLICANT) where = { id, vacancyResponse: { candidateId: req.user.id } };
 
     const offer = await prisma.offer.findUnique({
       where: where!,
       include: {
         vacancyResponse: include?.includes("vacancyResponse.vacancy")
-        ? { include: { vacancy: true }}
-        : include?.includes("vacancyResponse"),
+          ? { include: { vacancy: true }}
+          : include?.includes("vacancyResponse"),
       },
     });
 
-    if(!offer) throw new HttpError(404, "Offer not found");
+    if (!offer) throw new HttpError(404, "Offer not found");
 
     return offer;
   }
@@ -224,11 +224,11 @@ export class OfferController extends Controller {
     @Path() id: string,
   ) {
     let where = null;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
+    if (req.user.role === UserRole.MANAGER) where = { id };
+    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
 
     const offer = await prisma.offer.findUnique({ where: where! });
-    if(!offer) throw new HttpError(404, "Offer not found");
+    if (!offer) throw new HttpError(404, "Offer not found");
 
     await prisma.offer.delete({ where: where! });
   }

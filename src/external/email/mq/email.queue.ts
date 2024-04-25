@@ -35,8 +35,8 @@ export class EmailQueue {
 
   public async findIncompleteJobsByEmailAndLink(email: string, link: string): Promise<Job<EmailJobData>[]> {
     const jobs = await this.queue.getJobs(
-      ["failed", "delayed", "prioritized", "waiting", "waiting-children", "paused", "repeat", "wait"]
+      ["failed", "delayed", "prioritized", "waiting", "waiting-children", "paused", "repeat", "wait"],
     );
-    return jobs.filter(job => job.data.to === email && job.data.template.context.link === link);
+    return jobs.filter((job) => job.data.to === email && job.data.template.context.link === link);
   }
 }

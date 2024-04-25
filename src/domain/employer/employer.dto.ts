@@ -1,9 +1,9 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 import { Employer, EmployerLegalForm, EmployerSize } from "@prisma/client";
 import { BasicMeeting } from "../meeting/meeting.dto";
 import { BasicVacancy } from "../vacancy/vacancy.dto";
-import { yupUint32 } from '../../infrastructure/validation/requests/int32.yup';
-import { yupOneOfEnum } from '../../infrastructure/validation/requests/enum.yup';
+import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";
+import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicEmployer = Omit<
@@ -37,7 +37,7 @@ export const BasicEmployerSchema: yup.ObjectSchema<BasicEmployer> = yup.object({
   size: yupOneOfEnum(EmployerSize).defined(),
   website: yup.string().defined().trim().min(4).max(100).nullable(),
   description: yup.string().defined().trim().max(3000).nullable(),
-})
+});
 
 export type GetEmployerResponse = BasicEmployer & {
   meetings?: BasicMeeting[],
@@ -77,7 +77,7 @@ export const PatchMeByEmployerRequestSchema: yup.ObjectSchema<PatchMeByEmployerR
   "size",
   "website",
   "description",
-]).partial()
+]).partial();
 
 
 export type PatchByIdByEmployerRequest = Partial<Pick<
@@ -123,4 +123,4 @@ export const PatchByIdByEmployerRequestSchema: yup.ObjectSchema<PatchByIdByEmplo
   "size",
   "website",
   "description",
-])
+]);

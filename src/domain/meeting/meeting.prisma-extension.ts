@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError } from "../../infrastructure/error/http.error";
 
@@ -9,20 +9,20 @@ export const meetingPrismaExtension = Prisma.defineExtension({
       async archive(id: string) {
         const context = Prisma.getExtensionContext(this);
         const meeting = await prisma.meeting.findUnique({
-            where: { id },
-            include: {
-              feedback: true,
-              scriptProtocols: {
-                include: {
-                  answers: true,
-                },
-              },
-              slot: {
-                include: {
-                  payments: true,
-                },
+          where: { id },
+          include: {
+            feedback: true,
+            scriptProtocols: {
+              include: {
+                answers: true,
               },
             },
+            slot: {
+              include: {
+                payments: true,
+              },
+            },
+          },
         });
 
         if (!meeting) throw new HttpError(404, "Meeting not found");
@@ -38,4 +38,4 @@ export const meetingPrismaExtension = Prisma.defineExtension({
       },
     },
   },
-})
+});

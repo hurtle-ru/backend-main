@@ -13,9 +13,9 @@ export class TelegramWorker extends Worker<TelegramAdminNotificationJobData> {
       async (job: Job<TelegramAdminNotificationJobData>) => {
         try {
           await this.telegramService.sendMessage(job.data.text, job.data.options);
-        } catch(e: any) {
-          if(e.message && e.message.includes("429")) {
-            if(e.response && e.response.headers && e.response.headers["retry-after"]) {
+        } catch (e: any) {
+          if (e.message?.includes("429")) {
+            if (e.response?.headers?.["retry-after"]) {
               const duration = parseInt(e.response.headers["retry-after"]) * 1000;
               await this.rateLimit(duration);
             } else {
@@ -40,7 +40,7 @@ export class TelegramWorker extends Worker<TelegramAdminNotificationJobData> {
         removeOnComplete: {
           count: 1000,
         },
-      }
+      },
     );
   }
 }

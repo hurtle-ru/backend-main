@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client";
 
 export const existsExtension = Prisma.defineExtension({
   model: {
@@ -10,4 +10,4 @@ export const existsExtension = Prisma.defineExtension({
       },
     },
   },
-})
+});

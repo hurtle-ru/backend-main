@@ -9,7 +9,7 @@ import { appConfig } from "./infrastructure/app.config";
 import cors from "./infrastructure/cors/cors.provider";
 import * as Sentry from "@sentry/node";
 import { ProfilingIntegration } from "@sentry/profiling-node";
-import { routeRateLimit, userRateLimit } from "./infrastructure/rate-limiter/rate-limiter.middleware"
+import { routeRateLimit, userRateLimit } from "./infrastructure/rate-limiter/rate-limiter.middleware";
 import { validateChatGptConfig } from "./external/chatgpt/chatgpt.config";
 import * as http from "node:http";
 import { MqManager } from "./infrastructure/mq/mq-manager";
@@ -23,7 +23,7 @@ process.on("SIGINT", shutdown);
 const app = express();
 
 mqManager.run();
-startServer().catch(error => {
+startServer().catch((error) => {
   logger.fatal(error, "Failed to start the server");
   process.exit(1);
 });
@@ -72,7 +72,7 @@ async function startServer() {
 async function validateConfig() {
   try {
     await validateChatGptConfig();
-  } catch(e: any) {
+  } catch (e: any) {
     throw new Error("ChatGPT config is invalid", { cause: e });
   }
 }

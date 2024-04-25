@@ -11,10 +11,10 @@ export const paymentConfig = {
       MEETING_PAYMENT_FAIL_URL_BASE: str(),
       MEETING_PAYMENT_NOTIFICATION_URL: str(),
       MEETING_PAYMENT_CONSULTATION_B2C_EXPERT_PRICE_IN_KOPECKS: int(),
-    }
+    },
   ),
 };
 
 export const meetingPriceByType = {
   [MeetingType.CONSULTATION_B2C_EXPERT]: paymentConfig.MEETING_PAYMENT_CONSULTATION_B2C_EXPERT_PRICE_IN_KOPECKS,
-}
+};

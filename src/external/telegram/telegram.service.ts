@@ -2,7 +2,7 @@ import TelegramBot, { ParseMode, SendMessageOptions } from "node-telegram-bot-ap
 import { telegramConfig } from "./telegram.config";
 import { singleton } from "tsyringe";
 import { TelegramQueue } from "./mq/telegram.queue";
-import { TelegramAdminNotificationJobData, } from "./telegram.dto";
+import { TelegramAdminNotificationJobData } from "./telegram.dto";
 import { JobsOptions } from "bullmq/dist/esm/types";
 import { HtmlFormatter } from "./telegram.service.text-formatter";
 import { appConfig } from "../../infrastructure/app.config";
@@ -11,9 +11,10 @@ import { appConfig } from "../../infrastructure/app.config";
 @singleton()
 export class TelegramService {
   private bot: TelegramBot;
-  public readonly TextFormatter = new HtmlFormatter()
 
-  private adminGroupChatId = appConfig.NODE_ENV === 'production' ? telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID : telegramConfig.TELEGRAM_ADMIN_DEV_GROUP_CHAT_ID
+  public readonly TextFormatter = new HtmlFormatter();
+
+  private adminGroupChatId = appConfig.NODE_ENV === "production" ? telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID : telegramConfig.TELEGRAM_ADMIN_DEV_GROUP_CHAT_ID;
 
   constructor(
     private readonly queue: TelegramQueue,

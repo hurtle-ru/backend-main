@@ -43,7 +43,7 @@ export class ApplicantAiChatMessageController extends Controller {
   @Response<HttpErrorBody & {"error": "External text generation service is unavailable"}>(503)
   public async create(
     @Request() req: ExpressRequest & JwtModel,
-    @Body() body: CreateApplicantAiChatMessageRequest
+    @Body() body: CreateApplicantAiChatMessageRequest,
   ): Promise<BasicApplicantAiChatMessage> {
     body = CreateApplicantAiChatMessageRequestSchema.validateSync(body);
 
@@ -60,17 +60,17 @@ export class ApplicantAiChatMessageController extends Controller {
       },
     });
 
-    if(!chat) throw new HttpError(404, "AI Chat not found");
-    if(!chat.applicant.resume) throw new HttpError(409, "Applicant resume not found");
+    if (!chat) throw new HttpError(404, "AI Chat not found");
+    if (!chat.applicant.resume) throw new HttpError(409, "Applicant resume not found");
 
-    const applicantInterviews = chat.applicant.meetings.filter(m =>
+    const applicantInterviews = chat.applicant.meetings.filter((m) =>
       m.type === MeetingType.INTERVIEW
       && m.status === MeetingStatus.COMPLETED
       && m.transcript
       && m.transcript.trim().length > 0,
     );
 
-    if(applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
+    if (applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
 
     const systemPrompt = this.applicantAiChatService.getSystemPrompt({
       ...chat.applicant,
@@ -80,7 +80,7 @@ export class ApplicantAiChatMessageController extends Controller {
 
     try {
       return await this.applicantAiChatService.createMessage(body.question, systemPrompt, chat);
-    } catch(e) {
+    } catch (e) {
       throw new HttpError(503, "External text generation service is unavailable");
     }
   }

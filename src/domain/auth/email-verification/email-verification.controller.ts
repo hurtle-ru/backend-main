@@ -18,7 +18,7 @@ export class EmailVerificationController extends Controller {
   @Post()
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   public async createEmailVerification(
-    @Request() req: ExpressRequest & JwtModel
+    @Request() req: ExpressRequest & JwtModel,
   ) {
     let code = this.emailVerificationService.generateCode();
     while (await prisma.emailVerification.findUnique({ where: { code } })) {
@@ -43,8 +43,8 @@ export class EmailVerificationController extends Controller {
     });
 
     let user: { firstName: string, email: string } | null = null;
-    if(req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { id: req.user.id } });
-    if(req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { id: req.user.id } });
+    if (req.user.role === UserRole.APPLICANT) user = await prisma.applicant.findUnique({ where: { id: req.user.id } });
+    if (req.user.role === UserRole.EMPLOYER) user = await prisma.employer.findUnique({ where: { id: req.user.id } });
 
     await this.emailVerificationService.sendEmail(req.log, user!.firstName, user!.email, code);
   }
@@ -62,7 +62,7 @@ export class EmailVerificationController extends Controller {
       code: code,
     };
 
-    if(!await prisma.emailVerification.findUnique({ where: whereEmailVerification })) throw new HttpError(404, "Invalid code");
+    if (!await prisma.emailVerification.findUnique({ where: whereEmailVerification })) throw new HttpError(404, "Invalid code");
     await prisma.emailVerification.delete({ where: whereEmailVerification });
 
     const updateQuery = {
@@ -70,7 +70,7 @@ export class EmailVerificationController extends Controller {
       data: { isEmailConfirmed: true },
     };
 
-    if(req.user.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
-    if(req.user.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
+    if (req.user.role === UserRole.APPLICANT) await prisma.applicant.update(updateQuery);
+    if (req.user.role === UserRole.EMPLOYER) await prisma.employer.update(updateQuery);
   }
 }

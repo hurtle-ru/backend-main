@@ -1,4 +1,4 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 
 import { Meeting, MeetingStatus, MeetingType } from "@prisma/client";
 import { BasicApplicant } from "../applicant/applicant.dto";
@@ -16,7 +16,7 @@ import {
   RequesterGuest,
   RequesterGuestSchema,
 } from "../../infrastructure/controller/requester/requester.dto";
-import { yupOneOfEnum } from '../../infrastructure/validation/requests/enum.yup';
+import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicMeeting = Omit<
@@ -42,7 +42,7 @@ export const BasicMeetingSchema: yup.ObjectSchema<BasicMeeting> = yup.object({
   guestEmail: yup.string().defined().min(3).max(255).nullable(),
   applicantId: yup.string().defined().length(36).nullable(),
   employerId: yup.string().defined().length(36).nullable(),
-})
+});
 
 
 export type UserMeetingCreator = { _type: "user", firstName: string, lastName: string, email: string }
@@ -72,8 +72,8 @@ export const CreateMeetingRequestSchema: yup.ObjectSchema<CreateMeetingRequest> 
   "name",
   "description",
   "slotId",
-  "type"
-])
+  "type",
+]);
 
 
 export type CreateMeetingGuestRequest = CreateMeetingRequest & RequesterGuest & {
@@ -81,14 +81,14 @@ export type CreateMeetingGuestRequest = CreateMeetingRequest & RequesterGuest & 
 }
 
 export const CreateMeetingGuestRequestSchema: yup.ObjectSchema<CreateMeetingGuestRequest> = CreateMeetingRequestSchema
-.concat(RequesterGuestSchema)
-.shape({ successCode: yup.string().trim().min(1).defined() })
+  .concat(RequesterGuestSchema)
+  .shape({ successCode: yup.string().trim().min(1).defined() });
 
 
 export type CreateMeetingByApplicantOrEmployerRequest = CreateMeetingRequest & (RequesterApplicant | RequesterEmployer)
 
-export const CreateMeetingByApplicantRequestSchema: yup.ObjectSchema<CreateMeetingRequest & RequesterApplicant> = CreateMeetingRequestSchema.concat(RequesterApplicantSchema)
-export const CreateMeetingByEmployerRequestSchema: yup.ObjectSchema<CreateMeetingRequest & RequesterEmployer>  = CreateMeetingRequestSchema.concat(RequesterEmployerSchema)
+export const CreateMeetingByApplicantRequestSchema: yup.ObjectSchema<CreateMeetingRequest & RequesterApplicant> = CreateMeetingRequestSchema.concat(RequesterApplicantSchema);
+export const CreateMeetingByEmployerRequestSchema: yup.ObjectSchema<CreateMeetingRequest & RequesterEmployer>  = CreateMeetingRequestSchema.concat(RequesterEmployerSchema);
 
 
 export type PatchMeetingByManagerRequest = Partial<Pick<
@@ -103,8 +103,8 @@ export const PatchMeetingByManagerRequestSchema: yup.ObjectSchema<PatchMeetingBy
   "name",
   "description",
   "status",
-  "transcript"
-]).partial()
+  "transcript",
+]).partial();
 
 
 export type PatchMeetingByApplicantOrEmployerRequest = Partial<Pick<
@@ -114,7 +114,7 @@ export type PatchMeetingByApplicantOrEmployerRequest = Partial<Pick<
 
 export const PatchMeetingByApplicantOrEmployerSchemaRequest: yup.ObjectSchema<PatchMeetingByApplicantOrEmployerRequest> = BasicMeetingSchema.pick([
   "slotId",
-]).partial()
+]).partial();
 
 
 export type ExportAllRequest = {

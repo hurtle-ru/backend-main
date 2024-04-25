@@ -1,10 +1,10 @@
-import * as yup from "yup"
+import * as yup from "yup";
 
 import { Currency, Offer, OfferStatus } from "@prisma/client";
 import { BasicVacancy } from "../vacancy.dto";
-import { BasicVacancyResponse } from "../response/response.dto"
-import { yupUint32 } from '../../../infrastructure/validation/requests/int32.yup';
-import { yupOneOfEnum } from '../../../infrastructure/validation/requests/enum.yup';
+import { BasicVacancyResponse } from "../response/response.dto";
+import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
+import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicOffer = Omit<
@@ -27,7 +27,7 @@ const BasicOfferSchema: yup.ObjectSchema<BasicOffer> = yup.object({
   salary: yupUint32().defined().max(100_000_000),
   salaryCurrency: yupOneOfEnum(Currency).defined(),
   vacancyResponseId: yup.string().defined().length(36),
-})
+});
 
 
 export type CreateOfferRequest = Pick<BasicOffer,
@@ -42,7 +42,7 @@ export const CreateOfferRequestSchema: yup.ObjectSchema<CreateOfferRequest> = Ba
   "salary",
   "salaryCurrency",
   "vacancyResponseId",
-])
+]);
 
 export type PatchOfferRequest = Partial<Pick<BasicOffer,
   | "message"
@@ -56,4 +56,4 @@ export const PatchOfferRequestSchema: yup.ObjectSchema<PatchOfferRequest> = Basi
   "salary",
   "salaryCurrency",
   "vacancyResponseId",
-]).partial()
+]).partial();

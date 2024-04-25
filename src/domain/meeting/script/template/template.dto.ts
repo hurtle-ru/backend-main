@@ -1,4 +1,4 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 
 import { MeetingScriptTemplate } from "@prisma/client";
 import { BasicMeetingScriptQuestion } from "../question/question.dto";
@@ -18,7 +18,7 @@ export const BasicMeetingScriptTemplateSchema: yup.ObjectSchema<BasicMeetingScri
   title: yup.string().defined().max(100),
   description: yup.string().defined().max(300),
   answerOptions: yup.array(yup.string().defined().max(300)).defined(),
-})
+});
 
 export type CreateMeetingScriptTemplateRequest = Pick<
   MeetingScriptTemplate,
@@ -27,15 +27,15 @@ export type CreateMeetingScriptTemplateRequest = Pick<
 >;
 export const CreateMeetingScriptTemplateRequestSchema: yup.ObjectSchema<CreateMeetingScriptTemplateRequest> = BasicMeetingScriptTemplateSchema.pick([
   "title",
-  "description"
-])
+  "description",
+]);
 
 
 export type PatchMeetingScriptTemplateRequest = Partial<CreateMeetingScriptTemplateRequest>;
 export const PatchMeetingScriptTemplateRequestSchema: yup.ObjectSchema<PatchMeetingScriptTemplateRequest> = BasicMeetingScriptTemplateSchema.pick([
   "title",
-  "description"
-]).partial()
+  "description",
+]).partial();
 
 
 export type GetMeetingScriptTemplateResponse = BasicMeetingScriptTemplate & {

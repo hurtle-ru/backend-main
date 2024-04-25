@@ -13,8 +13,11 @@ import { singleton } from "tsyringe";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { TokenPayload } from "google-auth-library/build/src/auth/loginticket";
 
+
 @singleton()
 export class AuthService {
+  constructor() {}
+
   createToken(payload: Omit<JwtModel["user"], "iat">): string {
     return jwt.sign({
       ...payload,
@@ -30,23 +33,28 @@ export class AuthService {
     return await bcrypt.compare(password, passwordHash);
   }
 
-  async registerApplicant(body: RegisterApplicantRequest) {
-    await prisma.applicant.create({
-      data: {
-        login: body.email,
-        password: {
-          create: {
-            hash: await this.generatePasswordHash(body.password),
+  async registerApplicant(body: RegisterApplicantRequest,) {
+    await prisma.applicant.create(
+      {
+        data: {
+          login: body.email,
+          password: {
+            create: {
+              hash: await this.generatePasswordHash(body.password,),
+            },
+          },
+          firstName: body.firstName,
+          lastName: body.lastName,
+          middleName: body.middleName,
+          contact: body.contact,
+          email: body.email,
+          birthDate: body.birthDate,
+          resume: {
+            create: {},
           },
         },
-        firstName: body.firstName,
-        lastName: body.lastName,
-        middleName: body.middleName,
-        contact: body.contact,
-        email: body.email,
-        birthDate: body.birthDate,
       },
-    });
+    );
   }
 
   async registerEmployer(body: RegisterEmployerRequest) {
@@ -71,41 +79,51 @@ export class AuthService {
   /**
   * @param {string | undefined} email inputted by user email for not email verified google accounts
   */
-  async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined) {
-    return await prisma.applicant.create({
-      data: {
-        login: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        middleName: body.middleName,
-        contact: body.contact,
-        email: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
-        birthDate: body.birthDate,
-        googleTokenSub: googleToken.sub,
+  async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined,) {
+    return await prisma.applicant.create(
+      {
+        data: {
+          login: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          middleName: body.middleName,
+          contact: body.contact,
+          email: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
+          birthDate: body.birthDate,
+          googleTokenSub: googleToken.sub,
+          resume: {
+            create: {},
+          },
+        },
       },
-    });
+    );
   }
 
-  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: RegisterApplicantHhToken) {
-    const applicant = await prisma.applicant.create({
-      data: {
-        login: body.email,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        middleName: body.middleName,
-        contact: body.contact,
-        email: body.email,
-        birthDate: body.birthDate,
+  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: RegisterApplicantHhToken,) {
+    const applicant = await prisma.applicant.create(
+      {
+        data: {
+          login: body.email,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          middleName: body.middleName,
+          contact: body.contact,
+          email: body.email,
+          birthDate: body.birthDate,
+          resume: {
+            create: {},
+          },
+        },
       },
-    });
+    );
 
     await prisma.hhToken.create({
       data: {
         ...hhToken,
         applicant: { connect: { id: applicant.id } },
-      }
-    })
+      },
+    });
 
-    return applicant
+    return applicant;
   }
 }

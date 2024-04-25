@@ -30,12 +30,9 @@ type MappedCertificate = Omit<ResumeCertificate, "resumeId" | "id">
 @injectable()
 @singleton()
 export class HhResumeMapper {
-  constructor() {
-  }
-
   mapResume(hhResume: hh.Resume): MappedResume {
-    const desiredSalaryCurrency = hhResume.salary?.currency ? this.mapCurrency(hhResume.salary.currency) : null;
-    const desiredSalary = hhResume.salary?.amount && desiredSalaryCurrency ? hhResume.salary.amount :  null;
+    const desiredSalaryCurrency = hhResume.salary.currency ? this.mapCurrency(hhResume.salary.currency) : null;
+    const desiredSalary = hhResume.salary.amount && desiredSalaryCurrency ? hhResume.salary.amount :  null;
 
     return {
       createdAt: momentTimezone(hhResume.createdAt, hh.DateTimeFormatWithTimeZone).toDate(),
@@ -48,7 +45,7 @@ export class HhResumeMapper {
       contacts: hhResume.contact.map(this.mapContact),
       languages: hhResume.language.map(this.mapLanguage),
       experience: hhResume.experience.map(this.mapExperience),
-      education: hhResume.education.primary ? hhResume.education.primary.map(primary => {
+      education: hhResume.education.primary ? hhResume.education.primary.map((primary) => {
         return this.mapPrimaryEducation(primary, hhResume.education.level ?? null);
       }) : [],
       certificates: [
@@ -60,7 +57,7 @@ export class HhResumeMapper {
   }
 
   mapCurrency(hhCurrency: hh.Currency): Currency | null {
-    if(hhCurrency === "RUR") return "RUB";
+    if (hhCurrency === "RUR") return "RUB";
     if (!Object.values(Currency).includes(hhCurrency as keyof typeof Currency)) return null;
 
     return hhCurrency as Currency;
@@ -69,21 +66,21 @@ export class HhResumeMapper {
   mapContact(hhContact: hh.Contact): MappedContact {
     let type: ContactType;
     switch (hhContact.type.id) {
-      case "home":
-        type = ContactType.PHONE;
-        break;
-      case "work":
-        type = ContactType.PHONE;
-        break;
-      case "cell":
-        type = ContactType.PHONE;
-        break;
-      case "email":
-        type = ContactType.EMAIL;
-        break;
-      default:
-        type = ContactType.OTHER;
-        break;
+    case "home":
+      type = ContactType.PHONE;
+      break;
+    case "work":
+      type = ContactType.PHONE;
+      break;
+    case "cell":
+      type = ContactType.PHONE;
+      break;
+    case "email":
+      type = ContactType.EMAIL;
+      break;
+    default:
+      type = ContactType.OTHER;
+      break;
     }
 
     let value: string;

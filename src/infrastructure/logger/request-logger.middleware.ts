@@ -4,6 +4,6 @@ import { httpLogger } from "./logger";
 
 
 export default (req: Request, res: Response, next: NextFunction) => {
-  httpLogger(req, res)
+  httpLogger(req, res);
   next();
 };

@@ -27,7 +27,7 @@ import { PartnershipInquiryService } from "./partnership-inquiry.service";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { prisma } from "../../infrastructure/database/prisma.provider";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 
 
 @injectable()
@@ -43,7 +43,7 @@ export class PartnershipInquiryController extends Controller {
   public async create(
     @Body() body: CreatePartnershipInquiryRequest,
   ): Promise<BasicPartnershipInquiry> {
-    body = CreatePartnershipInquiryRequestSchema.validateSync(body)
+    body = CreatePartnershipInquiryRequestSchema.validateSync(body);
 
     const partnershipInquiry = await prisma.partnershipInquiry.create({
       data: body,
@@ -80,7 +80,7 @@ export class PartnershipInquiryController extends Controller {
     @Path() id: string,
     @Body() body: PatchByIdPartnershipInquiryStatusRequest,
   ): Promise<BasicPartnershipInquiry> {
-    body = PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body)
+    body = PatchByIdPartnershipInquiryStatusRequestSchema.validateSync(body);
 
     const partnershipInquiry = await prisma.partnershipInquiry.findUnique({
       where: { id },
@@ -104,7 +104,7 @@ export class PartnershipInquiryController extends Controller {
       where: { id },
     });
 
-    if(!partnershipInquiry) throw new HttpError(404, "PartnershipInquiry not found");
+    if (!partnershipInquiry) throw new HttpError(404, "PartnershipInquiry not found");
 
     return partnershipInquiry;
   }

@@ -27,7 +27,7 @@ export class EmailWorker extends Worker<EmailJobData> {
         removeOnComplete: {
           count: 1000,
         },
-      }
+      },
     );
   }
 }

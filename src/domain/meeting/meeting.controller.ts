@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import * as moment from 'moment-timezone';
+import * as moment from "moment-timezone";
 import {
   Body,
   Controller,
@@ -23,7 +23,15 @@ import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import {
   BasicMeeting,
   CreateMeetingGuestRequest,
-  GetMeetingResponse, PatchMeetingByManagerRequest, ExportAllResponse, CreateMeetingByApplicantOrEmployerRequest, CreateMeetingRequestSchema, CreateMeetingByApplicantRequestSchema, CreateMeetingByEmployerRequestSchema, PatchMeetingByManagerRequestSchema, MeetingCreator,
+  GetMeetingResponse,
+  PatchMeetingByManagerRequest,
+  ExportAllResponse,
+  CreateMeetingByApplicantOrEmployerRequest,
+  CreateMeetingRequestSchema,
+  CreateMeetingByApplicantRequestSchema,
+  CreateMeetingByEmployerRequestSchema,
+  PatchMeetingByManagerRequestSchema,
+  MeetingCreator,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -34,7 +42,7 @@ import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
 import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus } from "@prisma/client";
@@ -81,13 +89,13 @@ export class MeetingController extends Controller {
       CreateMeetingRequestSchema,
       CreateMeetingByApplicantRequestSchema,
       CreateMeetingByEmployerRequestSchema,
-    ], body)
+    ], body);
 
     const { _requester, ...bodyData } = body;
 
-    if(req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
-    if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
-    if(req.user.role === GUEST_ROLE && _requester !== GUEST_ROLE) throw new HttpError(403, "Invalid body request for guest");
+    if (req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
+    if (req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if (req.user.role === GUEST_ROLE && _requester !== GUEST_ROLE) throw new HttpError(403, "Invalid body request for guest");
 
     const slot = await prisma.meetingSlot.findUnique({
       where: {
@@ -117,22 +125,22 @@ export class MeetingController extends Controller {
       },
     });
 
-    if(!slot) throw new HttpError(404, "MeetingSlot not found");
-    if(slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-    if(!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
+    if (!slot) throw new HttpError(404, "MeetingSlot not found");
+    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+    if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
     // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
-    if(this.paymentService.doesMeetingTypeRequiresPayment(bodyData.type)) {
+    if (this.paymentService.doesMeetingTypeRequiresPayment(bodyData.type)) {
       const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id);
 
-      if(!slotPaymentPaidByGuest)
+      if (!slotPaymentPaidByGuest)
         throw new HttpError(409, "Meeting requires MeetingPayment with SUCCESS status");
 
-      if(slotPaymentPaidByGuest.successCode !== (bodyData as CreateMeetingGuestRequest).successCode)
+      if (slotPaymentPaidByGuest.successCode !== (bodyData as CreateMeetingGuestRequest).successCode)
         throw new HttpError(409, "Invalid MeetingPayment success code");
 
-      if(slotPaymentPaidByGuest.type !== bodyData.type)
+      if (slotPaymentPaidByGuest.type !== bodyData.type)
         throw new HttpError(409, "Paid meeting type and passed type from request body dont match");
     }
 
@@ -143,27 +151,26 @@ export class MeetingController extends Controller {
       select: { firstName: true, lastName: true, email: true },
     };
 
-    if(req.user.role === UserRole.APPLICANT) user = { _type: "user", ...await prisma.applicant.findUnique(findArgs) as any };
-    if(req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
-    else if(req.user.role === GUEST_ROLE) user = { _type: "guest", email: req.user.id }
+    if (req.user.role === UserRole.APPLICANT) user = { _type: "user", ...await prisma.applicant.findUnique(findArgs) as any };
+    if (req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
+    else if (req.user.role === GUEST_ROLE) user = { _type: "guest", email: req.user.id };
 
-    let roomUrl = ''
+    let roomUrl = "";
     try {
       roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
-    }
-    catch (error) {
-      logger.error("Can not create Sber jazz room, error: " + error)
+    } catch (error) {
+      logger.error("Can not create Sber jazz room, error: " + String(error));
 
-      this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({...user!, id: req.user.id}, body, error)
+      this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({...user!, id: req.user.id}, body, error);
 
-      throw new HttpError(409, "Related service not available, retry later")
+      throw new HttpError(409, "Related service not available, retry later");
     }
 
     let description = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
         + "\n Также, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
         + "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
 
-    if(bodyData.type !== "INTERVIEW") description = bodyData.description;
+    if (bodyData.type !== "INTERVIEW") description = bodyData.description;
 
     const meeting = await prisma.meeting.create({
       data: {
@@ -181,7 +188,7 @@ export class MeetingController extends Controller {
     await this.meetingService.sendMeetingCreatedToAdminGroup(
       { name: bodyData.name, id: meeting.id, dateTime: slot.dateTime, type: bodyData.type },
       { name: slot.manager.name, id: slot.manager.id },
-      { ...user!, id: req.user.id, role: req.user.role }
+      { ...user!, id: req.user.id, role: req.user.role },
     );
 
     await this.meetingService.sendMeetingCreatedToEmail(
@@ -215,8 +222,8 @@ export class MeetingController extends Controller {
       employerId: employerId ?? undefined,
       feedback: hasFeedback === true ? { some: {} }
         : hasFeedback === false ? { none: {} }
-        : undefined,
-    }
+          : undefined,
+    };
 
     const [meetings, meetingsCount] = await Promise.all([
       prisma.meeting.findMany({
@@ -232,7 +239,7 @@ export class MeetingController extends Controller {
         },
       }),
       prisma.meeting.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(meetings, page, size, meetingsCount);
   }
@@ -265,7 +272,7 @@ export class MeetingController extends Controller {
         },
       }),
       prisma.meeting.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(meetings, page, size, meetingsCount);
   }
@@ -279,9 +286,9 @@ export class MeetingController extends Controller {
   public async exportAll(
     @Query() secret: string,
     @Query() date: string,
-    @Query() timezone: string = "Europe/Moscow",
+    @Query() timezone = "Europe/Moscow",
   ): Promise<ExportAllResponse> {
-    if(secret !== meetingConfig.MEETING_EXPORT_SECRET) throw new HttpError(401, "Invalid secret");
+    if (secret !== meetingConfig.MEETING_EXPORT_SECRET) throw new HttpError(401, "Invalid secret");
 
     const startDateTime = moment.tz(date, timezone).startOf("day");
     const endDateTime = startDateTime.clone().endOf("day");
@@ -306,7 +313,7 @@ export class MeetingController extends Controller {
       },
     });
 
-    return meetings.map(meeting => ({
+    return meetings.map((meeting) => ({
       status: meeting.status,
       managerName: meeting.slot.manager.name,
       roomUrl: meeting.roomUrl,
@@ -337,7 +344,7 @@ export class MeetingController extends Controller {
     const meeting = await prisma.meeting.findUnique({where: { id }});
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
-    if(fileName == null) throw new HttpError(404, "File not found");
+    if (fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
@@ -400,7 +407,7 @@ export class MeetingController extends Controller {
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video");
     const filePath = `meeting/${id}/${fileName}`;
 
-    if(fileName == null) throw new HttpError(404, "File not found");
+    if (fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
@@ -413,8 +420,7 @@ export class MeetingController extends Controller {
       response.on("close", () => {
         try {
           stream.destroy();
-        }
-        catch (e) {
+        } catch (e) {
           req.log.error(e, "Stream response error");
         }
       });
@@ -459,7 +465,7 @@ export class MeetingController extends Controller {
     @Body() body: PatchMeetingByManagerRequest,
     @Path() id: string,
   ): Promise<BasicMeeting> {
-    body = PatchMeetingByManagerRequestSchema.validateSync(body)
+    body = PatchMeetingByManagerRequestSchema.validateSync(body);
 
     const where = { id };
 
@@ -497,15 +503,15 @@ export class MeetingController extends Controller {
       },
     });
 
-    if(!meeting) throw new HttpError(404, "Meeting not found");
-    switch(req.user.role) {
-      case UserRole.APPLICANT:
-      case UserRole.EMPLOYER:
-        if(meeting.status !== MeetingStatus.PLANNED) {
-          throw new HttpError(409, "Applicant and employer unable to delete finished meeting");
-        }
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+    switch (req.user.role) {
+    case UserRole.APPLICANT:
+    case UserRole.EMPLOYER:
+      if (meeting.status !== MeetingStatus.PLANNED) {
+        throw new HttpError(409, "Applicant and employer unable to delete finished meeting");
+      }
 
-        break;
+      break;
     }
 
     await prisma.meeting.archive(id);
@@ -515,15 +521,15 @@ export class MeetingController extends Controller {
 
     let role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE;
 
-    if (meeting.applicant) role = UserRole.APPLICANT
-    else if (meeting.employer) role = UserRole.EMPLOYER
-    else role = GUEST_ROLE
+    if (meeting.applicant) role = UserRole.APPLICANT;
+    else if (meeting.employer) role = UserRole.EMPLOYER;
+    else role = GUEST_ROLE;
 
     await this.meetingService.sendMeetingCancelledToEmail(
       req.log,
       userEmail!,
       role,
-      { name: userFirstName!, dateTime: meeting.slot.dateTime }
+      { name: userFirstName!, dateTime: meeting.slot.dateTime },
     );
 
     await this.meetingService.removeMeetingReminderToEmail(
@@ -539,7 +545,7 @@ export class MeetingController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[]
+    @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[],
   ): Promise<GetMeetingResponse> {
     const meeting = await prisma.meeting.findUnique({
       where: {

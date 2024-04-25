@@ -11,7 +11,7 @@ export class MeetingSlotService {
   buildAccessWhereQuery(userRole: UserRole, userId: string, meetingSlotId: string): Prisma.MeetingSlotWhereUniqueInput {
     let where: Prisma.MeetingSlotWhereUniqueInput = { id: meetingSlotId };
 
-    if(userRole === UserRole.EMPLOYER) {
+    if (userRole === UserRole.EMPLOYER) {
       where = {
         ...where,
         OR: [
@@ -19,7 +19,7 @@ export class MeetingSlotService {
           { meeting: null },
         ],
       };
-    } else if(userRole === UserRole.APPLICANT) {
+    } else if (userRole === UserRole.APPLICANT) {
       where = {
         ...where,
         OR: [

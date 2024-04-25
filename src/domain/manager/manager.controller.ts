@@ -10,7 +10,7 @@ import { ArtifactService} from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import { Request as ExpressRequest } from "express";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 
 
 @injectable()
@@ -26,7 +26,7 @@ export class ManagerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async getMe(
     @Request() req: JwtModel,
-    @Query() include?: ("slots")[]
+    @Query() include?: ("slots")[],
   ): Promise<GetManagerResponse> {
     const manager = await prisma.manager.findUnique({
       where: { id: req.user.id },
@@ -43,7 +43,7 @@ export class ManagerController extends Controller {
   @Delete("me")
   @Security("jwt", [UserRole.MANAGER])
   public async deleteMe(
-    @Request() req: JwtModel
+    @Request() req: JwtModel,
   ): Promise<void> {
     await prisma.manager.archive(req.user.id);
   }
@@ -56,7 +56,7 @@ export class ManagerController extends Controller {
     @Request() req: JwtModel,
   ): Promise<void> {
     const manager = await prisma.manager.findUnique({ where: { id } });
-    if(!manager) throw new HttpError(404, "Manager not found");
+    if (!manager) throw new HttpError(404, "Manager not found");
 
     await prisma.manager.archive(id);
   }
@@ -65,9 +65,9 @@ export class ManagerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: PatchMeRequestByManager
+    @Body() body: PatchMeRequestByManager,
   ): Promise<BasicManager> {
-    body = PatchMeRequestByManagerSchema.validateSync(body)
+    body = PatchMeRequestByManagerSchema.validateSync(body);
 
     return prisma.manager.update({
       where: { id: req.user.id },
@@ -82,11 +82,11 @@ export class ManagerController extends Controller {
     @Request() req: ExpressRequest,
     @Path() id: string,
   ): Promise<Readable | any> {
-      const manager = await prisma.manager.findUnique({
-        where: { id },
-      });
+    const manager = await prisma.manager.findUnique({
+      where: { id },
+    });
 
-      if (!manager) throw new HttpError(404, "Manager not found");
+    if (!manager) throw new HttpError(404, "Manager not found");
 
       const fileName = await this.artifactService.getFullFileName(`manager/${id}/`, "avatar");
       const filePath = `manager/${id}/${fileName}`;
@@ -119,7 +119,7 @@ export class ManagerController extends Controller {
   ): Promise<void> {
     const manager = await prisma.manager.findUnique({
       where: { id },
-    })
+    });
 
     if (!manager) throw new HttpError(404, "Manager not found");
 

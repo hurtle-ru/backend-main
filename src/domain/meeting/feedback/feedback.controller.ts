@@ -45,14 +45,14 @@ export class MeetingFeedbackController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingFeedbackRequest,
   ): Promise<BasicMeetingFeedback> {
-    body = CreateMeetingFeedbackRequestSchema.validateSync(body)
+    body = CreateMeetingFeedbackRequestSchema.validateSync(body);
 
     const meeting = await prisma.meeting.findUnique({
       where: { id: body.meetingId },
       select: { id: true },
     });
 
-    if(!meeting) throw new HttpError(404, "Meeting not found");
+    if (!meeting) throw new HttpError(404, "Meeting not found");
 
     return prisma.meetingFeedback.create({
       data: {
@@ -75,7 +75,7 @@ export class MeetingFeedbackController extends Controller {
         employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
       },
-    }
+    };
 
     const [meetingFeedback, meetingFeedbackCount] = await Promise.all([
       prisma.meetingFeedback.findMany({
@@ -87,9 +87,9 @@ export class MeetingFeedbackController extends Controller {
         },
       }),
       prisma.meetingFeedback.count({ where }),
-    ])
+    ]);
 
-    return new PageResponse(meetingFeedback, page, size, meetingFeedbackCount)
+    return new PageResponse(meetingFeedback, page, size, meetingFeedbackCount);
   }
 
   @Get("")
@@ -100,7 +100,7 @@ export class MeetingFeedbackController extends Controller {
     @Query() size: PageSizeNumber = 60,
     @Query() include?: ("meeting")[],
   ): Promise<PageResponse<GetMeetingFeedbackResponse>> {
-    const where = {}
+    const where = {};
 
     const [meetingFeedback, meetingFeedbackCount] = await Promise.all([
       prisma.meetingFeedback.findMany({
@@ -112,9 +112,9 @@ export class MeetingFeedbackController extends Controller {
         },
       }),
       prisma.meetingFeedback.count({ where }),
-    ])
+    ]);
 
-    return new PageResponse(meetingFeedback, page, size, meetingFeedbackCount)
+    return new PageResponse(meetingFeedback, page, size, meetingFeedbackCount);
   }
 
   @Delete("{id}")
@@ -127,10 +127,10 @@ export class MeetingFeedbackController extends Controller {
     const where = {
       id,
       meeting: { slot: { managerId: req.user.id  } },
-    }
+    };
 
     const meetingFeedback = await prisma.meetingFeedback.findUnique({ where });
-    if(!meetingFeedback) throw new HttpError(404, "MeetingFeedback not found");
+    if (!meetingFeedback) throw new HttpError(404, "MeetingFeedback not found");
 
     await prisma.meetingFeedback.delete({ where });
   }
@@ -143,15 +143,15 @@ export class MeetingFeedbackController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingFeedbackRequest,
   ): Promise<BasicMeetingFeedback> {
-    body = PatchMeetingFeedbackRequestSchema.validateSync(body)
+    body = PatchMeetingFeedbackRequestSchema.validateSync(body);
 
     const where = {
       id,
       meeting: { slot: { managerId: req.user.id  } },
-    }
+    };
 
     const meetingFeedback = await prisma.meetingFeedback.findUnique({ where });
-    if(!meetingFeedback) throw new HttpError(404, "MeetingFeedback not found");
+    if (!meetingFeedback) throw new HttpError(404, "MeetingFeedback not found");
 
     return prisma.meetingFeedback.update({
       where,
@@ -165,12 +165,12 @@ export class MeetingFeedbackController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("meeting")[]
+    @Query() include?: ("meeting")[],
   ): Promise<GetMeetingFeedbackResponse> {
     let where;
-    if(req.user.role === UserRole.MANAGER) where = { id };
-    else if(req.user.role === UserRole.EMPLOYER) where = { id, meeting: { employerId: req.user.id } };
-    else if(req.user.role === UserRole.APPLICANT) where = { id, meeting: { applicantId: req.user.id } };
+    if (req.user.role === UserRole.MANAGER) where = { id };
+    else if (req.user.role === UserRole.EMPLOYER) where = { id, meeting: { employerId: req.user.id } };
+    else if (req.user.role === UserRole.APPLICANT) where = { id, meeting: { applicantId: req.user.id } };
 
     const meetingFeedback = await prisma.meetingFeedback.findUnique({
       where: where!,
@@ -179,7 +179,7 @@ export class MeetingFeedbackController extends Controller {
       },
     });
 
-    if(!meetingFeedback) throw new HttpError(404, "MeetingFeedback not found");
+    if (!meetingFeedback) throw new HttpError(404, "MeetingFeedback not found");
 
     return meetingFeedback;
   }

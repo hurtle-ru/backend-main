@@ -101,11 +101,11 @@ export class ChatGPTService {
   }
 
   cleanUpPrompt(prompt: string): string {
-    while(prompt.includes("\n\n\n")) {
+    while (prompt.includes("\n\n\n")) {
       prompt = prompt.replaceAll("\n\n\n", "\n\n");
     }
 
-    while(prompt.includes("  ")) {
+    while (prompt.includes("  ")) {
       prompt = prompt.replaceAll("  ", " ");
     }
 

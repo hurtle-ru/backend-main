@@ -32,13 +32,13 @@ export class MeetingService {
   async createRoom(
     meetingType: MeetingType,
     user: { _type: "user", firstName: string, lastName: string }
-        | { _type: "guest" }
+        | { _type: "guest" },
   ): Promise<string> {
     const meetingName = MeetingNameByType[meetingType];
 
     let roomName;
-    if(user._type === "guest") roomName = `Хартл ${meetingName}`;
-    else if(user._type === "user") roomName = `${user.lastName} ${user.firstName[0]}. | Хартл ${meetingName}`;
+    if (user._type === "guest") roomName = `Хартл ${meetingName}`;
+    else if (user._type === "user") roomName = `${user.lastName} ${user.firstName[0]}. | Хартл ${meetingName}`;
 
     return await this.jazzService.createRoom(roomName!);
   }
@@ -51,16 +51,16 @@ export class MeetingService {
   )  {
 
     let text =
-      `Забронирована новая встреча!` +
-      `\n` +
+      "Забронирована новая встреча!" +
+      "\n" +
       `\nНазвание: <b>${meeting.name} (ID: ${meeting.id})</b>` +
       `\nТип: <b>${meeting.type}</b>` +
       `\nДата: <b>${meeting.dateTime}</b>` +
       `\nМенеджер: <b>${manager.name} (ID: ${manager.id}</b>` +
-      `\n`;
+      "\n";
 
-    if(user._type === "user") text += `\nПользователь: <b>${user.lastName} ${user.firstName[0]}. (ID: ${user.id})</b>`;
-    else if(user._type === "guest") text += `\nEmail Пользователя (гостя): <b>${user.email}</b>`;
+    if (user._type === "user") text += `\nПользователь: <b>${user.lastName} ${user.firstName[0]}. (ID: ${user.id})</b>`;
+    else if (user._type === "guest") text += `\nEmail Пользователя (гостя): <b>${user.email}</b>`;
 
     text += `\nРоль: <b>${user.role}</b>`;
 
@@ -72,11 +72,11 @@ export class MeetingService {
           inline_keyboard: [
             [{
               text: "Admin-panel",
-              url: this.adminPanelService.getLinkOnMeeting(meeting.id)
-            }]
-          ]
-        }
-      }
+              url: this.adminPanelService.getLinkOnMeeting(meeting.id),
+            }],
+          ],
+        },
+      },
     });
   }
 
@@ -88,7 +88,7 @@ export class MeetingService {
     const date = moment(meeting.dateTime)
       .locale("ru")
       .tz(appConfig.TZ)
-      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+      .format("D MMM YYYY г. HH:mm по московскому времени");
 
     await this.emailService.enqueueEmail({
       to: userEmail,
@@ -110,7 +110,7 @@ export class MeetingService {
     const date = moment(meeting.dateTime)
       .locale("ru")
       .tz(appConfig.TZ)
-      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+      .format("D MMM YYYY г. HH:mm по московскому времени");
 
     await this.emailService.enqueueEmail({
       to: userEmail,
@@ -130,7 +130,7 @@ export class MeetingService {
     const date = moment(meeting.dateTime)
       .locale("ru")
       .tz(appConfig.TZ)
-      .format(`D MMM YYYY г. HH:mm по московскому времени`);
+      .format("D MMM YYYY г. HH:mm по московскому времени");
 
     const emailData = {
       to: userEmail,
@@ -147,7 +147,7 @@ export class MeetingService {
       if (reminderDelay > 0) {
         await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
           .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
-          .catch(error => logger.error(error, "Error scheduling meeting reminder"));
+          .catch((error) => logger.error(error, "Error scheduling meeting reminder"));
       }
     }
   }
@@ -155,11 +155,11 @@ export class MeetingService {
   async sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
     user: MeetingCreator & { id: string },
     body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
-    error: any
+    error: any,
   ) {
-    let text = "Ошибка во время попытки создать комнату в Sber Jazz:" + "\n\n"
+    let text = "Ошибка во время попытки создать комнату в Sber Jazz:" + "\n\n";
 
-    let formatter = new HtmlFormatter()
+    const formatter = new HtmlFormatter();
     text += [
       "Слот: " + formatter.bold(formatter.code(body.slotId)),
       "Тип встречи: " + formatter.bold(body.type),
@@ -169,7 +169,7 @@ export class MeetingService {
       "",
       "Ошибка: ",
       formatter.code(error),
-    ].join("\n")
+    ].join("\n");
 
     const reply_markup = body._requester !== "GUEST" ? {
       inline_keyboard: [
@@ -178,17 +178,17 @@ export class MeetingService {
           url: {
             "APPLICANT": this.adminPanelService.getLinkOnApplicant(user.id),
             "EMPLOYER":  this.adminPanelService.getLinkOnEmployer(user.id),
-          }[body._requester]
-        }]
-      ]
-    } : undefined
+          }[body._requester],
+        }],
+      ],
+    } : undefined;
 
     await this.telegramService.enqueueAdminNotification({
       text,
       options: {
         parse_mode: "HTML",
         reply_markup: reply_markup,
-      }
+      },
     });
   }
 
@@ -200,11 +200,11 @@ export class MeetingService {
   ) {
     const jobs = await this.emailService.findIncompleteJobsByEmailAndLink(userEmail, roomUrl);
     for (const job of jobs) {
-      if(job.id) {
-        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job")
+      if (job.id) {
+        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job");
         try {
           await this.emailService.removeJob(job.id);
-        } catch(e) {
+        } catch (e) {
           logger.error( { jobId: job.id }, "Error while removing job");
         }
       }
@@ -226,21 +226,21 @@ export class MeetingService {
 
   private getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage(
     user: MeetingCreator & { id: string },
-    body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest
+    body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
   ): string {
     let message = [
       "ID: " + this.formatter.code(user.id),
       "Роль: "  + body._requester,
       "Почта: " + this.formatter.code(user.email),
-    ].join("\n")
+    ].join("\n");
 
     message += user._type === "user" ?
-    "\n" + [
-      "Имя: " + this.formatter.bold(user.firstName),
-      "Фамилия: " + this.formatter.bold(user.lastName),
-    ].join("\n")
-    : ""
+      "\n" + [
+        "Имя: " + this.formatter.bold(user.firstName),
+        "Фамилия: " + this.formatter.bold(user.lastName),
+      ].join("\n")
+      : "";
 
-    return message
+    return message;
   }
 }

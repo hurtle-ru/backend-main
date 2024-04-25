@@ -19,7 +19,13 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeCertificate, CreateResumeCertificateRequest, CreateResumeCertificateRequestSchema, PatchResumeCertificateRequest, PatchResumeCertificateRequestSchema } from "./certificate.dto";
+import {
+  BasicResumeCertificate,
+  CreateResumeCertificateRequest,
+  CreateResumeCertificateRequestSchema,
+  PatchResumeCertificateRequest,
+  PatchResumeCertificateRequestSchema,
+} from "./certificate.dto";
 
 
 @Route("api/v1/resumeCertificates")
@@ -32,13 +38,13 @@ export class ResumeCertificateController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeCertificateRequest,
   ): Promise<BasicResumeCertificate> {
-    body = CreateResumeCertificateRequestSchema.validateSync(body)
+    body = CreateResumeCertificateRequestSchema.validateSync(body);
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return prisma.resumeCertificate.create({
       data: {
@@ -60,7 +66,7 @@ export class ResumeCertificateController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const certificate = await prisma.resumeCertificate.findUnique({ where });
     if (!certificate) throw new HttpError(404, "ResumeCertificate not found");
@@ -76,12 +82,12 @@ export class ResumeCertificateController extends Controller {
   @Response<HttpErrorBody>(404, "ResumeCertificate not found")
   public async deleteById(
     @Request() req: JwtModel,
-    @Path() id: string
+    @Path() id: string,
   ): Promise<void> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const certificate = await prisma.resumeCertificate.findUnique({ where });
     if (!certificate) throw new HttpError(404, "ResumeCertificate not found");
@@ -94,12 +100,12 @@ export class ResumeCertificateController extends Controller {
   @Response<HttpErrorBody>(404, "ResumeCertificate not found")
   public async getById(
     @Request() req: JwtModel,
-    @Path() id: string
+    @Path() id: string,
   ): Promise<BasicResumeCertificate> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const certificate = await prisma.resumeCertificate.findUnique({ where });
     if (!certificate) throw new HttpError(404, "ResumeCertificate not found");

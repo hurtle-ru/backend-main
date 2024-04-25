@@ -13,7 +13,7 @@ export class HhAuthService {
   constructor() {
   }
 
-  async getAuthorizeUrl() {
+  getAuthorizeUrl() {
     return `https://hh.ru/oauth/authorize?response_type=code&client_id=${hhConfig.HH_CLIENT_ID}&redirect_uri=${hhConfig.HH_REDIRECT_URI}`;
   }
 
@@ -60,23 +60,23 @@ export class HhAuthService {
   }
 
   async refreshTokenAndSaveIfNeed(hhToken: HhToken): Promise<HhToken> {
-    if(prisma.hhToken.isExpired(hhToken)) {
+    if (prisma.hhToken.isExpired(hhToken)) {
       const newToken = await this.refreshAccessToken(hhToken.refreshToken);
       const newTokenData = {
         accessToken: newToken.accessToken,
         refreshToken: newToken.refreshToken,
         expiresIn: newToken.expiresIn,
-      }
+      };
 
       await prisma.hhToken.update({
         where: { applicantId: hhToken.applicantId },
         data: newTokenData,
       });
 
-      return {...hhToken, ...newTokenData}
+      return {...hhToken, ...newTokenData};
     }
 
-  return hhToken
+    return hhToken;
   }
 
 }

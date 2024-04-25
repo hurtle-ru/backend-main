@@ -1,4 +1,4 @@
-import * as yup from "yup"
+import * as yup from "yup";
 
 import { GuestVacancyResponse, Resume, VacancyResponseStatus } from "@prisma/client";
 import { BasicVacancy, CreateVacancyRequest, CreateVacancyRequestSchema } from "../vacancy.dto";
@@ -120,7 +120,7 @@ const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyRespons
   lastName: yup.string().defined(),
   middleName: yup.string().defined().nullable(),
   isReadyToRelocate: yup.boolean().defined().nullable(),
-})
+});
 
 export type CreateGuestVacancyResponseRequest = Pick<
   BasicGuestVacancyResponse,

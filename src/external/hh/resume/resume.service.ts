@@ -11,7 +11,7 @@ export class HhResumeService {
   }
 
   async getMine(accessToken: string): Promise<GetMineResumeResponse[]> {
-    const response = await axios.get(`https://api.hh.ru/resumes/mine`, {
+    const response = await axios.get("https://api.hh.ru/resumes/mine", {
       headers: { Authorization: `Bearer ${accessToken}` },
       validateStatus: () => true,
     });
