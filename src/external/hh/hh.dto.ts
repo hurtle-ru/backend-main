@@ -38,7 +38,7 @@ export namespace hh {
   }
 
   export type Currency = typeof currencyCodes[number];
-  export const currencyCodes = ["AZN", "BYR", "EUR", "GEL", "KGS", "KZT", "RUR", "UAH", "USD", "UZS",] as const;
+  export const currencyCodes = ["AZN", "BYR", "EUR", "GEL", "KGS", "KZT", "RUR", "UAH", "USD", "UZS"] as const;
 
   export interface Contact {
     comment?: string;

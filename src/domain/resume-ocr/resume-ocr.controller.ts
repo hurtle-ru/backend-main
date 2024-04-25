@@ -1,4 +1,4 @@
-import { injectable, } from "tsyringe";
+import { injectable } from "tsyringe";
 import {
   Controller,
   Get, Middlewares,
@@ -11,20 +11,20 @@ import {
   Tags,
   UploadedFile,
 } from "tsoa";
-import { ResumeOcrService, } from "./resume-ocr.service";
-import { JwtModel, UserRole, } from "../auth/auth.dto";
-import { routeRateLimit as rateLimit, } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
-import { HttpError, HttpErrorBody, } from "../../infrastructure/error/http.error";
-import { artifactConfig, } from "../../external/artifact/artifact.config";
-import { ArtifactService, } from "../../external/artifact/artifact.service";
-import { ResumeOcrJobInfo, } from "./resume-ocr.dto";
+import { ResumeOcrService } from "./resume-ocr.service";
+import { JwtModel, UserRole } from "../auth/auth.dto";
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
+import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
+import { artifactConfig } from "../../external/artifact/artifact.config";
+import { ArtifactService } from "../../external/artifact/artifact.service";
+import { ResumeOcrJobInfo } from "./resume-ocr.dto";
 
 
 const PDF_MIME_TYPE = "application/pdf";
 
 @injectable()
-@Route("api/v1/resumes-ocr",)
-@Tags("Resume OCR",)
+@Route("api/v1/resumes-ocr")
+@Tags("Resume OCR")
 export class ResumeOcrController extends Controller {
   constructor(
     private readonly resumeOcrService: ResumeOcrService,
@@ -33,28 +33,28 @@ export class ResumeOcrController extends Controller {
     super();
   }
 
-  @Put("pdf",)
-  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24,},),)
-  @Response<HttpErrorBody & {"error": "File is too large"}>(413,)
-  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415,)
+  @Put("pdf")
+  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async recognizePdf(
     @Request() req: JwtModel,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<{jobId: string}> {
-    await this.artifactService.validateFileAttributes(file, [PDF_MIME_TYPE,], artifactConfig.MAX_IMAGE_FILE_SIZE,);
+    await this.artifactService.validateFileAttributes(file, [PDF_MIME_TYPE], artifactConfig.MAX_IMAGE_FILE_SIZE);
 
-    return {jobId: await this.resumeOcrService.enqueueRecognizingPdf({ file, },),};
+    return {jobId: await this.resumeOcrService.enqueueRecognizingPdf({ file })};
   }
 
-  @Get("{jobId}",)
-  @Response<HttpErrorBody & {"error": "Job not found"}>(404,)
+  @Get("{jobId}")
+  @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getRecognizePdfInfo(
     @Path() jobId: string,
   ): Promise<ResumeOcrJobInfo> {
-    const info = await this.resumeOcrService.getResumeOcrJobInfo(jobId,);
+    const info = await this.resumeOcrService.getResumeOcrJobInfo(jobId);
 
     if (!info) {
-      throw new HttpError(404, "Job not found",);
+      throw new HttpError(404, "Job not found");
     }
 
     return info;

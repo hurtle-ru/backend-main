@@ -1,10 +1,10 @@
 import * as yup from "yup";
 
-import { MeetingScriptProtocol, } from "@prisma/client";
-import { BasicMeetingScriptAnswer, } from "../answer/answer.dto";
-import { BasicMeeting, } from "../../meeting.dto";
-import { BasicMeetingScriptTemplate, } from "../template/template.dto";
-import { BasicMeetingSlot, } from "../../slot/slot.dto";
+import { MeetingScriptProtocol } from "@prisma/client";
+import { BasicMeetingScriptAnswer } from "../answer/answer.dto";
+import { BasicMeeting } from "../../meeting.dto";
+import { BasicMeetingScriptTemplate } from "../template/template.dto";
+import { BasicMeetingSlot } from "../../slot/slot.dto";
 
 
 export type BasicMeetingScriptProtocol = Omit<
@@ -19,9 +19,9 @@ export const BasicMeetingScriptProtocolSchema: yup.ObjectSchema<BasicMeetingScri
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
   dateTime: yup.date().defined(),
-  meetingId: yup.string().defined().length(36,),
-  templateId: yup.string().defined().length(36,),
-},);
+  meetingId: yup.string().defined().length(36),
+  templateId: yup.string().defined().length(36),
+});
 
 
 export type CreateMeetingScriptProtocolRequest = Pick<
@@ -33,7 +33,7 @@ export type CreateMeetingScriptProtocolRequest = Pick<
 export const CreateMeetingScriptProtocolRequestSchema: yup.ObjectSchema<CreateMeetingScriptProtocolRequest> = BasicMeetingScriptProtocolSchema.pick([
   "meetingId",
   "templateId",
-],);
+]);
 
 export type GetMeetingScriptProtocolResponse = BasicMeetingScriptProtocol & {
   meeting?: BasicMeeting & { slot?: BasicMeetingSlot };

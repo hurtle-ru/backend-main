@@ -1,7 +1,7 @@
-import { singleton, } from "tsyringe";
+import { singleton } from "tsyringe";
 
 
 @singleton()
 export class ManagerService {
-    constructor() {}
+  constructor() {}
 }

@@ -1,7 +1,7 @@
-import { dadataConfig, } from "./dadata.config";
+import { dadataConfig } from "./dadata.config";
 import axios from "axios";
-import { singleton, } from "tsyringe";
-import { BasicDadataCompany, } from "./dadata.dto";
+import { singleton } from "tsyringe";
+import { BasicDadataCompany } from "./dadata.dto";
 
 
 const BaseDadataURL = "http://suggestions.dadata.ru/suggestions/api/4_1/";
@@ -9,10 +9,10 @@ const BaseDadataURL = "http://suggestions.dadata.ru/suggestions/api/4_1/";
 
 @singleton()
 export class DadataService {
-  async getBasicCompanyInfoByInn(inn: string,): Promise<BasicDadataCompany | null> {
+  async getBasicCompanyInfoByInn(inn: string): Promise<BasicDadataCompany | null> {
     const response = await axios.post(
       BaseDadataURL + "rs/suggest/party",
-      JSON.stringify({query: inn,},),
+      JSON.stringify({query: inn}),
       {
         method: "POST",
         headers: {

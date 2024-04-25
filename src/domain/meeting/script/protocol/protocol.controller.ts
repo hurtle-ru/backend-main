@@ -1,4 +1,4 @@
-import { injectable, } from "tsyringe";
+import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
@@ -14,51 +14,51 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { MeetingScriptProtocolService, } from "./protocol.service";
-import { JwtModel, UserRole, } from "../../../auth/auth.dto";
-import { prisma, } from "../../../../infrastructure/database/prisma.provider";
-import { HttpError, HttpErrorBody, } from "../../../../infrastructure/error/http.error";
+import { MeetingScriptProtocolService } from "./protocol.service";
+import { JwtModel, UserRole } from "../../../auth/auth.dto";
+import { prisma } from "../../../../infrastructure/database/prisma.provider";
+import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.error";
 import {
   BasicMeetingScriptProtocol,
   CreateMeetingScriptProtocolRequest,
   CreateMeetingScriptProtocolRequestSchema,
   GetMeetingScriptProtocolResponse,
 } from "./protocol.dto";
-import { PageNumber, PageSizeNumber, } from "../../../../infrastructure/controller/pagination/page.dto";
-import { PageResponse, } from "../../../../infrastructure/controller/pagination/page.response";
+import { PageNumber, PageSizeNumber } from "../../../../infrastructure/controller/pagination/page.dto";
+import { PageResponse } from "../../../../infrastructure/controller/pagination/page.response";
 
 
 @injectable()
-@Route("api/v1/meetingScriptProtocols",)
-@Tags("Meeting Script Protocol",)
+@Route("api/v1/meetingScriptProtocols")
+@Tags("Meeting Script Protocol")
 export class MeetingScriptProtocolController extends Controller {
-  constructor(private readonly scriptProtocolService: MeetingScriptProtocolService,) {
+  constructor(private readonly scriptProtocolService: MeetingScriptProtocolService) {
     super();
   }
 
-  @Post("",)
-  @Security("jwt", [UserRole.MANAGER,],)
-  @Response<HttpErrorBody & { "error": "Meeting not found" }>(404,)
+  @Post("")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & { "error": "Meeting not found" }>(404)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptProtocolRequest,
   ): Promise<BasicMeetingScriptProtocol> {
-    body = CreateMeetingScriptProtocolRequestSchema.validateSync(body,);
+    body = CreateMeetingScriptProtocolRequestSchema.validateSync(body);
 
     const meeting = await prisma.meeting.findUnique({
-      where: { id: body.meetingId, },
-      select: { id: true, },
-    },);
+      where: { id: body.meetingId },
+      select: { id: true },
+    });
 
-    if (!meeting) throw new HttpError(404, "Meeting not found",);
+    if (!meeting) throw new HttpError(404, "Meeting not found");
 
     return prisma.meetingScriptProtocol.create({
       data: body,
-    },);
+    });
   }
 
-  @Get("",)
-  @Security("jwt", [UserRole.MANAGER,],)
+  @Get("")
+  @Security("jwt", [UserRole.MANAGER])
   public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
@@ -71,65 +71,65 @@ export class MeetingScriptProtocolController extends Controller {
       meetingId: meetingId ?? undefined,
       templateId: templateId ?? undefined,
     };
-    const [protocols, protocolsCount,] = await Promise.all([
+    const [protocols, protocolsCount] = await Promise.all([
       prisma.meetingScriptProtocol.findMany({
         skip: (page - 1) * size,
         take: size,
         where,
         include: {
-          template: include?.includes("template",),
-          answers: include?.includes("answers",),
-          meeting: include?.includes("meeting.slot",)
-            ? { include: { slot: true, },}
-            : include?.includes("meeting",),
+          template: include?.includes("template"),
+          answers: include?.includes("answers"),
+          meeting: include?.includes("meeting.slot")
+            ? { include: { slot: true }}
+            : include?.includes("meeting"),
         },
-      },),
-      prisma.meetingScriptProtocol.count({ where, },),
-    ],);
+      }),
+      prisma.meetingScriptProtocol.count({ where }),
+    ]);
 
-    return new PageResponse(protocols, page, size, protocolsCount,);
+    return new PageResponse(protocols, page, size, protocolsCount);
   }
 
-  @Delete("{id}",)
-  @Security("jwt", [UserRole.MANAGER,],)
-  @Response<HttpErrorBody & { "error": "MeetingScriptProtocol not found" }>(404,)
+  @Delete("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & { "error": "MeetingScriptProtocol not found" }>(404)
   public async deleteById(
     @Request() req: JwtModel,
     @Path() id: string,
   ): Promise<void> {
     const protocol = await prisma.meetingScriptProtocol.findUnique({
-      where: { id, },
-      select: { id: true, },
-    },);
+      where: { id },
+      select: { id: true },
+    });
 
-    if (!protocol) throw new HttpError(404, "MeetingScriptProtocol not found",);
+    if (!protocol) throw new HttpError(404, "MeetingScriptProtocol not found");
 
     await Promise.all([
-      prisma.meetingScriptAnswer.deleteMany({ where: { protocolId: id, }, },),
-      prisma.meetingScriptProtocol.delete({ where: { id, }, },),
-    ],);
+      prisma.meetingScriptAnswer.deleteMany({ where: { protocolId: id } }),
+      prisma.meetingScriptProtocol.delete({ where: { id } }),
+    ]);
   }
 
-  @Get("{id}",)
-  @Security("jwt", [UserRole.MANAGER,],)
-  @Response<HttpErrorBody & { "error": "MeetingScriptProtocol not found" }>(404,)
+  @Get("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & { "error": "MeetingScriptProtocol not found" }>(404)
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("template" | "answers" | "meeting" | "meeting.slot")[],
   ): Promise<GetMeetingScriptProtocolResponse> {
     const protocol = await prisma.meetingScriptProtocol.findUnique({
-      where: { id, },
+      where: { id },
       include: {
-        template: include?.includes("template",),
-        answers: include?.includes("answers",),
-        meeting: include?.includes("meeting.slot",)
-          ? { include: { slot: true, },}
-          : include?.includes("meeting",),
+        template: include?.includes("template"),
+        answers: include?.includes("answers"),
+        meeting: include?.includes("meeting.slot")
+          ? { include: { slot: true }}
+          : include?.includes("meeting"),
       },
-    },);
+    });
 
-    if (!protocol) throw new HttpError(404, "MeetingScriptProtocol not found",);
+    if (!protocol) throw new HttpError(404, "MeetingScriptProtocol not found");
     return protocol;
   }
 }

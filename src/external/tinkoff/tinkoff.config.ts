@@ -1,4 +1,4 @@
-import { bool, cleanEnv, num, port, str, } from "envalid";
+import { bool, cleanEnv, num, port, str } from "envalid";
 
 export const tinkoffConfig = {
   ...cleanEnv(

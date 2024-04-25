@@ -1,6 +1,6 @@
-import { TelegramService, } from "../../external/telegram/telegram.service";
-import { BasicPartnershipInquiry, } from "./partnership-inquiry.dto";
-import { injectable, singleton, } from "tsyringe";
+import { TelegramService } from "../../external/telegram/telegram.service";
+import { BasicPartnershipInquiry } from "./partnership-inquiry.dto";
+import { injectable, singleton } from "tsyringe";
 
 
 @injectable()
@@ -10,7 +10,7 @@ export class PartnershipInquiryService {
     private readonly telegramService: TelegramService,
   ) {}
 
-  async sendToAdminGroup(inquiry: BasicPartnershipInquiry,)  {
+  async sendToAdminGroup(inquiry: BasicPartnershipInquiry)  {
     const text =
       `Поступила новая заявка на сотрудничество от компании: <b>${inquiry.companyName}</b>` +
       `\nПредставитель: <b>${inquiry.representativeName}</b>` +
@@ -19,7 +19,7 @@ export class PartnershipInquiryService {
 
     await this.telegramService.enqueueAdminNotification({
       text,
-      options: { parse_mode: "HTML", },
-    },);
+      options: { parse_mode: "HTML" },
+    });
   }
 }

@@ -1,11 +1,11 @@
-import { injectable, singleton, } from "tsyringe";
-import { ChatGPTService, } from "../../external/chatgpt/chatgpt.service";
-import { BasicApplicantAiChatMessage, } from "./message/message.dto";
-import { prisma, } from "../../infrastructure/database/prisma.provider";
-import { ApplicantAiChatMessage, Meeting, Resume, } from "@prisma/client";
-import { TemplateRendererService, } from "../../external/template-renderer/template-renderer.service";
-import { ChatCompletionMessageParam, } from "openai/resources";
-import { BasicApplicant, } from "../applicant/applicant.dto";
+import { injectable, singleton } from "tsyringe";
+import { ChatGPTService } from "../../external/chatgpt/chatgpt.service";
+import { BasicApplicantAiChatMessage } from "./message/message.dto";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { ApplicantAiChatMessage, Meeting, Resume } from "@prisma/client";
+import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
+import { ChatCompletionMessageParam } from "openai/resources";
+import { BasicApplicant } from "../applicant/applicant.dto";
 
 
 @injectable()
@@ -30,8 +30,8 @@ export class ApplicantAiChatService {
   ): Promise<BasicApplicantAiChatMessage> {
     const completion = await this.chatgptService.generateChatCompletion(
       question, [
-        { content: systemPrompt, role: "system", },
-        ...this.mapHistory(chat.history,),
+        { content: systemPrompt, role: "system" },
+        ...this.mapHistory(chat.history),
       ],
     );
 
@@ -43,7 +43,7 @@ export class ApplicantAiChatService {
         promptTokens: completion.usage!.prompt_tokens,
         completionTokens: completion.usage!.completion_tokens,
       },
-    },);
+    });
   }
 
   getSystemPrompt(
@@ -73,10 +73,10 @@ export class ApplicantAiChatService {
     );
   }
 
-  private mapHistory(history: ApplicantAiChatMessage[],): ChatCompletionMessageParam[] {
-    return history.flatMap((message,) => [
-      { content: message.prompt, role: "user", },
-      { content: message.response, role: "assistant", },
-    ],);
+  private mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
+    return history.flatMap((message) => [
+      { content: message.prompt, role: "user" },
+      { content: message.response, role: "assistant" },
+    ]);
   }
 }

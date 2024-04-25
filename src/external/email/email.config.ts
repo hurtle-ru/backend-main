@@ -1,4 +1,4 @@
-import { bool, cleanEnv, num, port, str, } from "envalid";
+import { bool, cleanEnv, num, port, str } from "envalid";
 
 export const emailConfig = cleanEnv(process.env, {
   MAIL_HOST: str(),
@@ -6,4 +6,4 @@ export const emailConfig = cleanEnv(process.env, {
   MAIL_SECURE: bool(),
   MAIL_AUTH_USER: str(),
   MAIL_AUTH_PASS: str(),
-},);
+});

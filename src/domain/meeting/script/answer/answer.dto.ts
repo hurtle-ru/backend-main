@@ -1,8 +1,8 @@
 import * as yup from "yup";
 
-import { MeetingScriptAnswer, } from "@prisma/client";
-import { BasicMeetingScriptQuestion, } from "../question/question.dto";
-import { BasicMeetingScriptProtocol, } from "../protocol/protocol.dto";
+import { MeetingScriptAnswer } from "@prisma/client";
+import { BasicMeetingScriptQuestion } from "../question/question.dto";
+import { BasicMeetingScriptProtocol } from "../protocol/protocol.dto";
 
 
 export type BasicMeetingScriptAnswer = Omit<
@@ -15,10 +15,10 @@ export const BasicMeetingScriptAnswerSchema: yup.ObjectSchema<BasicMeetingScript
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  text: yup.string().defined().trim().min(1,).max(1000,),
-  protocolId: yup.string().defined().length(36,),
-  questionId: yup.string().defined().length(36,),
-},);
+  text: yup.string().defined().trim().min(1).max(1000),
+  protocolId: yup.string().defined().length(36),
+  questionId: yup.string().defined().length(36),
+});
 
 export type CreateMeetingScriptAnswerRequest = Pick<
   MeetingScriptAnswer,
@@ -31,7 +31,7 @@ export const CreateMeetingScriptAnswerRequestSchema: yup.ObjectSchema<CreateMeet
   "text",
   "protocolId",
   "questionId",
-],);
+]);
 
 
 export type PatchMeetingScriptAnswerRequest = Partial<CreateMeetingScriptAnswerRequest>;
@@ -40,7 +40,7 @@ export const PatchMeetingScriptAnswerRequestSchema: yup.ObjectSchema<PatchMeetin
   "text",
   "protocolId",
   "questionId",
-],).partial();
+]).partial();
 
 export type GetMeetingScriptAnswerResponse = BasicMeetingScriptAnswer & {
   protocol?: BasicMeetingScriptProtocol;

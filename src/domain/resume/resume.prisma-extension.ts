@@ -1,18 +1,18 @@
-import { Resume, Prisma, } from "@prisma/client";
-import { GetResumeResponse, } from "./resume.dto";
+import { Resume, Prisma } from "@prisma/client";
+import { GetResumeResponse } from "./resume.dto";
 
 
 export const resumePrismaExtension = Prisma.defineExtension({
   model: {
     resume: {
-      isFilled({ summary, skills, certificates, education, experience, languages, }: {
+      isFilled({ summary, skills, certificates, education, experience, languages }: {
         summary: string | null,
         skills: string[],
         certificates: object[],
         education: object[],
         experience: object[],
         languages: object[],
-      },): boolean {
+      }): boolean {
         return !!(
           summary
           || (skills && skills.length > 0)
@@ -24,4 +24,4 @@ export const resumePrismaExtension = Prisma.defineExtension({
       },
     },
   },
-},);
+});

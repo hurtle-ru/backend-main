@@ -1,4 +1,4 @@
-import { singleton, } from "tsyringe";
+import { singleton } from "tsyringe";
 
 
 abstract class TextFormatter {
@@ -11,9 +11,9 @@ abstract class TextFormatter {
 
 @singleton()
 export class HtmlFormatter extends TextFormatter {
-  public bold = (text: string,): string => `<b>${text}</b>`;
+  public bold = (text: string): string => `<b>${text}</b>`;
 
-  public hyperLink = (text: string, link: string,): string => `<a href="${link}">${text}</a>`;
+  public hyperLink = (text: string, link: string): string => `<a href="${link}">${text}</a>`;
 
-  public code = (text: string,): string => `<code>${text}</code>`;
+  public code = (text: string): string => `<code>${text}</code>`;
 }

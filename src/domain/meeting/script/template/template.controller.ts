@@ -1,4 +1,4 @@
-import { injectable, } from "tsyringe";
+import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
@@ -15,43 +15,43 @@ import {
   Security,
   Tags,
 } from "tsoa";
-import { MeetingScriptTemplateService, } from "./template.service";
-import { JwtModel, UserRole, } from "../../../auth/auth.dto";
-import { HttpError, HttpErrorBody, } from "../../../../infrastructure/error/http.error";
-import { prisma, } from "../../../../infrastructure/database/prisma.provider";
+import { MeetingScriptTemplateService } from "./template.service";
+import { JwtModel, UserRole } from "../../../auth/auth.dto";
+import { HttpError, HttpErrorBody } from "../../../../infrastructure/error/http.error";
+import { prisma } from "../../../../infrastructure/database/prisma.provider";
 import {
   BasicMeetingScriptTemplate,
   CreateMeetingScriptTemplateRequest, CreateMeetingScriptTemplateRequestSchema, GetMeetingScriptTemplateResponse,
   PatchMeetingScriptTemplateRequest,
   PatchMeetingScriptTemplateRequestSchema,
 } from "./template.dto";
-import { PageNumber, PageSizeNumber, } from "../../../../infrastructure/controller/pagination/page.dto";
-import { PageResponse, } from "../../../../infrastructure/controller/pagination/page.response";
+import { PageNumber, PageSizeNumber } from "../../../../infrastructure/controller/pagination/page.dto";
+import { PageResponse } from "../../../../infrastructure/controller/pagination/page.response";
 
 
 @injectable()
-@Route("api/v1/meetingScriptTemplates",)
-@Tags("Meeting Script Template",)
+@Route("api/v1/meetingScriptTemplates")
+@Tags("Meeting Script Template")
 export class MeetingScriptTemplateController extends Controller {
-  constructor(private readonly scriptTemplateService: MeetingScriptTemplateService,) {
+  constructor(private readonly scriptTemplateService: MeetingScriptTemplateService) {
     super();
   }
 
-  @Post("",)
-  @Security("jwt", [UserRole.MANAGER,],)
+  @Post("")
+  @Security("jwt", [UserRole.MANAGER])
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptTemplateRequest,
   ): Promise<BasicMeetingScriptTemplate> {
-    body = CreateMeetingScriptTemplateRequestSchema.validateSync(body,);
+    body = CreateMeetingScriptTemplateRequestSchema.validateSync(body);
 
     return prisma.meetingScriptTemplate.create({
       data: body,
-    },);
+    });
   }
 
-  @Get("",)
-  @Security("jwt", [UserRole.MANAGER,],)
+  @Get("")
+  @Security("jwt", [UserRole.MANAGER])
   public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
@@ -60,88 +60,88 @@ export class MeetingScriptTemplateController extends Controller {
   ): Promise<PageResponse<GetMeetingScriptTemplateResponse>> {
     const where = {};
 
-    const [templates, templatesCount,] = await Promise.all([
+    const [templates, templatesCount] = await Promise.all([
       prisma.meetingScriptTemplate.findMany({
         skip: (page - 1) * size,
         take: size,
         where,
         include: {
-          protocols: include?.includes("protocols",),
-          questions: include?.includes("questions",),
+          protocols: include?.includes("protocols"),
+          questions: include?.includes("questions"),
         },
-      },),
-      prisma.meetingScriptTemplate.count({ where, },),
-    ],);
+      }),
+      prisma.meetingScriptTemplate.count({ where }),
+    ]);
 
-    return new PageResponse(templates, page, size, templatesCount,);
+    return new PageResponse(templates, page, size, templatesCount);
   }
 
-  @Patch("{id}",)
-  @Security("jwt", [UserRole.MANAGER,],)
-  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404,)
+  @Patch("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404)
   public async patchById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PatchMeetingScriptTemplateRequest,
   ): Promise<void> {
-    body = PatchMeetingScriptTemplateRequestSchema.validateSync(body,);
+    body = PatchMeetingScriptTemplateRequestSchema.validateSync(body);
 
     const template = await prisma.meetingScriptTemplate.findUnique({
-      where: { id, },
-      select: { id: true, },
-    },);
+      where: { id },
+      select: { id: true },
+    });
 
-    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found",);
+    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found");
 
     await prisma.meetingScriptTemplate.update({
-      where: { id, },
+      where: { id },
       data: body,
-    },);
+    });
   }
 
-  @Delete("{id}",)
-  @Security("jwt", [UserRole.MANAGER,],)
-  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404,)
-  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate is in use by some protocols" }>(409,)
+  @Delete("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404)
+  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate is in use by some protocols" }>(409)
   public async deleteById(
     @Request() req: JwtModel,
     @Path() id: string,
   ): Promise<void> {
     const template = await prisma.meetingScriptTemplate.findUnique({
-      where: { id, },
-      select: { id: true, },
-    },);
+      where: { id },
+      select: { id: true },
+    });
 
-    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found",);
+    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found");
 
     const usesCount = await prisma.meetingScriptProtocol.count({
-      where: { templateId: id, },
-    },);
+      where: { templateId: id },
+    });
 
-    if (usesCount > 0) throw new HttpError(409, "MeetingScriptTemplate is in use by some protocols",);
+    if (usesCount > 0) throw new HttpError(409, "MeetingScriptTemplate is in use by some protocols");
 
     await prisma.meetingScriptTemplate.delete({
-      where: { id, },
-    },);
+      where: { id },
+    });
   }
 
-  @Get("{id}",)
-  @Security("jwt", [UserRole.MANAGER,],)
-  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404,)
+  @Get("{id}")
+  @Security("jwt", [UserRole.MANAGER])
+  @Response<HttpErrorBody & { "error": "MeetingScriptTemplate not found" }>(404)
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
     @Query() include?: ("protocols" | "questions")[],
   ): Promise<GetMeetingScriptTemplateResponse> {
     const template = await prisma.meetingScriptTemplate.findUnique({
-      where: { id, },
+      where: { id },
       include: {
-        protocols: include?.includes("protocols",),
-        questions: include?.includes("questions",),
+        protocols: include?.includes("protocols"),
+        questions: include?.includes("questions"),
       },
-    },);
+    });
 
-    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found",);
+    if (!template) throw new HttpError(404, "MeetingScriptTemplate not found");
     return template;
   }
 }

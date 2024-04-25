@@ -1,6 +1,6 @@
 import * as yup from "yup";
-import { ResumeCertificate, } from "@prisma/client";
-import { yupUint32, } from "../../../infrastructure/validation/requests/int32.yup";
+import { ResumeCertificate } from "@prisma/client";
+import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
 
 
 export type BasicResumeCertificate = Omit<
@@ -9,12 +9,12 @@ export type BasicResumeCertificate = Omit<
 >;
 
 export const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertificate> = yup.object({
-  id: yup.string().defined().length(36,),
-  name: yup.string().defined().trim().min(0,).max(255,),
-  description: yup.string().defined().trim().min(0,).max(255,).nullable(),
-  year: yupUint32().max(9999,).defined().nullable(),
-  resumeId: yup.string().defined().length(36,),
-},);
+  id: yup.string().defined().length(36),
+  name: yup.string().defined().trim().min(0).max(255),
+  description: yup.string().defined().trim().min(0).max(255).nullable(),
+  year: yupUint32().max(9999).defined().nullable(),
+  resumeId: yup.string().defined().length(36),
+});
 
 export type CreateResumeCertificateRequest = Pick<BasicResumeCertificate,
   | "name"
@@ -28,7 +28,7 @@ export const CreateResumeCertificateRequestSchema: yup.ObjectSchema<CreateResume
   "description",
   "year",
   "resumeId",
-],);
+]);
 
 export type PatchResumeCertificateRequest = Partial<Pick<BasicResumeCertificate,
   | "name"
@@ -40,4 +40,4 @@ export const PatchResumeCertificateRequestSchema: yup.ObjectSchema<PatchResumeCe
   "name",
   "description",
   "year",
-],).partial();
+]).partial();

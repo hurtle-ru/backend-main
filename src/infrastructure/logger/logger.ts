@@ -22,16 +22,16 @@ const logger = pino({
       {
         level: "trace",
         target: "pino/file",
-        options: { destination: logFilePath, },
+        options: { destination: logFilePath },
       },
     ],
   },
-},);
+});
 
 const httpLogger = pinoHttp({
   logger,
   serializers: {
-    req: (req,) => ({
+    req: (req) => ({
       url: req.url,
       method: req.method,
       query: req.query,
@@ -43,7 +43,7 @@ const httpLogger = pinoHttp({
       },
       ip: req.headers["x-forwarded-for"] || req.remoteAddress,
     }),
-    res: (res,) => ({
+    res: (res) => ({
       statusCode: res.statusCode,
       headers: {
         "content-type": res.headers["content-type"],
@@ -51,44 +51,44 @@ const httpLogger = pinoHttp({
       },
     }),
   },
-  customLogLevel: function (req, res, err,) {
+  customLogLevel: function (req, res, err) {
     if (res.statusCode >= 400 && res.statusCode < 500) return "warn";
     else if (res.statusCode >= 500 || err) return "error";
 
     return "info";
   },
-  customErrorObject(req, res, error, loggableObject,) {
-    return { res, };
+  customErrorObject(req, res, error, loggableObject) {
+    return { res };
   },
   quietReqLogger: true,
-},);
+});
 
 function initLogCounter(): string {
   const logsDir = "data/logs";
-  const logCounterFile = path.join(logsDir, "logCounter.txt",);
+  const logCounterFile = path.join(logsDir, "logCounter.txt");
 
-  if (!fs.existsSync(logsDir,)) {
-    fs.mkdirSync(logsDir, { recursive: true, },);
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
   }
 
-  const nextLogNumber = getNextLogFileNumber(logCounterFile,);
+  const nextLogNumber = getNextLogFileNumber(logCounterFile);
   return `${logsDir}/${nextLogNumber}.log`;
 }
 
-function getNextLogFileNumber(logCounterFile: string,) {
+function getNextLogFileNumber(logCounterFile: string) {
   let lastLogNumber = 0;
 
-  if (fs.existsSync(logCounterFile,)) {
-    const counterContents = fs.readFileSync(logCounterFile, { encoding: "utf8", },);
-    lastLogNumber = parseInt(counterContents, 10,);
+  if (fs.existsSync(logCounterFile)) {
+    const counterContents = fs.readFileSync(logCounterFile, { encoding: "utf8" });
+    lastLogNumber = parseInt(counterContents, 10);
   }
 
   const nextLogNumber = lastLogNumber + 1;
 
-  fs.writeFileSync(logCounterFile, nextLogNumber.toString(), { encoding: "utf8", },);
+  fs.writeFileSync(logCounterFile, nextLogNumber.toString(), { encoding: "utf8" });
 
   return nextLogNumber;
 }
 
 
-export { logger, httpLogger, };
+export { logger, httpLogger };

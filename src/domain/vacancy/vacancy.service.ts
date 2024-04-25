@@ -1,8 +1,8 @@
-import { injectable, singleton, } from "tsyringe";
-import { VacancyEmploymentType, VacancyExperience, VacancyStatus, } from "@prisma/client";
-import { TelegramService, } from "../../external/telegram/telegram.service";
-import { appConfig, } from "../../infrastructure/app.config";
-import { AdminPanelService, } from "../../external/admin-panel/admin-panel.service";
+import { injectable, singleton } from "tsyringe";
+import { VacancyEmploymentType, VacancyExperience, VacancyStatus } from "@prisma/client";
+import { TelegramService } from "../../external/telegram/telegram.service";
+import { appConfig } from "../../infrastructure/app.config";
+import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
 
 @injectable()
 @singleton()
@@ -51,11 +51,11 @@ export class VacancyService {
           inline_keyboard: [
             [{
               text: "Admin-panel",
-              url: this.adminPanelService.getLinkOnVacancy(vacancy.id,),
-            },],
+              url: this.adminPanelService.getLinkOnVacancy(vacancy.id),
+            }],
           ],
         },
       },
-    },);
+    });
   }
 }

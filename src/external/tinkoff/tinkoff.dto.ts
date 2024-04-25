@@ -1,4 +1,4 @@
-import { tinkoffConfig, } from "./tinkoff.config";
+import { tinkoffConfig } from "./tinkoff.config";
 
 
 /* eslint-disable @typescript-eslint/no-namespace */

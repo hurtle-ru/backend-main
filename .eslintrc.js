@@ -40,14 +40,14 @@ module.exports = {
 
     "block-spacing": "error",
     "arrow-spacing": "error",
-    "brace-style": "error",
+    "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
 
     "comma-dangle": ["error", {
-      "arrays": "always",
-      "objects": "always",
-      "imports": "always",
-      "exports": "always",
-      "functions": "always",
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "always-multiline",
     }],
 
     "func-call-spacing": ["error", "never"],
