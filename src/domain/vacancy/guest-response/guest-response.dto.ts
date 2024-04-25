@@ -35,7 +35,7 @@ export type CreateGuestVacancyResponseRequestResume = Pick<
     | "name"
     | "description"
     | "year"
-    >[];
+  >[];
   contacts: Pick<
     BasicResumeContact,
     | "name"
