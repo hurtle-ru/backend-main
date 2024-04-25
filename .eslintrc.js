@@ -1,4 +1,4 @@
-const stylisticis = require('@stylistic/eslint-plugin-ts')
+const stylistic = require('@stylistic/eslint-plugin-ts')
 
 
 module.exports = {
