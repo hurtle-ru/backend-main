@@ -13,7 +13,7 @@ import { hh } from "../../../external/hh/hh.dto";
 import { injectable, singleton } from "tsyringe";
 
 
-type MappedResume = Omit<Resume & {
+export type MappedResume = Omit<Resume & {
   contacts: MappedContact[];
   languages: MappedLanguage[];
   experience: MappedExperience[];

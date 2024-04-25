@@ -224,7 +224,7 @@ model ResumeExperience {
   startYear   Int?
   endMonth    Int?
   endYear     Int?
-  description String? @db.VarChar(3000)
+  description String? @db.VarChar(6000)
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
 }
