@@ -56,6 +56,7 @@ module.exports = {
     "indent": ["error", 2],
     "space-before-blocks": "error",
     "space-infix-ops": "error",
+    "space-in-parens": "error",
 
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
