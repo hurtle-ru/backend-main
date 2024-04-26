@@ -103,7 +103,7 @@ export class AuthService {
       data: {
         ...hhToken,
         applicant: { connect: { id: applicant.id } },
-      }
+      },
     })
 
     return applicant

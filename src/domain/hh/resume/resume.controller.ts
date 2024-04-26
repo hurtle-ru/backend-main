@@ -15,7 +15,7 @@ import { HhResumeService } from "../../../external/hh/resume/resume.service";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { GetHhResumeSummaryResponse, importedFromHhResumeSchema } from "./resume.dto";
+import { GetHhResumeSummaryResponse, ImportedFromHhResumeSchema } from "./resume.dto";
 import { BasicResume } from "../../resume/resume.dto";
 import { HhResumeMapper } from "./resume.mapper";
 
@@ -74,7 +74,7 @@ export class HhResumeController extends Controller {
     const hhResume = await this.hhResumeService.getById(hhToken.accessToken, id);
     const mappedResume = this.hhResumeMapper.mapResume(hhResume);
 
-    const validatedResume = importedFromHhResumeSchema.validateSync(mappedResume);
+    const validatedResume = ImportedFromHhResumeSchema.validateSync(mappedResume);
 
     return prisma.resume.create({
       data: {

@@ -31,6 +31,7 @@ import { HhAuthService } from "../../external/hh/auth/auth.service";
 import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
 import { BasicHhToken } from "../../external/hh/auth/auth.dto";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+import { hh } from "../../external/hh/hh.dto";
 
 
 @injectable()
@@ -199,7 +200,7 @@ export class AuthController extends Controller {
       throw new HttpError(401, "Invalid Google token");
     }
 
-    let email = ( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email
+    const email = ( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email
     if (!email) throw new HttpError(409, "Need verified google email or provide it")
 
     const existingApplicantByEmail = await prisma.applicant.exists({ email });
@@ -242,7 +243,7 @@ export class AuthController extends Controller {
     const bodyData = validateSyncByAtLeastOneSchema(
       [
         RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy"]),
-        RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy"])
+        RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy"]),
       ],
       bodyWithOutAuthBy,
     )
@@ -281,29 +282,39 @@ export class AuthController extends Controller {
   ): Promise<AuthWithHhUserResponse> {
     body = AuthWithHhRequestSchema.validateSync(body)
 
-    const hhToken = await this.hhAuthService.createToken(body.authorizationCode);
-    const hhApplicant = await this.hhApplicantService.getMeApplicant(hhToken.accessToken);
+    const newHhToken = await this.hhAuthService.createToken(body.authorizationCode);
+    const hhApplicant = await this.hhApplicantService.getMeApplicant(newHhToken.accessToken);
+    let currentApplicantHhToken = await prisma.hhToken.findUnique({ where: { hhApplicantId: hhApplicant.id } });
 
-    const applicantHhToken = await prisma.hhToken.findUnique({ where: { hhApplicantId: hhApplicant.id } });
+    if (currentApplicantHhToken) {
+      currentApplicantHhToken = await prisma.hhToken.update({
+        where: {
+          applicantId: currentApplicantHhToken.applicantId,
+        },
+        data: {
+          ...newHhToken,
+        },
+      });
 
-    if ( applicantHhToken ) {
       const accessToken = this.authService.createToken({
-        id: applicantHhToken.applicantId,
+        id: currentApplicantHhToken.applicantId,
         role: UserRole.APPLICANT,
       });
 
       return { token: accessToken };
     }
 
-    if (hhApplicant.email){
+    if (hhApplicant.email) {
       const applicantByEmail = await prisma.applicant.findUnique({ where: { email: hhApplicant.email } })
 
-      if ( applicantByEmail ) {
-        await prisma.hhToken.create({data: {
-          ...hhToken,
-          applicant: { connect: { id: applicantByEmail.id} },
-          hhApplicantId: hhApplicant.id,
-        }})
+      if (applicantByEmail) {
+        await prisma.hhToken.create({
+          data: {
+            ...newHhToken,
+            applicant: { connect: { id: applicantByEmail.id} },
+            hhApplicantId: hhApplicant.id,
+          },
+        })
 
         const accessToken = this.authService.createToken({
           id: applicantByEmail.id,
@@ -316,7 +327,7 @@ export class AuthController extends Controller {
 
     return {
       message: "Hh token is valid, but registration is required",
-      hhToken,
+      hhToken: newHhToken,
       hhAccount: {
         firstName: hhApplicant.firstName,
         lastName: hhApplicant.lastName,

@@ -22,6 +22,7 @@ export const BasicHhTokenSchema: yup.ObjectSchema<BasicHhToken> = yup.object({
   accessToken: yup.string().trim().length(64).defined(),
   refreshToken: yup.string().trim().length(64).defined(),
   expiresIn: yup.number().min(0).max(2 * WEEK).defined(),
+  createdAt: yup.number().min(0).max(2 * WEEK).defined(),
 })
 
 export type AuthWithHhUserAccountResponse = {
@@ -41,6 +42,6 @@ export type HhAuthorizationCodeRequest = {
 }
 
 export const HhAuthorizationCodeRequestSchema: yup.ObjectSchema<HhAuthorizationCodeRequest> = yup.object({
-  authorizationCode: yup.string().defined().length(64)
+  authorizationCode: yup.string().defined().length(64),
 })
 

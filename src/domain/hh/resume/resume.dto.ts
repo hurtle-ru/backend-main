@@ -1,11 +1,18 @@
 import * as yup from 'yup'
-import { MappedResume } from './resume.mapper';
 import { BasicResumeSchema } from '../../resume/resume.dto';
 import { BasicResumeContactSchema } from '../../resume/contact/contact.dto';
 import { BasicResumeEducationSchema } from '../../resume/education/education.dto';
 import { BasicResumeLanguageSchema } from '../../resume/language/language.dto';
 import { BasicResumeExperienceSchema } from '../../resume/experience/experience.dto';
 import { BasicResumeCertificateSchema } from '../../resume/certificate/certificate.dto';
+import {
+  Resume,
+  ResumeCertificate,
+  ResumeContact,
+  ResumeEducation,
+  ResumeExperience,
+  ResumeLanguage,
+} from "@prisma/client";
 
 
 export type GetHhResumeSummaryResponse = {
@@ -14,7 +21,41 @@ export type GetHhResumeSummaryResponse = {
   createdAt: Date;
 }
 
-export const importedFromHhResumeSchema: yup.ObjectSchema<MappedResume> = BasicResumeSchema.pick([
+export type HhMappedResume = Omit<Resume & {
+  contacts: Omit<
+    ResumeContact,
+    | "resumeId"
+    | "id"
+  >[];
+  languages: Omit<
+    ResumeLanguage,
+    | "resumeId"
+    | "id"
+  >[];
+  experience: Omit<
+    ResumeExperience,
+    | "resumeId"
+    | "id"
+  >[];
+  education: Omit<
+    ResumeEducation,
+    | "resumeId"
+    | "id"
+    | "startYear"
+  >[];
+  certificates: Omit<
+    ResumeCertificate,
+    | "resumeId"
+    | "id"
+  >[];
+},
+  | "id"
+  | "applicantId"
+  | "importedFrom"
+  | "importedId"
+>;
+
+export const ImportedFromHhResumeSchema: yup.ObjectSchema<HhMappedResume> = BasicResumeSchema.pick([
   "createdAt",
   "title",
   "city",
