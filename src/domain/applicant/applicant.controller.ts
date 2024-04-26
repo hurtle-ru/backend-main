@@ -87,6 +87,9 @@ export class ApplicantController extends Controller {
     const where: Prisma.ApplicantFindManyArgs["where"] = {
       nickname,
       ...searchFilter,
+      resume: {
+        summary: {}
+      },
       ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } } ),
       ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } } ),
       ...(has?.includes("meetings") && { meetings: { some: {} } } ),
