@@ -15,7 +15,7 @@ import { HhResumeService } from "../../../external/hh/resume/resume.service";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
-import { GetHhResumeSummaryResponse } from "./resume.dto";
+import { GetHhResumeSummaryResponse, ImportedFromHhResumeSchema } from "./resume.dto";
 import { BasicResume } from "../../resume/resume.dto";
 import { HhResumeMapper } from "./resume.mapper";
 
@@ -74,18 +74,19 @@ export class HhResumeController extends Controller {
     const hhResume = await this.hhResumeService.getById(hhToken.accessToken, id);
     const mappedResume = this.hhResumeMapper.mapResume(hhResume);
 
+    const validatedResume = ImportedFromHhResumeSchema.validateSync(mappedResume);
+
     return prisma.resume.create({
       data: {
         applicantId: req.user.id,
         importedFrom: "HH",
         importedId: id,
-
-        ...mappedResume,
-        contacts: { create: mappedResume.contacts },
-        languages: { create: mappedResume.languages },
-        experience: { create: mappedResume.experience },
-        education: { create: mappedResume.education },
-        certificates: { create: mappedResume.certificates},
+        ...validatedResume,
+        contacts: { create: validatedResume.contacts },
+        languages: { create: validatedResume.languages },
+        experience: { create: validatedResume.experience },
+        education: { create: validatedResume.education },
+        certificates: { create: validatedResume.certificates},
       },
     });
   }

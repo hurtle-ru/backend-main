@@ -2,37 +2,23 @@ import momentTimezone from "moment-timezone";
 import moment from "moment";
 import {
   ContactType, Currency,
-  Resume,
-  ResumeCertificate,
-  ResumeContact,
-  ResumeEducation,
-  ResumeExperience,
-  ResumeLanguage,
 } from "@prisma/client";
 import { hh } from "../../../external/hh/hh.dto";
 import { injectable, singleton } from "tsyringe";
+import {
+  HhMappedResume,
+} from "./resume.dto";
 
-
-type MappedResume = Omit<Resume & {
-  contacts: MappedContact[];
-  languages: MappedLanguage[];
-  experience: MappedExperience[];
-  education: MappedEducation[];
-  certificates: MappedCertificate[];
-}, "id" | "applicantId" | "importedFrom" | "importedId">;
-
-type MappedContact = Omit<ResumeContact, "resumeId" | "id">;
-type MappedLanguage = Omit<ResumeLanguage, "resumeId" | "id">;
-type MappedExperience = Omit<ResumeExperience, "resumeId" | "id">
-type MappedEducation = Omit<ResumeEducation, "resumeId" | "id" | "startYear">
-type MappedCertificate = Omit<ResumeCertificate, "resumeId" | "id">
 
 @injectable()
 @singleton()
 export class HhResumeMapper {
-  mapResume(hhResume: hh.Resume): MappedResume {
-    const desiredSalaryCurrency = hhResume.salary.currency ? this.mapCurrency(hhResume.salary.currency) : null;
-    const desiredSalary = hhResume.salary.amount && desiredSalaryCurrency ? hhResume.salary.amount :  null;
+  constructor() {
+  }
+
+  mapResume(hhResume: hh.Resume): HhMappedResume {
+    const desiredSalaryCurrency = hhResume.salary?.currency ? this.mapCurrency(hhResume.salary.currency) : null;
+    const desiredSalary = hhResume.salary?.amount && desiredSalaryCurrency ? hhResume.salary.amount :  null;
 
     return {
       createdAt: momentTimezone(hhResume.createdAt, hh.DateTimeFormatWithTimeZone).toDate(),
@@ -45,7 +31,7 @@ export class HhResumeMapper {
       contacts: hhResume.contact.map(this.mapContact),
       languages: hhResume.language.map(this.mapLanguage),
       experience: hhResume.experience.map(this.mapExperience),
-      education: hhResume.education.primary ? hhResume.education.primary.map((primary) => {
+      education: hhResume.education.primary ? hhResume.education.primary.map(primary => {
         return this.mapPrimaryEducation(primary, hhResume.education.level ?? null);
       }) : [],
       certificates: [
@@ -57,30 +43,30 @@ export class HhResumeMapper {
   }
 
   mapCurrency(hhCurrency: hh.Currency): Currency | null {
-    if (hhCurrency === "RUR") return "RUB";
+    if(hhCurrency === "RUR") return "RUB";
     if (!Object.values(Currency).includes(hhCurrency as keyof typeof Currency)) return null;
 
     return hhCurrency as Currency;
   }
 
-  mapContact(hhContact: hh.Contact): MappedContact {
+  mapContact(hhContact: hh.Contact): HhMappedResume["contacts"][number] {
     let type: ContactType;
     switch (hhContact.type.id) {
-    case "home":
-      type = ContactType.PHONE;
-      break;
-    case "work":
-      type = ContactType.PHONE;
-      break;
-    case "cell":
-      type = ContactType.PHONE;
-      break;
-    case "email":
-      type = ContactType.EMAIL;
-      break;
-    default:
-      type = ContactType.OTHER;
-      break;
+      case "home":
+        type = ContactType.PHONE;
+        break;
+      case "work":
+        type = ContactType.PHONE;
+        break;
+      case "cell":
+        type = ContactType.PHONE;
+        break;
+      case "email":
+        type = ContactType.EMAIL;
+        break;
+      default:
+        type = ContactType.OTHER;
+        break;
     }
 
     let value: string;
@@ -95,14 +81,14 @@ export class HhResumeMapper {
     };
   }
 
-  mapLanguage(hhLanguage: hh.Language): MappedLanguage {
+  mapLanguage(hhLanguage: hh.Language): HhMappedResume["languages"][number] {
     return {
       name: hhLanguage.name,
       level: hhLanguage.level.id.toUpperCase(),
     };
   }
 
-  mapExperience(hhExperience: hh.Experience): MappedExperience {
+  mapExperience(hhExperience: hh.Experience): HhMappedResume["experience"][number] {
     return {
       position: hhExperience.position,
       company: hhExperience.company ?? null,
@@ -114,7 +100,7 @@ export class HhResumeMapper {
     };
   }
 
-  mapPrimaryEducation(hhPrimaryEducation: hh.PrimaryEducation, hhEducationLevel: hh.EducationLevel | null): MappedEducation {
+  mapPrimaryEducation(hhPrimaryEducation: hh.PrimaryEducation, hhEducationLevel: hh.EducationLevel | null): HhMappedResume["education"][number] {
     let description = null;
     if (hhPrimaryEducation.organization && hhPrimaryEducation.result) description = hhPrimaryEducation.organization + ", " + hhPrimaryEducation.result;
     else if (hhPrimaryEducation.organization) description = hhPrimaryEducation.organization;
@@ -128,7 +114,7 @@ export class HhResumeMapper {
     };
   }
 
-  mapAdditionalEducation(hhAdditional: hh.CourseOrTest): MappedCertificate {
+  mapAdditionalEducation(hhAdditional: hh.CourseOrTest): HhMappedResume["certificates"][number] {
     const description = hhAdditional.organization + ", " + hhAdditional.result;
 
     return {
@@ -138,7 +124,7 @@ export class HhResumeMapper {
     };
   }
 
-  mapAttestationEducation(hhAdditional: hh.CourseOrTest): MappedCertificate {
+  mapAttestationEducation(hhAdditional: hh.CourseOrTest): HhMappedResume["certificates"][number] {
     const description = hhAdditional.organization + ", " + hhAdditional.result;
 
     return {
