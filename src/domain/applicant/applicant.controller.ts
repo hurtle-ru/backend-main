@@ -76,26 +76,16 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Query() nickname?: string,
     @Query() search?: string,
-    @Query() searchSkills?: string[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
     @Query() has?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
-    const availableResumes = await prisma.resume.findMany({
-      select: {
-        id: true,
-      },
-      where: searchSkills ? {
-        skills: {
-          hasSome: searchSkills,
-        }
-      }: undefined
-    }
-    )
-    const availableResumesIds = availableResumes.map((element) => element["id"])
+    const searchFilter =
+      req.user.role === UserRole.MANAGER && search && search.length > 0
+      ? this.applicantService.getApplicantSearchByDefaultSearchFields(search)
+      : undefined
 
-    const searchFilter = req.user.role === UserRole.MANAGER ? this.applicantService.getApplicantSearchByDefaultSearchFields(search, availableResumesIds) : undefined
     const where: Prisma.ApplicantFindManyArgs["where"] = {
       nickname,
       ...searchFilter,
@@ -111,7 +101,7 @@ export class ApplicantController extends Controller {
     if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
       includeResume = { where: { isVisibleToEmployers: true } };
 
-    let [applicants, applicantsCount] = await Promise.all([
+    const [applicants, applicantsCount] = await Promise.all([
       prisma.applicant.findMany({
         skip: (page - 1) * size,
         take: size,
