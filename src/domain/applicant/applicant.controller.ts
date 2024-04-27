@@ -34,9 +34,8 @@ import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
 import { Prisma } from "@prisma/client";
-import { DateWithoutTime } from "../../infrastructure/controller/date/date.dto";
 import { ApplicantService } from "./applicant.service";
-import { some } from "lodash";
+import { SearchQuery } from "../../infrastructure/controller/search/search.dto";
 
 
 @injectable()
@@ -71,24 +70,24 @@ export class ApplicantController extends Controller {
   }
 
   @Get("")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER, PUBLIC_SCOPE])
   public async getAll(
     @Request() req: JwtModel,
     @Query() nickname?: string,
-    @Query() search?: string,
+    @Query() search?: SearchQuery,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
     @Query() has?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
-    const searchFilter =
+    const searchInput =
       req.user.role === UserRole.MANAGER && search && search.length > 0
-      ? this.applicantService.getApplicantSearchByDefaultSearchFields(search)
-      : undefined
+      ? this.applicantService.buildSearchInput(search)
+      : undefined;
 
     const where: Prisma.ApplicantFindManyArgs["where"] = {
       nickname,
-      ...searchFilter,
+      ...searchInput,
       ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } } ),
       ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } } ),
       ...(has?.includes("meetings") && { meetings: { some: {} } } ),

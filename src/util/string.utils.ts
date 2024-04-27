@@ -11,3 +11,7 @@ export function camelize(obj: any): any {
     }
     return obj;
 }
+
+export const ENGLISH_ALPHABET_LOWER = "abcdefghijklmnopqrstuvwxyz";
+export const RUSSIAN_ALPHABET_LOWER = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+export const DIGITS = "0123456789";
