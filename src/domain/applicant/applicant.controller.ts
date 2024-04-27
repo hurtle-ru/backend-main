@@ -76,13 +76,14 @@ export class ApplicantController extends Controller {
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
     @Query() has?: ("resume" | "meetings" | "vacancyResponses")[],
   ): Promise<PageResponse<GetApplicantResponse>> {
-    let meetingsWhere: Prisma.MeetingListRelationFilter = {}
+    let whereMeetings: Prisma.MeetingListRelationFilter = {};
 
-    if ( has?.includes("meetings") ) {
-      meetingsWhere = { some: {} }
+    if (has?.includes("meetings")) {
+      whereMeetings = { some: {} };
     }
-    if ( req.user.role===UserRole.MANAGER && ( hadMeetingGte || hadMeetingLte ) ) {
-      meetingsWhere = {
+
+    if (req.user.role === UserRole.MANAGER && (hadMeetingGte || hadMeetingLte)) {
+      whereMeetings = {
         some: {
           slot: {
             dateTime: {
@@ -90,14 +91,16 @@ export class ApplicantController extends Controller {
               ...(hadMeetingLte && { lte: hadMeetingLte }),
             },
           },
-    }}}
+        },
+      };
+    }
 
-    const where: Prisma.ApplicantFindManyArgs["where"] = {
+    const where: Prisma.ApplicantWhereInput = {
       nickname,
-      meetings: meetingsWhere,
-      ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } } ),
-      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } } ),
-      ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } } ),
+      meetings: whereMeetings,
+      ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } }),
+      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } }),
+      ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } }),
     };
 
     let includeResume: any = false;
