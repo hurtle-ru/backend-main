@@ -1,4 +1,4 @@
-import * as yup from "yup"
+import * as yup from "yup";
 import { ResumeExperience } from "@prisma/client";
 
 
@@ -16,9 +16,9 @@ export const BasicResumeExperienceSchema: yup.ObjectSchema<BasicResumeExperience
   startYear: yup.number().defined().max(9999).nullable(),
   endMonth: yup.number().defined().max(12).nullable(),
   endYear: yup.number().defined().max(9999).nullable(),
-  description: yup.string().defined().trim().min(0).max(3000).nullable(),
+  description: yup.string().defined().trim().min(0).max(6000).nullable(),
   resumeId: yup.string().defined().length(36),
-})
+});
 
 export type CreateResumeExperienceRequest = Pick<BasicResumeExperience,
   | "company"
@@ -40,7 +40,7 @@ export const CreateResumeExperienceRequestSchema: yup.ObjectSchema<CreateResumeE
   "endYear",
   "description",
   "resumeId",
-])
+]);
 
 export type PatchResumeExperienceRequest = Partial<Pick<BasicResumeExperience,
   | "company"
@@ -62,4 +62,4 @@ export const PatchResumeExperienceRequestSchema: yup.ObjectSchema<PatchResumeExp
   "endYear",
   "description",
   "resumeId",
-]).partial()
+]).partial();

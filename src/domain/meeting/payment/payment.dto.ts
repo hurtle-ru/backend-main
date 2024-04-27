@@ -1,11 +1,11 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 
 import { MeetingPayment, MeetingPaymentStatus, MeetingType } from "@prisma/client";
-import { BasicMeetingSlot } from "../slot/slot.dto"
+import { BasicMeetingSlot } from "../slot/slot.dto";
 import { tinkoff } from "../../../external/tinkoff/tinkoff.dto";
 import StandardPaymentStatus = tinkoff.StandardPaymentStatus;
-import { yupOneOfEnum } from '../../../infrastructure/validation/requests/enum.yup';
-import { yupUint32 } from '../../../infrastructure/validation/requests/int32.yup';
+import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
+import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
 
 
 export type BasicMeetingPayment = Omit<
@@ -29,7 +29,7 @@ export const BasicMeetingPaymentSchema: yup.ObjectSchema<BasicMeetingPayment> = 
   dueDate: yup.date().defined(),
   slotId: yup.string().defined(),
   type: yupOneOfEnum(MeetingType).defined(),
-})
+});
 
 
 export type CreateMeetingPaymentRequest = Pick<
@@ -40,7 +40,7 @@ export type CreateMeetingPaymentRequest = Pick<
 export const CreateMeetingPaymentRequestSchema: yup.ObjectSchema<CreateMeetingPaymentRequest> = BasicMeetingPaymentSchema.pick([
   "slotId",
   "type",
-])
+]);
 
 export type GetMeetingPaymentResponse = BasicMeetingPayment & {
   slot?: BasicMeetingSlot | null;
@@ -54,7 +54,7 @@ export type PatchMeetingPaymentRequest = Partial<Pick<MeetingPayment,
 
 export const PatchMeetingPaymentRequestSchema: yup.ObjectSchema<PatchMeetingPaymentRequest> = BasicMeetingPaymentSchema.pick([
   "status",
-]).partial().shape({code: yup.string().trim().min(1).defined()})
+]).partial().shape({code: yup.string().trim().min(1).defined()});
 
 export type MeetingPaymentTinkoffNotificationRequest = {
   TerminalKey: string;
@@ -100,4 +100,4 @@ export const TinkoffPaymentStatusToMeetingPaymentStatus: {
   REVERSING: "FAIL",
   PARTIAL_REVERSED: "FAIL",
   CONFIRMED: "SUCCESS",
-}
+};

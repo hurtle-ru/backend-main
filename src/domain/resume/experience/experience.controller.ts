@@ -19,7 +19,13 @@ import {
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, UserRole } from "../../auth/auth.dto";
-import { BasicResumeExperience, CreateResumeExperienceRequest, CreateResumeExperienceRequestSchema, PatchResumeExperienceRequest, PatchResumeExperienceRequestSchema } from "./experience.dto";
+import {
+  BasicResumeExperience,
+  CreateResumeExperienceRequest,
+  CreateResumeExperienceRequestSchema,
+  PatchResumeExperienceRequest,
+  PatchResumeExperienceRequestSchema,
+} from "./experience.dto";
 
 
 @Route("api/v1/resumeExperience")
@@ -32,13 +38,13 @@ export class ResumeExperienceController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeExperienceRequest,
   ): Promise<BasicResumeExperience> {
-    body = CreateResumeExperienceRequestSchema.validateSync(body)
+    body = CreateResumeExperienceRequestSchema.validateSync(body);
 
     const resume = await prisma.resume.findUnique({
       where: { id: body.resumeId, applicantId: req.user.id },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return prisma.resumeExperience.create({
       data: {
@@ -60,7 +66,7 @@ export class ResumeExperienceController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const experience = await prisma.resumeExperience.findUnique({ where });
     if (!experience) throw new HttpError(404, "ResumeExperience not found");
@@ -76,12 +82,12 @@ export class ResumeExperienceController extends Controller {
   @Response<HttpErrorBody>(404, "ResumeExperience not found")
   public async deleteById(
     @Request() req: JwtModel,
-    @Path() id: string
+    @Path() id: string,
   ): Promise<void> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const experience = await prisma.resumeExperience.findUnique({ where });
     if (!experience) throw new HttpError(404, "ResumeExperience not found");
@@ -94,12 +100,12 @@ export class ResumeExperienceController extends Controller {
   @Response<HttpErrorBody>(404, "ResumeExperience not found")
   public async getById(
     @Request() req: JwtModel,
-    @Path() id: string
+    @Path() id: string,
   ): Promise<BasicResumeExperience> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const experience = await prisma.resumeExperience.findUnique({ where });
     if (!experience) throw new HttpError(404, "ResumeExperience not found");

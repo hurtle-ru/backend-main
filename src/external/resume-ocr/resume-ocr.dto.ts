@@ -1,6 +1,9 @@
-import { DeepPartial, Nullable } from "tsdef";
+import { DeepPartial } from "tsdef";
 import { Currency } from "@prisma/client";
 import { ContactType } from ".prisma/client";
+import { DeepNullable } from "../../util/typescript.utils";
+import { MetadataCreateGuestVacancyResponse } from "../../domain/vacancy/guest-response/guest-response.dto";
+import { MetadataImportAsApplicantResume } from "../../domain/auth/auth.dto";
 
 export const RESUME_OCR_JOB_NAME = "recognizePdfWithResumeOcr";
 export const RESUME_OCR_QUEUE_NAME = "resumeOcr";
@@ -9,12 +12,19 @@ export interface ResumeOcrJobData {
   fileName: string,
   recognizedResume?: string,
   mappedResume?: GetRecognizedResumeResponse,
+  metadata?: MetadataCreateGuestVacancyResponse | MetadataImportAsApplicantResume,
 }
 
 export const enum ResumeOcrJobStatus {
   SUCCESS = "SUCCESS",
   PROCESSING = "PROCESSING",
   FAILED = "FAILED",
+}
+
+export type UnknownDeepRawRecognizedResume = RawRecognizedResume | DeepNestedRawRecognizedResume;
+
+interface DeepNestedRawRecognizedResume {
+  [key: string]: UnknownDeepRawRecognizedResume;
 }
 
 export type RawRecognizedResume = DeepPartial<
@@ -24,10 +34,10 @@ export type RawRecognizedResume = DeepPartial<
       | "createdAt"
       | "importedFrom"
       | "importedId"
-      | "birthDate"
+      | "birthDate" // ignore birthDate
     >
   >
->
+>;
 
 export type GetRecognizedResumeResponse = {
   createdAt: Date,
@@ -79,8 +89,12 @@ export type GetRecognizedResumeResponse = {
 };
 
 export type GetResumeOcrJobResponse = {
+  id: string,
   status: ResumeOcrJobStatus,
-  resume: GetRecognizedResumeResponse | null,
   createdAt: number,
   finishedAt: number | undefined,
+  data: {
+    metadata: ResumeOcrJobData["metadata"],
+    mappedResume: ResumeOcrJobData["mappedResume"] | null,
+  }
 }

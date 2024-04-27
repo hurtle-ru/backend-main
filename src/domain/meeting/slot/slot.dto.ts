@@ -1,10 +1,10 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 
 import { MeetingSlot, MeetingType } from "@prisma/client";
 import { BasicMeeting } from "../meeting.dto";
 import { BasicManager } from "../../manager/manager.dto";
-import { yupManyOfEnum } from '../../../infrastructure/validation/requests/enum.yup';
-import { yupUint32 } from '../../../infrastructure/validation/requests/int32.yup';
+import { yupManyOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
+import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
 
 
 export type BasicMeetingSlot = Omit<
@@ -18,13 +18,13 @@ export const BasicMeetingSlotSchema = yup.object({
   updatedAt: yup.date().defined(),
   dateTime: yup.date().defined(
   ).min(
-    new Date(new Date().getFullYear() - 1, 11)
+    new Date(new Date().getFullYear() - 1, 11),
   ).max(
-    new Date(new Date().getFullYear() + 1, 11)
+    new Date(new Date().getFullYear() + 1, 11),
   ),
   types: yupManyOfEnum(MeetingType).defined(),
   managerId: yup.string().defined().length(36),
-})
+});
 
 export type CreateMeetingSlotRequest = Pick<
   MeetingSlot,
@@ -34,8 +34,8 @@ export type CreateMeetingSlotRequest = Pick<
 
 export const CreateMeetingSlotRequestSchema: yup.ObjectSchema<CreateMeetingSlotRequest> = BasicMeetingSlotSchema.pick([
   "dateTime",
-  "types"
-])
+  "types",
+]);
 
 
 export type CreateMeetingSlotsWithinRangeRequest = Pick<
@@ -52,22 +52,22 @@ export type CreateMeetingSlotsWithinRangeRequest = Pick<
 };
 
 export const CreateMeetingSlotsWithinRangeRequestSchema: yup.ObjectSchema<CreateMeetingSlotsWithinRangeRequest> = BasicMeetingSlotSchema.pick([
-  "types"
+  "types",
 ]).shape({
   interval: yupUint32().defined(),
   startDate: yup.date().defined(
   ).min(
-    new Date(new Date().getFullYear() - 1, 11)
+    new Date(new Date().getFullYear() - 1, 11),
   ).max(
-    new Date(new Date().getFullYear() + 1, 11)
+    new Date(new Date().getFullYear() + 1, 11),
   ),
   endDate: yup.date().defined(
   ).min(
-    new Date(new Date().getFullYear() - 1, 11)
+    new Date(new Date().getFullYear() - 1, 11),
   ).max(
-    new Date(new Date().getFullYear() + 1, 11)
-  )
-})
+    new Date(new Date().getFullYear() + 1, 11),
+  ),
+});
 
 export type CreateMeetingSlotsWithinRangeResponse = {
   count: number,
@@ -81,8 +81,8 @@ export type PatchMeetingSlotRequest = Partial<Pick<
 
 export const PatchMeetingSlotRequestSchema: yup.ObjectSchema<PatchMeetingSlotRequest> = BasicMeetingSlotSchema.pick([
   "dateTime",
-  "types"
-]).partial()
+  "types",
+]).partial();
 
 export type GetMeetingSlotResponse = BasicMeetingSlot & {
   meeting?: BasicMeeting | null;

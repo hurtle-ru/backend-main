@@ -12,6 +12,6 @@ export const BasicUniversitySchema: yup.ObjectSchema<BasicUniversity> = yup.obje
   name: yup.string().defined().min(1).max(300),
   shortName: yup.string().defined().min(1).max(100).nullable(),
   logoUrl: yup.string().defined().min(1).max(255).nullable(),
-})
+});
 
-export const GetAllUniversitiesRequestSearchSchema = yup.string().min(3).max(300).defined()
+export const GetAllUniversitiesRequestSearchSchema = yup.string().min(3).max(300).defined();

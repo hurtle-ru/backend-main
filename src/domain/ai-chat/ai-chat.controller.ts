@@ -38,11 +38,11 @@ export class ApplicantAiChatController extends Controller {
   @Response<HttpErrorBody & {"error": "Completed applicant interviews with transcript not found"}>(409)
   public async create(
     @Request() req: JwtModel,
-    @Body() body: CreateApplicantAiChatRequest
+    @Body() body: CreateApplicantAiChatRequest,
   ): Promise<BasicApplicantAiChat> {
-    body = CreateApplicantAiChatRequestSchema.validateSync(body)
+    body = CreateApplicantAiChatRequestSchema.validateSync(body);
 
-    if(await prisma.applicantAiChat.exists({ applicantId: body.applicantId, employerId: req.user.id }))
+    if (await prisma.applicantAiChat.exists({ applicantId: body.applicantId, employerId: req.user.id }))
       throw new HttpError(409, "AI Chat already exists");
 
     const applicant = await prisma.applicant.findUnique({
@@ -53,18 +53,18 @@ export class ApplicantAiChatController extends Controller {
       },
     });
 
-    if(!applicant) throw new HttpError(404, "Applicant not found");
-    if(!applicant.resume || !applicant.resume.isVisibleToEmployers)
+    if (!applicant) throw new HttpError(404, "Applicant not found");
+    if (!applicant.resume || !applicant.resume.isVisibleToEmployers)
       throw new HttpError(409, "Applicant resume not found or invisible to employers");
 
-    const applicantInterviews = applicant.meetings.filter(m =>
+    const applicantInterviews = applicant.meetings.filter((m) =>
       m.type === MeetingType.INTERVIEW
       && m.status === MeetingStatus.COMPLETED
       && m.transcript
       && m.transcript.trim().length > 0,
     );
 
-    if(applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
+    if (applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
 
     return prisma.applicantAiChat.create({
       data: {
@@ -80,7 +80,7 @@ export class ApplicantAiChatController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("applicant" | "employer" | "history")[]
+    @Query() include?: ("applicant" | "employer" | "history")[],
   ): Promise<GetApplicantAiChatResponse> {
     const chat = await prisma.applicantAiChat.findUnique({
       where: {
@@ -96,7 +96,7 @@ export class ApplicantAiChatController extends Controller {
       },
     });
 
-    if(!chat) throw new HttpError(404, "AI Chat not found");
+    if (!chat) throw new HttpError(404, "AI Chat not found");
 
     return chat;
   }

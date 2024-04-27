@@ -42,7 +42,7 @@ export class MeetingScriptAnswerController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptAnswerRequest,
   ): Promise<BasicMeetingScriptAnswer> {
-    body = CreateMeetingScriptAnswerRequestSchema.validateSync(body)
+    body = CreateMeetingScriptAnswerRequestSchema.validateSync(body);
 
     return prisma.meetingScriptAnswer.create({
       data: body,
@@ -62,7 +62,7 @@ export class MeetingScriptAnswerController extends Controller {
     const where = {
       protocolId: protocolId ?? undefined,
       questionId: questionId ?? undefined,
-    }
+    };
 
     const [answers, answersCount] = await Promise.all([
       prisma.meetingScriptAnswer.findMany({
@@ -75,7 +75,7 @@ export class MeetingScriptAnswerController extends Controller {
         },
       }),
       prisma.meetingScriptAnswer.count({ where }),
-    ])
+    ]);
 
     return new PageResponse(answers, page, size, answersCount);
   }
@@ -88,7 +88,7 @@ export class MeetingScriptAnswerController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingScriptAnswerRequest,
   ): Promise<void> {
-    body = PatchMeetingScriptAnswerRequestSchema.validateSync(body)
+    body = PatchMeetingScriptAnswerRequestSchema.validateSync(body);
 
     const answer = await prisma.meetingScriptAnswer.findUnique({
       where: { id },
@@ -128,7 +128,7 @@ export class MeetingScriptAnswerController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("protocol" | "question")[]
+    @Query() include?: ("protocol" | "question")[],
   ): Promise<GetMeetingScriptAnswerResponse> {
     const answer = await prisma.meetingScriptAnswer.findUnique({
       where: { id },
@@ -138,7 +138,7 @@ export class MeetingScriptAnswerController extends Controller {
       },
     });
 
-    if(!answer) throw new HttpError(404, "MeetingScriptAnswer not found");
+    if (!answer) throw new HttpError(404, "MeetingScriptAnswer not found");
 
     return answer;
   }

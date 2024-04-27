@@ -9,4 +9,4 @@ export const hhTokenExtension = Prisma.defineExtension({
       },
     },
   },
-})
+});

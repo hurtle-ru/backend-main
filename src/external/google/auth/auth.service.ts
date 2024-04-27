@@ -17,7 +17,7 @@ export class GoogleAuthService {
     });
 
     const payload = ticket.getPayload();
-    if(!payload) throw new Error("Unable to verify Google token: payload is undefined");
+    if (!payload) throw new Error("Unable to verify Google token: payload is undefined");
 
     return payload;
   }

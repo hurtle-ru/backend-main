@@ -1,8 +1,12 @@
 export class PageResponse<T> {
   items: T[];
+
   currentPage: number;
+
   perPage: number;
+
   total: number;
+
   totalPages: number;
 
   constructor(items: T[], currentPage: number, perPage: number, total: number) {

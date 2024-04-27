@@ -44,11 +44,11 @@ export class ResumeController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateResumeRequest,
   ): Promise<BasicResume> {
-    body = CreateResumeRequestSchema.validateSync(body)
+    body = CreateResumeRequestSchema.validateSync(body);
 
     const resume = await prisma.resume.findUnique({
       where: { applicantId: req.user.id },
-    })
+    });
     if (resume) throw new HttpError(409, "Resume already exists.");
 
     return prisma.resume.create({
@@ -79,7 +79,7 @@ export class ResumeController extends Controller {
       },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return resume;
   }
@@ -94,10 +94,10 @@ export class ResumeController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: { id: req.user.id } }),
-    }
+    };
 
     const resume = await prisma.resume.findUnique({ where });
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     await prisma.resume.delete({ where });
   }
@@ -112,14 +112,14 @@ export class ResumeController extends Controller {
   ): Promise<GetResumeResponse> {
     let where: Prisma.ResumeWhereUniqueInput = { id };
 
-    if(req.user) {
-      switch(req.user.role) {
-        case UserRole.APPLICANT:
-          where = { ...where, applicantId: req.user.id };
-          break;
-        case UserRole.EMPLOYER:
-          where = { ...where, isVisibleToEmployers: true };
-          break;
+    if (req.user) {
+      switch (req.user.role) {
+      case UserRole.APPLICANT:
+        where = { ...where, applicantId: req.user.id };
+        break;
+      case UserRole.EMPLOYER:
+        where = { ...where, isVisibleToEmployers: true };
+        break;
       }
     } else {
       where = { ...where, isVisibleToEmployers: true };
@@ -137,7 +137,7 @@ export class ResumeController extends Controller {
       },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found or is not visible for employers");
+    if (!resume) throw new HttpError(404, "Resume not found or is not visible for employers");
 
     return resume;
   }
@@ -155,10 +155,10 @@ export class ResumeController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
-    }
+    };
 
     const resume = await prisma.resume.findUnique({ where });
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return prisma.resume.update({
       where,

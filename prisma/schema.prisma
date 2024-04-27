@@ -170,7 +170,7 @@ model Resume {
   createdAt             DateTime                     @default(now())
   importedFrom          ResumeImportExternalService?
   importedId            String?                      @db.VarChar(512)
-  title                 String                       @db.VarChar(255)
+  title                 String?                      @db.VarChar(255)
   summary               String?                      @db.VarChar(5000)
   city                  String?                      @db.VarChar(255)
   skills                String[]                     @db.VarChar(5000)
@@ -224,7 +224,7 @@ model ResumeExperience {
   startYear   Int?
   endMonth    Int?
   endYear     Int?
-  description String? @db.VarChar(3000)
+  description String? @db.VarChar(6000)
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
 }

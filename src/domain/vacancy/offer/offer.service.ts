@@ -4,5 +4,4 @@ import { injectable, singleton } from "tsyringe";
 @singleton()
 export class OfferService {
   constructor() {}
-
 }

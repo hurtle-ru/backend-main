@@ -9,6 +9,10 @@ const replaceMap = [
   { find: "%24", replace: "" },
   { find: ".$", replace: "" },
   { find: "%3F%3A", replace: "Optional" },
+  { find: "%5C", replace: "_" },
+  { find: "%5B", replace: "_" },
+  { find: "%5D", replace: "_" },
+  { find: "%3A", replace: "_" },
 ]
 
 function postProcessSwagger(swaggerFilePath) {

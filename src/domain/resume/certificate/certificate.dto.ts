@@ -14,7 +14,7 @@ export const BasicResumeCertificateSchema: yup.ObjectSchema<BasicResumeCertifica
   description: yup.string().defined().trim().min(0).max(255).nullable(),
   year: yupUint32().max(9999).defined().nullable(),
   resumeId: yup.string().defined().length(36),
-})
+});
 
 export type CreateResumeCertificateRequest = Pick<BasicResumeCertificate,
   | "name"
@@ -28,7 +28,7 @@ export const CreateResumeCertificateRequestSchema: yup.ObjectSchema<CreateResume
   "description",
   "year",
   "resumeId",
-])
+]);
 
 export type PatchResumeCertificateRequest = Partial<Pick<BasicResumeCertificate,
   | "name"
@@ -40,4 +40,4 @@ export const PatchResumeCertificateRequestSchema: yup.ObjectSchema<PatchResumeCe
   "name",
   "description",
   "year",
-]).partial()
+]).partial();

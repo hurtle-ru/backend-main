@@ -36,7 +36,7 @@ import { PageResponse } from "../../infrastructure/controller/pagination/page.re
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
 import { ArtifactService} from "../../external/artifact/artifact.service";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 
 
 @injectable()
@@ -52,7 +52,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async getMe(
     @Request() req: JwtModel,
-    @Query() include?: ("meetings" | "vacancies")[]
+    @Query() include?: ("meetings" | "vacancies")[],
   ): Promise<GetEmployerResponse> {
     const employer = await prisma.employer.findUnique({
       where: { id: req.user.id },
@@ -72,7 +72,7 @@ export class EmployerController extends Controller {
   public async getAll(
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() include?: ("meetings" | "vacancies")[]
+    @Query() include?: ("meetings" | "vacancies")[],
   ): Promise<PageResponse<GetEmployerResponse>> {
     const where = {};
 
@@ -95,7 +95,7 @@ export class EmployerController extends Controller {
   @Delete("me")
   @Security("jwt", [UserRole.EMPLOYER])
   public async deleteMe(
-    @Request() req: JwtModel
+    @Request() req: JwtModel,
   ): Promise<void> {
     await prisma.employer.archive(req.user.id);
   }
@@ -104,9 +104,9 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: PatchMeByEmployerRequest
+    @Body() body: PatchMeByEmployerRequest,
   ): Promise<BasicEmployer> {
-    body = PatchMeByEmployerRequestSchema.validateSync(body)
+    body = PatchMeByEmployerRequestSchema.validateSync(body);
 
     const employer = await prisma.employer.update({
       where: { id: req.user.id },
@@ -132,7 +132,7 @@ export class EmployerController extends Controller {
     const fileName = await this.artifactService.getFullFileName(`employer/${id}/`, "avatar");
     const filePath = `employer/${id}/${fileName}`;
 
-    if(fileName == null) throw new HttpError(404, "File not found");
+    if (fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
@@ -190,7 +190,7 @@ export class EmployerController extends Controller {
   ): Promise<void> {
     const employer = await prisma.employer.findUnique({ where: { id } });
 
-    if(!employer) throw new HttpError(404, "Employer not found");
+    if (!employer) throw new HttpError(404, "Employer not found");
     if (req.user.id !== id && req.user.role !== UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another employer");
 
     await prisma.employer.archive(id);
@@ -201,12 +201,12 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: PatchByIdByEmployerRequest
+    @Body() body: PatchByIdByEmployerRequest,
   ): Promise<BasicEmployer> {
-    body = PatchByIdByEmployerRequestSchema.validateSync(body)
+    body = PatchByIdByEmployerRequestSchema.validateSync(body);
 
     const where = { id };
-    if(!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
+    if (!await prisma.employer.exists(where)) throw new HttpError(404, "Employer not found");
 
     return prisma.employer.update({
       where,
@@ -219,7 +219,7 @@ export class EmployerController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async getById(
     @Path() id: string,
-    @Query() include?: ("meetings" | "vacancies")[]
+    @Query() include?: ("meetings" | "vacancies")[],
   ): Promise<GetEmployerResponse> {
     const employer = await prisma.employer.findUnique({
       where: { id },
