@@ -44,7 +44,7 @@ export class ResumeOcrWorker extends BaseWorker<ResumeOcrJobData> {
         removeOnComplete: {
           count: 1000,
         },
-      }
+      },
     );
   }
 }

@@ -88,21 +88,21 @@ export class ManagerController extends Controller {
 
     if (!manager) throw new HttpError(404, "Manager not found");
 
-      const fileName = await this.artifactService.getFullFileName(`manager/${id}/`, "avatar");
-      const filePath = `manager/${id}/${fileName}`;
+    const fileName = await this.artifactService.getFullFileName(`manager/${id}/`, "avatar");
+    const filePath = `manager/${id}/${fileName}`;
 
-      if(fileName == null) throw new HttpError(404, "File not found");
+    if (fileName == null) throw new HttpError(404, "File not found");
 
-      const response = req.res;
-      if (response) {
-        const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+    const response = req.res;
+    if (response) {
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
 
-        if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
-        response.setHeader("Content-Length", fileOptions.size.toString());
+      if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
+      response.setHeader("Content-Length", fileOptions.size.toString());
 
-        stream.pipe(response);
-        return stream;
-      }
+      stream.pipe(response);
+      return stream;
+    }
   }
 
   @Put("{id}/avatar")

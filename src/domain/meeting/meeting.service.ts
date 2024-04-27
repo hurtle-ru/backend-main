@@ -205,7 +205,7 @@ export class MeetingService {
         try {
           await this.emailService.removeJob(job.id);
         } catch (e) {
-          logger.error( { jobId: job.id }, "Error while removing job");
+          logger.error({ jobId: job.id }, "Error while removing job");
         }
       }
     }

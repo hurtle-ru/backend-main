@@ -33,14 +33,14 @@ export class AuthService {
     return await bcrypt.compare(password, passwordHash);
   }
 
-  async registerApplicant(body: RegisterApplicantRequest,) {
+  async registerApplicant(body: RegisterApplicantRequest) {
     await prisma.applicant.create(
       {
         data: {
           login: body.email,
           password: {
             create: {
-              hash: await this.generatePasswordHash(body.password,),
+              hash: await this.generatePasswordHash(body.password),
             },
           },
           firstName: body.firstName,
@@ -79,16 +79,16 @@ export class AuthService {
   /**
   * @param {string | undefined} email inputted by user email for not email verified google accounts
   */
-  async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined,) {
+  async registerApplicantWithGoogle(body: RegisterApplicantWithGoogleRequest, googleToken: TokenPayload, email?: string | undefined) {
     return await prisma.applicant.create(
       {
         data: {
-          login: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
+          login: ((googleToken.email && googleToken.email_verified) ? googleToken.email : body.email)!,
           firstName: body.firstName,
           lastName: body.lastName,
           middleName: body.middleName,
           contact: body.contact,
-          email: (( googleToken.email && googleToken.email_verified ) ? googleToken.email : body.email)!,
+          email: ((googleToken.email && googleToken.email_verified) ? googleToken.email : body.email)!,
           birthDate: body.birthDate,
           googleTokenSub: googleToken.sub,
           resume: {
@@ -99,7 +99,7 @@ export class AuthService {
     );
   }
 
-  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: RegisterApplicantHhToken,) {
+  async registerApplicantWithHh(body: RegisterApplicantWithHhRequest, hhToken: RegisterApplicantHhToken) {
     const applicant = await prisma.applicant.create(
       {
         data: {

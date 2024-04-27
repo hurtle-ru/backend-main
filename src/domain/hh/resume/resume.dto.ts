@@ -1,10 +1,10 @@
-import * as yup from 'yup'
-import { BasicResumeSchema } from '../../resume/resume.dto';
-import { BasicResumeContactSchema } from '../../resume/contact/contact.dto';
-import { BasicResumeEducationSchema } from '../../resume/education/education.dto';
-import { BasicResumeLanguageSchema } from '../../resume/language/language.dto';
-import { BasicResumeExperienceSchema } from '../../resume/experience/experience.dto';
-import { BasicResumeCertificateSchema } from '../../resume/certificate/certificate.dto';
+import * as yup from "yup";
+import { BasicResumeSchema } from "../../resume/resume.dto";
+import { BasicResumeContactSchema } from "../../resume/contact/contact.dto";
+import { BasicResumeEducationSchema } from "../../resume/education/education.dto";
+import { BasicResumeLanguageSchema } from "../../resume/language/language.dto";
+import { BasicResumeExperienceSchema } from "../../resume/experience/experience.dto";
+import { BasicResumeCertificateSchema } from "../../resume/certificate/certificate.dto";
 import {
   Resume,
   ResumeCertificate,
@@ -96,5 +96,5 @@ export const ImportedFromHhResumeSchema: yup.ObjectSchema<HhMappedResume> = Basi
       "description",
       "year",
     ])).defined(),
-  }
-)
+  },
+);

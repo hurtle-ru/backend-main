@@ -37,25 +37,25 @@ export class ResumeOcrMapper {
       education: this.mapEducation(raw.education),
       experience: this.mapExperience(raw.experience),
       languages: this.mapLanguages(raw.languages),
-    }
+    };
   }
 
   private mapSkills(skills: RawRecognizedResume["skills"]): GetRecognizedResumeResponse["skills"] {
-    if(!skills) return [];
+    if (!skills) return [];
     const mappedSkills: GetRecognizedResumeResponse["skills"] = [];
 
     for (const skill of skills) {
-      if(skill) mappedSkills.push(skill);
+      if (skill) mappedSkills.push(skill);
     }
 
     return mappedSkills;
   }
 
   private mapDesiredSalaryCurrency(desiredSalaryCurrency: RawRecognizedResume["desiredSalaryCurrency"]): Currency | null {
-    if(desiredSalaryCurrency === null || desiredSalaryCurrency === undefined) return null;
+    if (desiredSalaryCurrency === null || desiredSalaryCurrency === undefined) return null;
     const upperDesiredSalaryCurrency = desiredSalaryCurrency.toUpperCase();
 
-    if(upperDesiredSalaryCurrency as Currency & "RUR" === "RUR") return "RUB";
+    if (upperDesiredSalaryCurrency as Currency & "RUR" === "RUR") return "RUB";
     if (!Object.values(Currency).includes(upperDesiredSalaryCurrency as keyof typeof Currency)) return null;
 
     return upperDesiredSalaryCurrency as Currency;
@@ -65,12 +65,12 @@ export class ResumeOcrMapper {
     if (certificates === null || certificates === undefined) return [];
     const mappedCertificates: GetRecognizedResumeResponse["certificates"] = [];
 
-    for(const certificate of certificates) {
-      if(!certificate) continue;
+    for (const certificate of certificates) {
+      if (!certificate) continue;
 
       const mappedName = certificate.name ?? null;
 
-      if(mappedName !== null) {
+      if (mappedName !== null) {
         mappedCertificates.push({
           name: mappedName,
           description: certificate.description ?? null,
@@ -83,13 +83,13 @@ export class ResumeOcrMapper {
   }
 
   private mapContacts(contacts: RawRecognizedResume["contacts"]): GetRecognizedResumeResponse["contacts"] {
-    if(contacts === null || contacts === undefined) return [];
+    if (contacts === null || contacts === undefined) return [];
     const mappedContacts: GetRecognizedResumeResponse["contacts"] = [];
 
-    for (let i = 0; i < contacts.length; i++){
+    for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i];
 
-      if(!contact) continue;
+      if (!contact) continue;
 
       const mappedName = null; // Игнорируем
       const mappedValue = contact.value ?? null;
@@ -97,9 +97,9 @@ export class ResumeOcrMapper {
 
       const rawType = contact.type ? contact.type.toUpperCase() : null;
       let mappedType = null;
-      if(rawType) mappedType = Object.values(ContactType).includes(rawType as keyof typeof ContactType) ? rawType as ContactType : null;
+      if (rawType) mappedType = Object.values(ContactType).includes(rawType as keyof typeof ContactType) ? rawType as ContactType : null;
 
-      if(mappedType !== null && mappedValue !== null) {
+      if (mappedType !== null && mappedValue !== null) {
         mappedContacts.push({
           name: mappedName,
           type: mappedType,
@@ -116,12 +116,12 @@ export class ResumeOcrMapper {
     if (educationList === null || educationList === undefined) return [];
     const mappedEducation: GetRecognizedResumeResponse["education"] = [];
 
-    for(const education of educationList) {
-      if(!education) continue;
+    for (const education of educationList) {
+      if (!education) continue;
 
       const mappedName = education.name ?? null;
 
-      if(mappedName !== null) {
+      if (mappedName !== null) {
         mappedEducation.push({
           name: mappedName,
           description: education.description ?? null,
@@ -132,19 +132,19 @@ export class ResumeOcrMapper {
       }
     }
 
-    return mappedEducation
+    return mappedEducation;
   }
 
   private mapExperience(experienceList: RawRecognizedResume["experience"]): GetRecognizedResumeResponse["experience"] {
     if (experienceList === null || experienceList === undefined) return [];
     const mappedExperience: GetRecognizedResumeResponse["experience"] = [];
 
-    for(const experience of experienceList) {
-      if(!experience) continue;
+    for (const experience of experienceList) {
+      if (!experience) continue;
 
       const mappedPosition = experience.position ?? null;
 
-      if(mappedPosition !== null) {
+      if (mappedPosition !== null) {
         mappedExperience.push({
           company: experience.company ?? null,
           position: mappedPosition,
@@ -157,11 +157,11 @@ export class ResumeOcrMapper {
       }
     }
 
-    return mappedExperience
+    return mappedExperience;
   }
 
   private mapLanguages(languages: RawRecognizedResume["languages"]): GetRecognizedResumeResponse["languages"] {
-    if(languages === null || languages === undefined) return [];
+    if (languages === null || languages === undefined) return [];
     const mappedLanguages: GetRecognizedResumeResponse["languages"] = [];
 
     for (const language of languages) {
@@ -169,9 +169,9 @@ export class ResumeOcrMapper {
 
       const mappedName = language.name ?? null;
       let mappedLevel = null;
-      if(language.level) {
+      if (language.level) {
         mappedLevel = language.level.toUpperCase();
-        if(mappedLevel.includes("NAT")) mappedLevel = "L1";
+        if (mappedLevel.includes("NAT")) mappedLevel = "L1";
       }
 
       if (mappedName !== null) {
@@ -191,7 +191,7 @@ export class ResumeOcrMapper {
         return object;
       }
 
-      for (let i = 0; i < Object.keys(object).length; i++){
+      for (let i = 0; i < Object.keys(object).length; i++) {
         const key: any = Object.keys(object)[i];
         const possibleResume = this.findResumeData(object[key]);
         if (possibleResume) return possibleResume;

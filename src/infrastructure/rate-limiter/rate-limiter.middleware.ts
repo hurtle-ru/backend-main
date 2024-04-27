@@ -51,7 +51,7 @@ export function userRateLimit(config: RateLimiterConfig) {
     const userRate = token ? updateRate(token, USERS_RATE_MAP, config).count : 0;
     const ipRate = ip ? updateRate(ip, IPS_RATE_MAP, config).count : 0;
 
-    if ( Math.max(userRate, ipRate) > config.limit ) {
+    if (Math.max(userRate, ipRate) > config.limit) {
       throw new HttpError(429, "Too Many Requests");
     }
 
@@ -78,7 +78,7 @@ export function routeRateLimit(config: RateLimiterConfig) {
     const userRate = token ? updateRate(token, usersRateMap, config).count : 0;
     const ipRate = ip ? updateRate(ip, ipsRateMap, config).count : 0;
 
-    if ( Math.max(userRate, ipRate) > config.limit ) {
+    if (Math.max(userRate, ipRate) > config.limit) {
       throw new HttpError(429, "Too Many Requests");
     }
 

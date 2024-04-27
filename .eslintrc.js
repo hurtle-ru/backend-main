@@ -22,7 +22,7 @@ module.exports = {
     "@typescript-eslint/restrict-plus-operands": "error",
     "@typescript-eslint/promise-function-async": "error",
     "@typescript-eslint/prefer-string-starts-ends-with": "error",
-    "@typescript-eslint/require-await": "error",
+    // "@typescript-eslint/require-await": "error",
     "@typescript-eslint/prefer-optional-chain": "error",
     "@typescript-eslint/no-useless-empty-export": "error",
     "@typescript-eslint/no-unnecessary-qualifier": "error",

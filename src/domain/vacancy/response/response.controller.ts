@@ -251,7 +251,7 @@ export class VacancyResponseController extends Controller {
     @Request() req: JwtModel,
     @Query() employerId: string,
   ): Promise<GetVacancyResponsesCountResponse> {
-    const employer = await prisma.employer.exists( { id: employerId } );
+    const employer = await prisma.employer.exists({ id: employerId });
     if (!employer) throw new HttpError(404, "Employer not found");
 
     return prisma.vacancy.findMany({

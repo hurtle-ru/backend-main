@@ -43,7 +43,7 @@ export class HhResumeMapper {
   }
 
   mapCurrency(hhCurrency: hh.Currency): Currency | null {
-    if(hhCurrency === "RUR") return "RUB";
+    if (hhCurrency === "RUR") return "RUB";
     if (!Object.values(Currency).includes(hhCurrency as keyof typeof Currency)) return null;
 
     return hhCurrency as Currency;
@@ -52,21 +52,21 @@ export class HhResumeMapper {
   mapContact(hhContact: hh.Contact): HhMappedResume["contacts"][number] {
     let type: ContactType;
     switch (hhContact.type.id) {
-      case "home":
-        type = ContactType.PHONE;
-        break;
-      case "work":
-        type = ContactType.PHONE;
-        break;
-      case "cell":
-        type = ContactType.PHONE;
-        break;
-      case "email":
-        type = ContactType.EMAIL;
-        break;
-      default:
-        type = ContactType.OTHER;
-        break;
+    case "home":
+      type = ContactType.PHONE;
+      break;
+    case "work":
+      type = ContactType.PHONE;
+      break;
+    case "cell":
+      type = ContactType.PHONE;
+      break;
+    case "email":
+      type = ContactType.EMAIL;
+      break;
+    default:
+      type = ContactType.OTHER;
+      break;
     }
 
     let value: string;

@@ -63,9 +63,9 @@ export class HhAuthService {
         expiresIn: response.data.expires_in,
       };
     } catch (e: unknown) {
-      if(!(e instanceof AxiosError)) throw e;
+      if (!(e instanceof AxiosError)) throw e;
 
-      if(e.response?.status === 400 && e.response.data?.error_description === "token not expired") {
+      if (e.response?.status === 400 && e.response.data?.error_description === "token not expired") {
         throw new HhRefreshTokenNotExpired("Auth token is not expired");
       }
 
@@ -74,12 +74,12 @@ export class HhAuthService {
   }
 
   async refreshTokenAndSaveIfNeed(hhToken: HhToken): Promise<HhToken> {
-    if(prisma.hhToken.isExpired(hhToken)) {
+    if (prisma.hhToken.isExpired(hhToken)) {
       let newToken;
       try {
         newToken = await this.refreshAccessToken(hhToken.refreshToken);
-      } catch(e: unknown) {
-        if(!(e instanceof HhRefreshTokenNotExpired)) throw e;
+      } catch (e: unknown) {
+        if (!(e instanceof HhRefreshTokenNotExpired)) throw e;
 
         return hhToken;
       }
@@ -88,17 +88,17 @@ export class HhAuthService {
         accessToken: newToken.accessToken,
         refreshToken: newToken.refreshToken,
         expiresIn: newToken.expiresIn,
-      }
+      };
 
       await prisma.hhToken.update({
         where: { applicantId: hhToken.applicantId },
         data: newTokenData,
       });
 
-      return {...hhToken, ...newTokenData}
+      return {...hhToken, ...newTokenData};
     }
 
-  return hhToken
+    return hhToken;
   }
 
 }

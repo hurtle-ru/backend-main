@@ -21,8 +21,8 @@ export class ResumeOcrQueue {
 
   constructor() {
     this.queue = new Queue(RESUME_OCR_QUEUE_NAME, {
-        connection: redis,
-      },
+      connection: redis,
+    },
     );
   }
 
@@ -48,13 +48,13 @@ export class ResumeOcrQueue {
         metadata: job.data.metadata,
         mappedResume: job.data.mappedResume ?? null,
       },
-    }
+    };
   }
 
   async patchJobData(jobId: string, newFields: Partial<ResumeOcrJobData>) {
     const job = await Job.fromId<ResumeOcrJobData, any, any>(this.queue, jobId);
 
-    if(job) {
+    if (job) {
       const data = job?.data;
 
       await job?.updateData({

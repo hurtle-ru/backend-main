@@ -65,7 +65,7 @@ export class GuestResponseService {
     }, id: string) => {
       const job = await this.getQueuedWithOcrJob(args.jobId);
 
-      if(job?.data?.metadata?.callback === "create-guest-vacancy-response") {
+      if (job?.data?.metadata?.callback === "create-guest-vacancy-response") {
         const { metadata } = job.data;
         let guestResponse;
 
@@ -83,7 +83,7 @@ export class GuestResponseService {
             guestResponseId: guestResponse ? guestResponse.id : null,
             errorDuringCreation: !guestResponse,
           },
-        })
+        });
       }
     });
 
@@ -94,7 +94,7 @@ export class GuestResponseService {
     let resume = data.mappedResume!;
     const { vacancyId, overwriteResumeFields } = data.metadata as MetadataCreateGuestVacancyResponse;
 
-    if(overwriteResumeFields) {
+    if (overwriteResumeFields) {
       resume = this.createOverwrittenResume(overwriteResumeFields, resume);
     }
 
@@ -130,7 +130,7 @@ export class GuestResponseService {
     const { overwriteResumeFields } = body;
     const { id, data } = job;
 
-    if(overwriteResumeFields) {
+    if (overwriteResumeFields) {
       const metadata = data.metadata as MetadataCreateGuestVacancyResponse;
       const guestResponseId = metadata.guestResponseId;
       const updatedResume = overwriteResumeFields && data.mappedResume
@@ -145,22 +145,22 @@ export class GuestResponseService {
         ...(updatedResume ? { mappedResume: updatedResume } : {}),
       });
 
-      if(guestResponseId) {
+      if (guestResponseId) {
         await prisma.guestVacancyResponse.update({
           where: { id: guestResponseId },
           data: {
             ...(updatedResume ? { resume: updatedResume } : {}),
           },
-        })
+        });
       }
     }
   }
 
   private createOverwrittenResume(
     overwriteResumeFields: Required<PatchGuestVacancyResponseQueuedWithOcrRequest>["overwriteResumeFields"],
-    resume: GetRecognizedResumeResponse
+    resume: GetRecognizedResumeResponse,
   ): GetRecognizedResumeResponse {
-    if(!overwriteResumeFields.contacts) return resume;
+    if (!overwriteResumeFields.contacts) return resume;
 
     const typesToOverwrite = new Set(overwriteResumeFields.contacts.map(c => c.type));
 
@@ -170,6 +170,6 @@ export class GuestResponseService {
         ...resume.contacts.filter(c => !typesToOverwrite.has(c.type)),
         ...overwriteResumeFields.contacts,
       ],
-    }
-  };
+    };
+  }
 }

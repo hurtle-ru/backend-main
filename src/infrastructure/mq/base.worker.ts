@@ -6,27 +6,28 @@ export class BaseWorker<DataType = any, ResultType = any, NameType extends strin
   constructor(
     queueName: string,
     processor: (job: Job<DataType, ResultType, NameType>) => Promise<ResultType>,
-    opts?: WorkerOptions
+    opts?: WorkerOptions,
   ) {
     super(queueName, processor, {
       ...opts,
       connection: redis,
     });
 
-    this.on("failed", (job, err) => {-
+    this.on("failed", (job, err) => {
+      -
       logger.error({
-          err: { stack: err.stack },
-          jobId: job?.id,
-          queueName: queueName,
-        }, `Job failed with error: ${err.message}`
+        err: { stack: err.stack },
+        jobId: job?.id,
+        queueName: queueName,
+      }, `Job failed with error: ${err.message}`,
       );
     });
 
     this.on("error", (err) => {
       logger.error({
-          err: { stack: err.stack },
-          queueName: queueName,
-        }, `Unexpected error in worker: ${err.message}`
+        err: { stack: err.stack },
+        queueName: queueName,
+      }, `Unexpected error in worker: ${err.message}`,
       );
     });
   }

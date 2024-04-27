@@ -13,8 +13,8 @@ import { GetResumeOcrJobResponse, ResumeOcrJobData } from "./resume-ocr.dto";
 import { Job, JobsOptions } from "bullmq";
 import { ResumeOcrQueue } from "./mq/resume-ocr.queue";
 import { randomUUID } from "crypto";
-import {readPdfText} from 'pdf-text-reader';
-import * as path from 'path';
+import {readPdfText} from "pdf-text-reader";
+import * as path from "path";
 import * as streamConsumers from "node:stream/consumers";
 import { jsonrepair } from "jsonrepair";
 import { logger } from "../../infrastructure/logger/logger";
@@ -26,8 +26,11 @@ import TextContentBlock = Threads.TextContentBlock;
 @singleton()
 export class ResumeOcrService {
   public static TEMPLATE_TYPE = "prompt-templates";
+
   public static TEMPLATE_EXTENSION = "txt";
+
   public static TEMPLATE_RECOGNIZE_PDF_NAME = "resume-ocr-recognize-pdf";
+
   public static ARTIFACT_DIR = "resume-ocr";
 
   constructor(
@@ -65,19 +68,19 @@ export class ResumeOcrService {
       ResumeOcrService.TEMPLATE_RECOGNIZE_PDF_NAME,
       ResumeOcrService.TEMPLATE_EXTENSION,
       {},
-      true
+      true,
     );
 
     const response = await this.chatgptService.generatePromptCompletionWithFile(
       renderedPrompt,
       file,
-      resumeOcrConfig.RESUME_OCR_ASSISTANT_ID
+      resumeOcrConfig.RESUME_OCR_ASSISTANT_ID,
     ) as TextContentBlock[];
 
     try {
       const responseText = response[0].text.value;
       return JSON.parse(this.cleanUpCompletion(responseText));
-    } catch(e) {
+    } catch (e) {
       logger.error({
         response,
       }, "Error occurred during parsing response");
@@ -101,7 +104,7 @@ export class ResumeOcrService {
     return new File(
       [buffer],
       newName ? newName : originalName,
-      { type: mimeType ?? undefined }
+      { type: mimeType ?? undefined },
     );
   }
 
