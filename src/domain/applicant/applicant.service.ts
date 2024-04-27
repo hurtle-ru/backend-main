@@ -7,7 +7,7 @@ import _ from "lodash";
 @injectable()
 @singleton()
 export class ApplicantService {
-  public buildSearchInput(searchQuery: string): Prisma.ApplicantFindManyArgs["where"] {
+  public buildSearchInput(searchQuery: string): Prisma.ApplicantWhereInput {
     const searchWords = this.getSearchWords(searchQuery);
 
     const scalarFieldsInput = searchWords.flatMap((word): Prisma.ApplicantWhereInput[] => [
