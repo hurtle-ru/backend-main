@@ -382,18 +382,19 @@ model VacancyResponse {
 }
 
 model GuestVacancyResponse {
-  id                 String                @id @default(uuid())
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
-  text               String?               @db.VarChar(3000)
-  status             VacancyResponseStatus @default(NEW_APPLICATION)
-  isViewedByEmployer Boolean               @default(false)
-  resume             Json
-  vacancy            Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  id                 String                          @id @default(uuid())
+  createdAt          DateTime                        @default(now())
+  updatedAt          DateTime                        @updatedAt
+  text               String?                         @db.VarChar(3000)
+  status             VacancyResponseStatus           @default(NEW_APPLICATION)
+  moderationStatus   VacancyResponseModerationStatus @default(UNDER_REVIEW)
+  isViewedByEmployer Boolean                         @default(false)
+  resume             Json?
+  vacancy            Vacancy                         @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
   vacancyId          String
-  firstName          String                @db.VarChar(50)
-  lastName           String                @db.VarChar(50)
-  middleName         String?               @db.VarChar(50)
+  firstName          String?                         @db.VarChar(50)
+  lastName           String?                         @db.VarChar(50)
+  middleName         String?                         @db.VarChar(50)
   isReadyToRelocate  Boolean?
 }
 
@@ -530,6 +531,12 @@ enum VacancyResponseStatus {
   OFFER_MADE
   HIRED
   REJECTED
+}
+
+enum VacancyResponseModerationStatus {
+  UNDER_REVIEW
+  FAILED_TO_PASS_REVIEW
+  PUBLISHED
 }
 
 enum OfferStatus {

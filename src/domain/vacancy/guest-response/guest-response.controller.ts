@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import {
   Body,
-  Controller, Delete,
+  Controller, Delete, Deprecated,
   Get, Middlewares, Patch,
   Path,
   Post,
@@ -18,7 +18,6 @@ import {
   CreateGuestVacancyResponseRequestSchema,
   CreateQueuedWithOcrGuestVacancyResponseResponse,
   GetGuestVacancyResponseResponse, PatchGuestVacancyResponseQueuedWithOcrRequest,
-  PatchGuestVacancyResponseQueuedWithOcrRequestSchema,
   PatchGuestVacancyResponseRequest,
   PatchGuestVacancyResponseRequestSchema,
 } from "./guest-response.dto";
@@ -31,9 +30,11 @@ import { PageResponse } from "../../../infrastructure/controller/pagination/page
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 import { GuestResponseService } from "./guest-response.service";
-import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
 import { ArtifactService } from "../../../external/artifact/artifact.service";
 import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
+import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
+import { Request as ExpressRequest } from "express";
+import { Readable } from "stream";
 
 
 @injectable()
@@ -48,6 +49,7 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Post("queuedWithOcr")
+  @Deprecated()
   @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
   @Response<HttpErrorBody & {"error":
@@ -61,14 +63,17 @@ export class GuestVacancyResponseController extends Controller {
     @UploadedFile("file") multerFile: Express.Multer.File,
     @Query() vacancyId: string,
   ): Promise<CreateQueuedWithOcrGuestVacancyResponseResponse> {
-    await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
-    await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
+    throw new HttpError(410, "Gone");
 
-    const { id } = await this.guestResponseService.enqueueCreationWithOcr(multerFile, vacancyId);
-    return { jobId: id! };
+    // await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
+    // await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
+    //
+    // const { id } = await this.guestResponseService.enqueueCreationWithOcr(multerFile, vacancyId);
+    // return { jobId: id! };
   }
 
   @Patch("queuedWithOcr/{jobId}/resume")
+  @Deprecated()
   @Middlewares(rateLimit({limit: 100, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async patchQueuedWithOcrById(
@@ -76,51 +81,67 @@ export class GuestVacancyResponseController extends Controller {
     @Path() jobId: string,
     @Body() body: PatchGuestVacancyResponseQueuedWithOcrRequest,
   ) {
-    body = PatchGuestVacancyResponseQueuedWithOcrRequestSchema.validateSync(body);
+    throw new HttpError(410, "Gone");
 
-    const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
-    if (!job) throw new HttpError(404, "Job not found");
-
-    await this.guestResponseService.patchQueuedWithOcrJob(job, body);
+    // body = PatchGuestVacancyResponseQueuedWithOcrRequestSchema.validateSync(body);
+    //
+    // const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    // if (!job) throw new HttpError(404, "Job not found");
+    //
+    // await this.guestResponseService.patchQueuedWithOcrJob(job, body);
   }
 
   @Get("queuedWithOcr/{jobId}")
+  @Deprecated()
   @Middlewares(rateLimit({limit: 1200, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getQueuedWithOcrById(
     @Request() req: JwtModel,
     @Path() jobId: string,
   ) {
-    const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    throw new HttpError(410, "Gone");
 
-    if (!job) throw new HttpError(404, "Job not found");
-
-    return job;
+    // const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    //
+    // if (!job) throw new HttpError(404, "Job not found");
+    //
+    // return job;
   }
 
   @Post("")
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
   @Response<HttpErrorBody & {"error":
       | "Vacancy is unpublished or hidden"
-      | "Applicant resume is unfilled or does not exist"
   }>(409)
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async create(
-    @Request() req: JwtModel,
-    @Body() body: CreateGuestVacancyResponseRequest,
+    @Request() req: { user: undefined },
+    @UploadedFile("file") multerFile: Express.Multer.File,
+    @Query() vacancyId: string,
   ): Promise<BasicGuestVacancyResponse> {
-    body = CreateGuestVacancyResponseRequestSchema.validateSync(body);
+    await this.artifactService.validateFileAttributes(
+      multerFile, [
+        FILE_EXTENSION_MIME_TYPES[".pdf"],
+        FILE_EXTENSION_MIME_TYPES[".doc"],
+        FILE_EXTENSION_MIME_TYPES[".docx"],
+      ],
+      artifactConfig.MAX_DOCUMENT_FILE_SIZE,
+    );
 
-    await this.guestResponseService.validateVacancyBeforeCreation(body.vacancyId);
-    const { resume, ...bodyData} = body;
-    await this.guestResponseService.validateResumeBeforeCreation(resume);
+    await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
 
-
-    return prisma.guestVacancyResponse.create({
+    const guestVacancyResponse = await prisma.guestVacancyResponse.create({
       data: {
-        ...bodyData,
-        resume,
+        vacancyId,
+        status: "NEW_APPLICATION",
+        moderationStatus: "UNDER_REVIEW",
       },
     });
+
+    await this.guestResponseService.saveResumeFile(multerFile, guestVacancyResponse.id);
+
+    return guestVacancyResponse;
   }
 
   @Get("my")
@@ -175,6 +196,22 @@ export class GuestVacancyResponseController extends Controller {
     ]);
 
     return new PageResponse(guestVacancyResponses, page, size, guestVacancyResponsesCount);
+  }
+
+  @Get("{id}/resume")
+  @Middlewares(rateLimit({limit: 500, interval: 60}))
+  @Response<HttpErrorBody & {"error": "File not found" | "GuestVacancyResponse not found"}>(404)
+  public async getResumeById(
+    @Request() req: ExpressRequest,
+    @Path() id: string,
+  ): Promise<Readable | undefined> {
+    const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
+      where: { id },
+    });
+
+    if (!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
+
+    return this.guestResponseService.getResumeFile(req, id);
   }
 
   @Get("{id}")

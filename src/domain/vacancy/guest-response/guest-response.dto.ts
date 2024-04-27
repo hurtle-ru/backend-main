@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-import { GuestVacancyResponse, Resume, VacancyResponseStatus } from "@prisma/client";
+import { GuestVacancyResponse, Resume, VacancyResponseModerationStatus, VacancyResponseStatus } from "@prisma/client";
 import { BasicVacancy, CreateVacancyRequest, CreateVacancyRequestSchema } from "../vacancy.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 import { BasicResumeSchema } from "../../resume/resume.dto";
@@ -113,11 +113,12 @@ const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyRespons
   updatedAt: yup.date().defined(),
   text: yup.string().defined().trim().max(3000).nullable(),
   status: yupOneOfEnum(VacancyResponseStatus).defined(),
+  moderationStatus: yupOneOfEnum(VacancyResponseModerationStatus).defined(),
   isViewedByEmployer: yup.boolean().defined(),
-  resume: CreateGuestVacancyResponseRequestResumeSchema,
+  resume: CreateGuestVacancyResponseRequestResumeSchema.nullable(),
   vacancyId: yup.string().defined().max(36),
-  firstName: yup.string().defined(),
-  lastName: yup.string().defined(),
+  firstName: yup.string().defined().nullable(),
+  lastName: yup.string().defined().nullable(),
   middleName: yup.string().defined().nullable(),
   isReadyToRelocate: yup.boolean().defined().nullable(),
 });

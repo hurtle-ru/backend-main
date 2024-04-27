@@ -16,13 +16,22 @@ import {
 import { Job, QueueEvents } from "bullmq";
 import { logger } from "../../../infrastructure/logger/logger";
 import redis from "../../../infrastructure/mq/redis.provider";
+import path from "path";
+import { ArtifactService } from "../../../external/artifact/artifact.service";
+import { Readable } from "stream";
+import { Request } from "express";
 
 
 @injectable()
 @singleton()
 export class GuestResponseService {
+  public static ARTIFACT_DIR = "guest-response";
+
+  public static RESUME_FILE_NAME = "resume.pdf";
+
   constructor(
     private readonly resumeOcrService: ResumeOcrService,
+    private readonly artifactService: ArtifactService,
   ) {
   }
 
@@ -38,6 +47,29 @@ export class GuestResponseService {
   public async validateResumeBeforeCreation(resume: ResumeToCheckIsFilled) {
     if (!resume || !prisma.resume.isFilled(resume)) {
       throw new HttpError(409, "Applicant resume is unfilled or does not exist");
+    }
+  }
+
+  public async saveResumeFile(multerFile: Express.Multer.File, responseId: string) {
+    await this.artifactService.saveDocumentFile(multerFile, this.getResumeFilePath(responseId));
+  }
+
+  public async getResumeFile(req: Request, id: string): Promise<Readable | undefined> {
+    const fileName = await this.artifactService.getFullFileName(`applicant/${id}/`, "avatar");
+    const filePath = `applicant/${id}/${fileName}`;
+
+    if (fileName == null) throw new HttpError(404, "File not found");
+
+    const response = req.res;
+    if (response) {
+      req.log.trace("File path: ", filePath);
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+
+      if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
+      response.setHeader("Content-Length", fileOptions.size.toString());
+
+      stream.pipe(response);
+      return stream;
     }
   }
 
@@ -126,7 +158,7 @@ export class GuestResponseService {
     return this.resumeOcrService.getJob(jobId);
   }
 
-  async patchQueuedWithOcrJob(job: GetResumeOcrJobResponse, body: PatchGuestVacancyResponseQueuedWithOcrRequest) {
+  public async patchQueuedWithOcrJob(job: GetResumeOcrJobResponse, body: PatchGuestVacancyResponseQueuedWithOcrRequest) {
     const { overwriteResumeFields } = body;
     const { id, data } = job;
 
@@ -154,6 +186,14 @@ export class GuestResponseService {
         });
       }
     }
+  }
+
+  public getResumeFilePath(responseId: string) {
+    return path.join(
+      GuestResponseService.ARTIFACT_DIR,
+      responseId,
+      GuestResponseService.RESUME_FILE_NAME,
+    );
   }
 
   private createOverwrittenResume(
