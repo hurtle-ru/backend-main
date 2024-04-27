@@ -8,14 +8,14 @@ export class ApplicantService {
     "firstName", "lastName", "middleName", "nickname", "login", "email", "phone",
   ]
 
-  getApplicantSearchByDefaultSearchFields = (search: string | undefined, skillSearch: string[] | undefined,) => ({
+  getApplicantSearchByDefaultSearchFields = (search: string | undefined, availableResumesIds: string[]) => ({
     OR: [
       ...this.DEFAULT_SCALAR_SEARCH_FIELDS.map(fieldName => ({ [fieldName]: { search, mode: 'insensitive' } })),
       {
         resume: {
-          title: search,
-          summary: search,
-          skills: { hasSome: skillSearch },
+          id: { in: availableResumesIds || undefined},
+          title: { search },
+          summary: { search },
         }
       }
     ]

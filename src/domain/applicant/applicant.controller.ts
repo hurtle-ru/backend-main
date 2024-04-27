@@ -82,14 +82,23 @@ export class ApplicantController extends Controller {
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
     @Query() has?: ("resume" | "meetings" | "vacancyResponses")[]
   ): Promise<PageResponse<GetApplicantResponse>> {
-    const searchFilter = req.user.role === UserRole.MANAGER ? this.applicantService.getApplicantSearchByDefaultSearchFields(search, searchSkills) : undefined
+    const availableResumes = await prisma.resume.findMany({
+      select: {
+        id: true,
+      },
+      where: searchSkills ? {
+        skills: {
+          hasSome: searchSkills,
+        }
+      }: undefined
+    }
+    )
+    const availableResumesIds = availableResumes.map((element) => element["id"])
 
+    const searchFilter = req.user.role === UserRole.MANAGER ? this.applicantService.getApplicantSearchByDefaultSearchFields(search, availableResumesIds) : undefined
     const where: Prisma.ApplicantFindManyArgs["where"] = {
       nickname,
       ...searchFilter,
-      resume: {
-        summary: {}
-      },
       ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } } ),
       ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } } ),
       ...(has?.includes("meetings") && { meetings: { some: {} } } ),
