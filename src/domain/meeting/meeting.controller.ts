@@ -396,7 +396,7 @@ export class MeetingController extends Controller {
     @Request() req: ExpressRequest & JwtModel,
     @Path() id: string,
   ): Promise<Readable | any> {
-    const meeting = await prisma.meeting.findUnique( {
+    const meeting = await prisma.meeting.findUnique({
       where: {
         id,
       },
