@@ -4,18 +4,16 @@ import {
   Controller, Delete, Deprecated,
   Get, Middlewares, Patch,
   Path,
-  Post,
+  Post, Produces,
   Query,
   Request,
   Response,
   Route,
-  Security,
+  Security, SuccessResponse,
   Tags, UploadedFile,
 } from "tsoa";
 import {
   BasicGuestVacancyResponse,
-  CreateGuestVacancyResponseRequest,
-  CreateGuestVacancyResponseRequestSchema,
   CreateQueuedWithOcrGuestVacancyResponseResponse,
   GetGuestVacancyResponseResponse, PatchGuestVacancyResponseQueuedWithOcrRequest,
   PatchGuestVacancyResponseRequest,
@@ -41,6 +39,8 @@ import { Readable } from "stream";
 @Route("api/v1/guestVacancyResponses")
 @Tags("Guest Vacancy Response")
 export class GuestVacancyResponseController extends Controller {
+  public static readonly RESUME_FILE_MIME_TYPE = "application/pdf";
+
   constructor(
     private readonly artifactService: ArtifactService,
     private readonly guestResponseService: GuestResponseService,
@@ -121,11 +121,7 @@ export class GuestVacancyResponseController extends Controller {
     @Query() vacancyId: string,
   ): Promise<BasicGuestVacancyResponse> {
     await this.artifactService.validateFileAttributes(
-      multerFile, [
-        FILE_EXTENSION_MIME_TYPES[".pdf"],
-        FILE_EXTENSION_MIME_TYPES[".doc"],
-        FILE_EXTENSION_MIME_TYPES[".docx"],
-      ],
+      multerFile, [GuestVacancyResponseController.RESUME_FILE_MIME_TYPE],
       artifactConfig.MAX_DOCUMENT_FILE_SIZE,
     );
 
@@ -201,10 +197,11 @@ export class GuestVacancyResponseController extends Controller {
   @Get("{id}/resume")
   @Middlewares(rateLimit({limit: 500, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "GuestVacancyResponse not found"}>(404)
-  public async getResumeById(
+  @Produces(GuestVacancyResponseController.RESUME_FILE_MIME_TYPE)
+  public async getResumeFileById(
     @Request() req: ExpressRequest,
     @Path() id: string,
-  ): Promise<Readable | undefined> {
+  ): Promise<Readable | null> {
     const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
       where: { id },
     });

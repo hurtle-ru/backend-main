@@ -25,9 +25,8 @@ import { Request } from "express";
 @injectable()
 @singleton()
 export class GuestResponseService {
-  public static ARTIFACT_DIR = "guest-response";
-
-  public static RESUME_FILE_NAME = "resume.pdf";
+  public static readonly ARTIFACT_DIR = "guest-response";
+  public static readonly RESUME_FILE_NAME = "resume";
 
   constructor(
     private readonly resumeOcrService: ResumeOcrService,
@@ -50,15 +49,19 @@ export class GuestResponseService {
     }
   }
 
-  public async saveResumeFile(multerFile: Express.Multer.File, responseId: string) {
-    await this.artifactService.saveDocumentFile(multerFile, this.getResumeFilePath(responseId));
+  public async saveResumeFile(multerFile: Express.Multer.File, id: string) {
+    const extension = path.extname(multerFile.originalname);
+    await this.artifactService.saveDocumentFile(multerFile, this.getResumeFilePath(id, extension));
   }
 
-  public async getResumeFile(req: Request, id: string): Promise<Readable | undefined> {
-    const fileName = await this.artifactService.getFullFileName(`applicant/${id}/`, "avatar");
-    const filePath = `applicant/${id}/${fileName}`;
+  public async getResumeFile(req: Request, id: string): Promise<Readable | null> {
+    const savedResumeFileName = await this.artifactService.getFullFileName(
+      `${GuestResponseService.ARTIFACT_DIR}/${id}/`,
+      GuestResponseService.RESUME_FILE_NAME,
+    );
 
-    if (fileName == null) throw new HttpError(404, "File not found");
+    if (savedResumeFileName == null) throw new HttpError(404, "File not found");
+    const filePath = `${GuestResponseService.ARTIFACT_DIR}/${id}/${savedResumeFileName}`;
 
     const response = req.res;
     if (response) {
@@ -71,6 +74,8 @@ export class GuestResponseService {
       stream.pipe(response);
       return stream;
     }
+
+    return null;
   }
 
   public async enqueueCreationWithOcr(multerFile: Express.Multer.File, vacancyId: string) {
@@ -188,11 +193,11 @@ export class GuestResponseService {
     }
   }
 
-  public getResumeFilePath(responseId: string) {
+  public getResumeFilePath(responseId: string, extension: string) {
     return path.join(
       GuestResponseService.ARTIFACT_DIR,
       responseId,
-      GuestResponseService.RESUME_FILE_NAME,
+      GuestResponseService.RESUME_FILE_NAME  + extension,
     );
   }
 

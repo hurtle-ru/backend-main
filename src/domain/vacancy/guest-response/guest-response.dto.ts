@@ -14,6 +14,11 @@ import { BasicResumeEducation, BasicResumeEducationSchema } from "../../resume/e
 import { BasicResumeExperience, BasicResumeExperienceSchema } from "../../resume/experience/experience.dto";
 import { BasicResumeLanguage, BasicResumeLanguageSchema } from "../../resume/language/language.dto";
 import { FullRequired } from "../../../util/typescript.utils";
+import {
+  RequesterApplicantSchema,
+  RequesterEmployer, RequesterEmployerSchema, RequesterManager, RequesterManagerSchema,
+  RequesterPublic, RequesterPublicSchema,
+} from "../../../infrastructure/controller/requester/requester.dto";
 
 
 export type BasicGuestVacancyResponse = Omit<
@@ -150,16 +155,57 @@ export type GetGuestVacancyResponseResponse = BasicGuestVacancyResponse & {
   vacancy?: BasicVacancy,
 };
 
-export type PatchGuestVacancyResponseRequest = Partial<Pick<
-  BasicGuestVacancyResponse,
-  | "status"
-  | "isViewedByEmployer"
->>;
+export type PatchGuestVacancyResponseByPublicRequest = Partial<
+  Pick<
+    BasicGuestVacancyResponse,
+    | "contacts"
+    | "text"
+  >
+> & RequesterPublic;
 
-export const PatchGuestVacancyResponseRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseRequest> = BasicGuestVacancyResponseSchema.pick([
+export const PatchGuestVacancyResponseByPublicRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseByPublicRequest> = BasicGuestVacancyResponseSchema.pick([
+  "contacts",
+  "text",
+]).partial()
+  .concat(RequesterPublicSchema);
+
+export type PatchGuestVacancyResponseByEmployerRequest = Partial<
+  Pick<
+    BasicGuestVacancyResponse,
+    | "status"
+    | "isViewedByEmployer"
+  >
+> & RequesterEmployer;
+
+export const PatchGuestVacancyResponseByEmployerRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseByEmployerRequest> = BasicGuestVacancyResponseSchema.pick([
   "status",
   "isViewedByEmployer",
-]).partial();
+]).partial()
+  .concat(RequesterEmployerSchema);
+
+export type PatchGuestVacancyResponseByManagerRequest = Partial<
+  Pick<
+    BasicGuestVacancyResponse,
+    | "status"
+    | "isViewedByEmployer"
+    | "moderationStatus"
+    | "resumeTitle"
+    | "firstName"
+    | "lastName"
+    | "middleName"
+  >
+> & RequesterManager;
+
+export const PatchGuestVacancyResponseByManagerRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseByManagerRequest> = BasicGuestVacancyResponseSchema.pick([
+  "status",
+  "isViewedByEmployer",
+  "moderationStatus",
+  "resumeTitle",
+  "firstName",
+  "lastName",
+  "middleName",
+]).partial()
+  .concat(RequesterManagerSchema);
 
 export type CreateQueuedWithOcrGuestVacancyResponseResponse = {
   jobId: string

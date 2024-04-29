@@ -396,6 +396,8 @@ model GuestVacancyResponse {
   lastName           String?                         @db.VarChar(50)
   middleName         String?                         @db.VarChar(50)
   isReadyToRelocate  Boolean?
+  resumeTitle        String?                         @db.VarChar(255)
+  // resumeContacts     Json?
 }
 
 model ApplicantAiChat {
