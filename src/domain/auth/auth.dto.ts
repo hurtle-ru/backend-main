@@ -15,10 +15,10 @@ import { GoogleTokenSchema } from "../../external/google/auth/auth.dto";
 import { BasicEmployer, BasicEmployerSchema } from "../employer/employer.dto";
 
 
-export interface JwtModel {
+export interface JwtModel<R = UserRole | typeof GUEST_ROLE> {
   user: {
     id: string; // Contains model id or email if the user is Guest
-    role: UserRole | typeof GUEST_ROLE;
+    role: R;
     iat: number;
   };
 }
