@@ -36,12 +36,6 @@ import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/art
 import { Request as ExpressRequest } from "express";
 import { Readable } from "stream";
 import { validateSyncByAtLeastOneSchema } from "../../../infrastructure/validation/requests/utils.yup";
-import {
-  CreateMeetingByApplicantRequestSchema,
-  CreateMeetingByEmployerRequestSchema,
-  CreateMeetingRequestSchema,
-} from "../../meeting/meeting.dto";
-import { PUBLIC } from "../../../infrastructure/controller/requester/requester.dto";
 
 
 @injectable()
@@ -226,7 +220,7 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Get("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
   public async getById(
     @Request() req: JwtModel | { user: undefined },
@@ -237,15 +231,6 @@ export class GuestVacancyResponseController extends Controller {
 
     if (req.user) {
       switch (req.user.role) {
-      case UserRole.APPLICANT:
-        where = {
-          id,
-          vacancy: {
-            isHidden: false,
-            status: { equals: VacancyStatus.PUBLISHED },
-          },
-        };
-        break;
       case UserRole.EMPLOYER:
         where = { id, vacancy: { employerId: req.user.id } };
         break;

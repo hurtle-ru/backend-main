@@ -43,3 +43,28 @@ export type GetGuestVacancyResponseResumeResponse = BasicGuestVacancyResponseRes
   response: BasicGuestVacancyResponse,
   contacts: BasicGuestVacancyResponseResumeContact[],
 }
+
+export type PatchGuestVacancyResponseResumeRequest = Partial<
+  Pick<
+    BasicGuestVacancyResponseResume,
+    | "title"
+    | "firstName"
+    | "middleName"
+    | "lastName"
+    | "isVisibleToEmployers"
+    | "isReadyToRelocate"
+    | "desiredSalary"
+    | "desiredSalaryCurrency"
+  >
+>;
+
+export const PatchGuestVacancyResponseResumeRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseResumeRequest> = BasicGuestVacancyResponseResumeSchema.pick([
+  "title",
+  "firstName",
+  "middleName",
+  "lastName",
+  "isVisibleToEmployers",
+  "isReadyToRelocate",
+  "desiredSalary",
+  "desiredSalaryCurrency",
+]).partial();

@@ -16,6 +16,7 @@ import {
   RequesterEmployer, RequesterEmployerSchema, RequesterManager, RequesterManagerSchema,
   RequesterPublic, RequesterPublicSchema,
 } from "../../../infrastructure/controller/requester/requester.dto";
+import { BasicGuestVacancyResponseResume } from "../../guest-response-resume/guest-response-resume.dto";
 
 
 export type BasicGuestVacancyResponse = Pick<
@@ -43,7 +44,7 @@ const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyRespons
 
 export type GetGuestVacancyResponseResponse = BasicGuestVacancyResponse & {
   vacancy?: BasicVacancy,
-  resume?: BasicGuestVacancyResponseResume,
+  resume?: BasicGuestVacancyResponseResume | null,
 };
 
 export type PatchGuestVacancyResponseByPublicRequest = Partial<
