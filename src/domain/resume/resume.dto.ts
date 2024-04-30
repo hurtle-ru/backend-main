@@ -31,7 +31,7 @@ export const BasicResumeSchema: yup.ObjectSchema<BasicResume> = yup.object({
   createdAt: yup.date().defined(),
   importedFrom: yupOneOfEnum(ResumeImportExternalService).defined().nullable(),
   importedId: yup.string().defined().nullable(),
-  title: yup.string().defined().trim().min(0).max(50).nullable(),
+  title: yup.string().defined().trim().min(0).max(255).nullable(),
   summary: yup.string().defined().trim().min(0).max(3000).nullable(),
   city: yup.string().defined().trim().min(0).max(255).nullable(),
   skills: yup.array().of(yup.string().defined().trim().min(0).max(50)).defined().max(30),
