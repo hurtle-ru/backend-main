@@ -50,7 +50,7 @@ export class ApplicantAiChatMessageController extends Controller {
     const where: Prisma.ApplicantAiChatWhereUniqueInput = {
       id: body.chatId,
       ...{
-        "APPLICANT": { applicantId: req.user.id },
+        "APPLICANT": { applicantId: req.user.id, employerId: null },
         "EMPLOYER": { employerId: req.user.id },
       }[req.user.role]
     }
