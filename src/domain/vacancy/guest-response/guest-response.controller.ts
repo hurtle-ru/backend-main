@@ -15,9 +15,11 @@ import {
 import {
   BasicGuestVacancyResponse,
   CreateQueuedWithOcrGuestVacancyResponseResponse,
-  GetGuestVacancyResponseResponse, PatchGuestVacancyResponseQueuedWithOcrRequest,
-  PatchGuestVacancyResponseRequest,
-  PatchGuestVacancyResponseRequestSchema,
+  GetGuestVacancyResponseResponse,
+  PatchGuestVacancyResponseByEmployerRequest, PatchGuestVacancyResponseByEmployerRequestSchema,
+  PatchGuestVacancyResponseByManagerRequest, PatchGuestVacancyResponseByManagerRequestSchema,
+  PatchGuestVacancyResponseByPublicRequest, PatchGuestVacancyResponseByPublicRequestSchema,
+  PatchGuestVacancyResponseQueuedWithOcrRequest,
 } from "./guest-response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
@@ -33,6 +35,13 @@ import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limite
 import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
 import { Request as ExpressRequest } from "express";
 import { Readable } from "stream";
+import { validateSyncByAtLeastOneSchema } from "../../../infrastructure/validation/requests/utils.yup";
+import {
+  CreateMeetingByApplicantRequestSchema,
+  CreateMeetingByEmployerRequestSchema,
+  CreateMeetingRequestSchema,
+} from "../../meeting/meeting.dto";
+import { PUBLIC } from "../../../infrastructure/controller/requester/requester.dto";
 
 
 @injectable()
@@ -132,6 +141,9 @@ export class GuestVacancyResponseController extends Controller {
         vacancyId,
         status: "NEW_APPLICATION",
         moderationStatus: "UNDER_REVIEW",
+        resume: {
+          create: {},
+        },
       },
     });
 
@@ -167,11 +179,13 @@ export class GuestVacancyResponseController extends Controller {
         },
       },
       resume: (candidate_resume_minDesiredSalary || candidate_resume_maxDesiredSalary) ? {
-        path: ["desiredSalary"],
-        gte: candidate_resume_minDesiredSalary ?? undefined,
-        lte: candidate_resume_maxDesiredSalary ?? undefined,
+        desiredSalary: {
+          gte: candidate_resume_minDesiredSalary ?? undefined,
+          lte: candidate_resume_maxDesiredSalary ?? undefined,
+        },
       } : undefined,
     };
+
     if (req.user.role === UserRole.EMPLOYER) {
       where = { ...where, vacancy: { employerId: req.user.id } };
     }
@@ -194,7 +208,7 @@ export class GuestVacancyResponseController extends Controller {
     return new PageResponse(guestVacancyResponses, page, size, guestVacancyResponsesCount);
   }
 
-  @Get("{id}/resume")
+  @Get("{id}/resumeFile")
   @Middlewares(rateLimit({limit: 500, interval: 60}))
   @Response<HttpErrorBody & {"error": "File not found" | "GuestVacancyResponse not found"}>(404)
   @Produces(GuestVacancyResponseController.RESUME_FILE_MIME_TYPE)
@@ -217,7 +231,7 @@ export class GuestVacancyResponseController extends Controller {
   public async getById(
     @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
-    @Query() include?: ("vacancy")[],
+    @Query() include?: ("vacancy" | "resume")[],
   ): Promise<GetGuestVacancyResponseResponse> {
     let where = null;
 
@@ -253,6 +267,7 @@ export class GuestVacancyResponseController extends Controller {
       where: where!,
       include: {
         vacancy: include?.includes("vacancy"),
+        resume: include?.includes("resume"),
       },
     });
 
@@ -261,36 +276,45 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Invalid body request for public scope"}>(403)
+  @Response<HttpErrorBody & {"error": "Invalid body request for employer"}>(403)
+  @Response<HttpErrorBody & {"error": "Invalid body request for manager"}>(403)
   public async patchById(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
-    @Body() body: PatchGuestVacancyResponseRequest,
+    @Body() body:
+      | PatchGuestVacancyResponseByPublicRequest
+      | PatchGuestVacancyResponseByEmployerRequest
+      | PatchGuestVacancyResponseByManagerRequest,
   ): Promise<BasicGuestVacancyResponse> {
-    body = PatchGuestVacancyResponseRequestSchema.validateSync(body);
+    body = validateSyncByAtLeastOneSchema([
+      PatchGuestVacancyResponseByPublicRequestSchema,
+      PatchGuestVacancyResponseByEmployerRequestSchema,
+      PatchGuestVacancyResponseByManagerRequestSchema,
+    ], body);
+
+    const { _requester, ...bodyData } = body;
+
+    if (!req.user && _requester !== PUBLIC_SCOPE) throw new HttpError(403, "Invalid body request for public scope");
+    if (req.user?.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if (req.user?.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
 
     const where = {
       id,
-      ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
+      ...(req.user?.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     };
 
     const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
-      where: where,
-      select: {
-        vacancy: {
-          select: {
-            employerId: true,
-          },
-        },
-      },
+      where,
     });
 
     if (!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
 
     return prisma.guestVacancyResponse.update({
       where: where,
-      data: body,
+      data: bodyData,
     });
   }
 
@@ -306,7 +330,7 @@ export class GuestVacancyResponseController extends Controller {
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     };
 
-    if (!await prisma.guestVacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
+    if (!await prisma.guestVacancyResponse.exists(where)) throw new HttpError(404, "GuestVacancyResponse not found");
 
     await prisma.guestVacancyResponse.delete({ where });
   }

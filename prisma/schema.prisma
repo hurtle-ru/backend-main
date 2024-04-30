@@ -389,15 +389,38 @@ model GuestVacancyResponse {
   status             VacancyResponseStatus           @default(NEW_APPLICATION)
   moderationStatus   VacancyResponseModerationStatus @default(UNDER_REVIEW)
   isViewedByEmployer Boolean                         @default(false)
-  resume             Json?
   vacancy            Vacancy                         @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
   vacancyId          String
-  firstName          String?                         @db.VarChar(50)
-  lastName           String?                         @db.VarChar(50)
-  middleName         String?                         @db.VarChar(50)
-  isReadyToRelocate  Boolean?
-  resumeTitle        String?                         @db.VarChar(255)
-  // resumeContacts     Json?
+  resume             GuestVacancyResponseResume?
+}
+
+model GuestVacancyResponseResume {
+  id                    String                              @id @default(uuid())
+  createdAt             DateTime                            @default(now())
+  updatedAt             DateTime                            @updatedAt
+  importedFrom          ResumeImportExternalService?
+  importedId            String?                             @db.VarChar(512)
+  title                 String?                             @db.VarChar(255)
+  firstName             String?                             @db.VarChar(50)
+  lastName              String?                             @db.VarChar(50)
+  middleName            String?                             @db.VarChar(50)
+  isVisibleToEmployers  Boolean                             @default(true)
+  isReadyToRelocate     Boolean?
+  desiredSalary         Int?
+  desiredSalaryCurrency Currency?
+  contacts              GuestVacancyResponseResumeContact[]
+  response              GuestVacancyResponse                @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  responseId            String                              @unique
+}
+
+model GuestVacancyResponseResumeContact {
+  id        String                     @id @default(uuid())
+  name      String?                    @db.VarChar(255)
+  type      ContactType
+  value     String                     @db.VarChar(255)
+  preferred Boolean                    @default(false)
+  resume    GuestVacancyResponseResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId  String
 }
 
 model ApplicantAiChat {
