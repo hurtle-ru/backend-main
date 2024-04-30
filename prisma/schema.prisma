@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -405,8 +406,8 @@ model ApplicantAiChat {
 
   applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applicantId String
-  employer    Employer  @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  employerId  String
+  employer    Employer?  @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId  String?
 }
 
 model ApplicantAiChatMessage {

@@ -242,8 +242,8 @@ export class AuthController extends Controller {
 
     const bodyData = validateSyncByAtLeastOneSchema(
       [
-        RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy"]),
         RegisterApplicantWithHhByHhTokenRequestSchema.omit(["_authBy"]),
+        RegisterApplicantWithHhByAuthCodeRequestSchema.omit(["_authBy"]),
       ],
       bodyWithOutAuthBy,
     );
