@@ -36,11 +36,16 @@ export class ApplicantAiChatController extends Controller {
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Response<HttpErrorBody & {"error": "Applicant resume not found or invisible to employers"}>(409)
   @Response<HttpErrorBody & {"error": "Completed applicant interviews with transcript not found"}>(409)
+  @Response<HttpErrorBody & {"error": "Applicant can make AI chat only with himself resume"}>(409)
   public async create(
     @Request() req: JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER>,
     @Body() body: CreateApplicantAiChatRequest,
   ): Promise<BasicApplicantAiChat> {
     body = CreateApplicantAiChatRequestSchema.validateSync(body);
+
+    if (req.user.role === UserRole.APPLICANT && req.user.id !== body.applicantId) {
+      throw new HttpError(409, "Applicant can make AI chat only with himself resume");
+    }
 
     if (await prisma.applicantAiChat.exists(
       {
@@ -97,7 +102,7 @@ export class ApplicantAiChatController extends Controller {
   ): Promise<GetApplicantAiChatResponse> {
     const where = {
       "APPLICANT": { id, employerId: null, },
-      "EMPLOYER": { id, employerId: req.user.id },
+      "EMPLOYER": { id, employerId: req.user.id, },
       "MANAGER": { id, }
     }[req.user.role]
 
