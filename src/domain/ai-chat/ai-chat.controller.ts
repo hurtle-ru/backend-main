@@ -31,18 +31,31 @@ export class ApplicantAiChatController extends Controller {
   }
 
   @Post("")
-  @Security("jwt", [UserRole.EMPLOYER])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   @Response<HttpErrorBody & {"error": "AI Chat already exists"}>(409)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Response<HttpErrorBody & {"error": "Applicant resume not found or invisible to employers"}>(409)
   @Response<HttpErrorBody & {"error": "Completed applicant interviews with transcript not found"}>(409)
+  @Response<HttpErrorBody & {"error": "Applicant can make AI chat only with himself resume"}>(409)
   public async create(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER>,
     @Body() body: CreateApplicantAiChatRequest,
   ): Promise<BasicApplicantAiChat> {
     body = CreateApplicantAiChatRequestSchema.validateSync(body);
 
-    if (await prisma.applicantAiChat.exists({ applicantId: body.applicantId, employerId: req.user.id }))
+    if (req.user.role === UserRole.APPLICANT && req.user.id !== body.applicantId) {
+      throw new HttpError(409, "Applicant can make AI chat only with himself resume");
+    }
+
+    if (await prisma.applicantAiChat.exists(
+      {
+        applicantId: body.applicantId,
+        employerId: {
+          "APPLICANT": null,
+          "EMPLOYER": req.user.id,
+        }[req.user.role]
+      }
+    ))
       throw new HttpError(409, "AI Chat already exists");
 
     const applicant = await prisma.applicant.findUnique({
@@ -54,7 +67,9 @@ export class ApplicantAiChatController extends Controller {
     });
 
     if (!applicant) throw new HttpError(404, "Applicant not found");
-    if (!applicant.resume || !applicant.resume.isVisibleToEmployers)
+    if (
+      !applicant.resume || !(req.user.role === UserRole.APPLICANT || applicant.resume.isVisibleToEmployers)
+    )
       throw new HttpError(409, "Applicant resume not found or invisible to employers");
 
     const applicantInterviews = applicant.meetings.filter((m) =>
@@ -69,27 +84,33 @@ export class ApplicantAiChatController extends Controller {
     return prisma.applicantAiChat.create({
       data: {
         applicantId: body.applicantId,
-        employerId: req.user.id,
+        employerId: {
+          "APPLICANT": null,
+          "EMPLOYER": req.user.id,
+        }[req.user.role],
       },
     });
   }
 
   @Get("{id}")
-  @Security("jwt", [UserRole.MANAGER, UserRole.EMPLOYER])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "AI Chat not found"}>(404)
   public async getById(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER | UserRole.MANAGER>,
     @Path() id: string,
     @Query() include?: ("applicant" | "employer" | "history")[],
   ): Promise<GetApplicantAiChatResponse> {
+    const where = {
+      "APPLICANT": { id, employerId: null, },
+      "EMPLOYER": { id, employerId: req.user.id, },
+      "MANAGER": { id, }
+    }[req.user.role]
+
     const chat = await prisma.applicantAiChat.findUnique({
-      where: {
-        id,
-        ...(req.user.role === UserRole.EMPLOYER && { employerId: req.user.id }),
-      },
+      where,
       include: {
         applicant: include?.includes("applicant"),
-        employer: include?.includes("employer"),
+        employer: req.user.role !== UserRole.APPLICANT && include?.includes("employer"),
         history: include?.includes("history") ? {
           orderBy: { createdAt: "asc" },
         } : undefined,
