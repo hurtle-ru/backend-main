@@ -54,13 +54,14 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async getMe(
     @Request() req: JwtModel,
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[],
   ): Promise<GetApplicantResponse> {
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
       include: {
         resume: include?.includes("resume"),
         meetings: include?.includes("meetings"),
+        aiChats: (include?.includes("aiChats") && { where: { employerId: null }}),
         vacancyResponses: include?.includes("vacancyResponses"),
       },
     });
