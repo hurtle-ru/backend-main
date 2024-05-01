@@ -106,6 +106,16 @@ model HhToken {
   expiresIn     Int
 }
 
+model AuthByEmailCode {
+  code      String   @id @db.VarChar(6)
+  email     String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      String   @db.VarChar(30)
+
+  @@unique([email, role])
+}
+
 model EmailVerification {
   code      String   @id @db.VarChar(6)
   createdAt DateTime @default(now())

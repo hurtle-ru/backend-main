@@ -18,6 +18,10 @@ import {
   RegisterApplicantRequestSchema,
   CreateGuestAccessTokenRequestSchema,
   RegisterEmployerRequestSchema,
+  AuthWithEmailCodeRequest,
+  AuthGetEmailCodeRequest,
+  AuthGetEmailCodeRequestSchema,
+  AuthWithEmailCodeRequestSchema,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -31,8 +35,9 @@ import { HhAuthService } from "../../external/hh/auth/auth.service";
 import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
 import { BasicHhToken } from "../../external/hh/auth/auth.dto";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
+import { logger } from "../../infrastructure/logger/logger";
 import { hh } from "../../external/hh/hh.dto";
-
 
 @injectable()
 @Route("api/v1/auth")
@@ -335,5 +340,64 @@ export class AuthController extends Controller {
         phone: hhApplicant.phone,
       },
     };
+  }
+
+  @Post("getEmailCode")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Response<HttpErrorBody & {"error": "User with provided credentials not found"}>(404)
+  @Response<HttpErrorBody & {"error": "User with provided credentials has not verified email"}>(404)
+  public async authGetEmailCode(
+    @Request() req: ExpressRequest,
+    @Body() body: AuthGetEmailCodeRequest,
+  ): Promise<void> {
+    body = AuthGetEmailCodeRequestSchema.validateSync(body)
+
+    const user = await {
+      "APPLICANT": prisma.applicant.findUnique({ where: { email: body.email } }),
+      "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } })
+    }[body.role]
+
+    if (!user) throw new HttpError(404, "User with provided credentials not found")
+    if (!user.isEmailConfirmed) throw new HttpError(404, "User with provided credentials has not verified email")
+
+    this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName)
+  }
+
+  @Post("withEmailCode")
+  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Response<HttpErrorBody & {"error": "Invalid provided credentials or code"}>(401)
+  public async authWithEmailCode(
+    @Request() req: ExpressRequest,
+    @Body() body: AuthWithEmailCodeRequest,
+  ): Promise<CreateAccessTokenResponse> {
+    body = AuthWithEmailCodeRequestSchema.validateSync(body)
+
+    try {
+      await prisma.authByEmailCode.delete({ where: {
+        code: body.code,
+        email: body.email,
+        role: body.role,
+      }})
+
+      const user = await {
+        "APPLICANT": prisma.applicant.findUnique({ where: { email: body.email } }),
+        "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } }),
+      }[body.role]
+
+      return {
+        token: this.authService.createToken({
+          role: {
+            "APPLICANT": UserRole.APPLICANT,
+            "EMPLOYER": UserRole.EMPLOYER,
+          }[body.role],
+          id: user!.id,
+        })
+      }
+    }
+
+    catch (error) {
+      logger.error(error)
+      throw new HttpError(401, "Invalid provided credentials or code")
+    }
   }
 }
