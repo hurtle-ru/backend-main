@@ -32,7 +32,7 @@ import {
 @Tags("Resume Certificate")
 export class ResumeCertificateController extends Controller {
   @Post("")
-  @Security("jwt", [UserRole.APPLICANT])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "Resume not found")
   public async create(
     @Request() req: JwtModel,
@@ -41,7 +41,10 @@ export class ResumeCertificateController extends Controller {
     body = CreateResumeCertificateRequestSchema.validateSync(body);
 
     const resume = await prisma.resume.findUnique({
-      where: { id: body.resumeId, applicantId: req.user.id },
+      where: {
+        id: body.resumeId,
+        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id })
+      },
     });
 
     if (!resume) throw new HttpError(404, "Resume not found");

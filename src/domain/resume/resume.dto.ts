@@ -8,6 +8,7 @@ import { BasicResumeExperience } from "./experience/experience.dto";
 import { BasicResumeEducation } from "./education/education.dto";
 import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";
 import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
+import { APPLICANT, APPLICANT_SCHEMA, MANAGER, MANAGER_SCHEMA } from "../../infrastructure/controller/requester/requester.dto";
 
 
 export type BasicResume = Pick<
@@ -50,14 +51,25 @@ export type GetResumeResponse = BasicResume & {
   languages?: BasicResumeLanguage[];
 }
 
-export type CreateResumeRequest = Pick<
+export type CreateResumeByApplicantRequest = Pick<
   Resume,
   | "title"
->;
+> & { role: APPLICANT };
 
-export const CreateResumeRequestSchema: yup.ObjectSchema<CreateResumeRequest> = BasicResumeSchema.pick([
+export const CreateResumeByApplicantRequestSchema: yup.ObjectSchema<CreateResumeByApplicantRequest> = BasicResumeSchema.pick([
   "title",
-]);
+]).shape({ role: APPLICANT_SCHEMA });
+
+export type CreateResumeByManagerRequest = Pick<
+  Resume,
+  | "title"
+  | "applicantId"
+> & { role: MANAGER };
+
+export const CreateResumeByManagerRequestSchema: yup.ObjectSchema<CreateResumeByManagerRequest> = BasicResumeSchema.pick([
+  "title",
+  "applicantId"
+]).shape({ role: MANAGER_SCHEMA });
 
 export type PatchByIdResumeRequest = Partial<Pick<
   Resume,
