@@ -20,6 +20,7 @@ import {
   PatchGuestVacancyResponseByManagerRequest, PatchGuestVacancyResponseByManagerRequestSchema,
   PatchGuestVacancyResponseByPublicRequest, PatchGuestVacancyResponseByPublicRequestSchema,
   PatchGuestVacancyResponseQueuedWithOcrRequest,
+  PatchGuestVacancyResponseQueuedWithOcrRequestSchema,
 } from "./guest-response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
@@ -84,9 +85,7 @@ export class GuestVacancyResponseController extends Controller {
     @Path() jobId: string,
     @Body() body: PatchGuestVacancyResponseQueuedWithOcrRequest,
   ) {
-    throw new HttpError(410, "Gone");
-
-    // body = PatchGuestVacancyResponseQueuedWithOcrRequestSchema.validateSync(body);
+    body = PatchGuestVacancyResponseQueuedWithOcrRequestSchema.validateSync(body);
     //
     // const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
     // if (!job) throw new HttpError(404, "Job not found");

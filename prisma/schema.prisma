@@ -404,6 +404,9 @@ model GuestVacancyResponseResume {
   firstName             String?                             @db.VarChar(50)
   lastName              String?                             @db.VarChar(50)
   middleName            String?                             @db.VarChar(50)
+  birthDate             DateTime?
+  skills                String[]                            @db.VarChar(5000)
+  summary               String?                             @db.VarChar(5000)
   isVisibleToEmployers  Boolean                             @default(true)
   isReadyToRelocate     Boolean?
   desiredSalary         Int?

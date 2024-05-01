@@ -135,26 +135,26 @@ export class GuestResponseService {
       resume = this.createOverwrittenResume(overwriteResumeFields, resume);
     }
 
-    const {
-      firstName,
-      lastName,
-      middleName,
-      isReadyToRelocate,
-      ...resumeData
-    } = resume;
-
     await this.validateVacancyBeforeCreation(vacancyId);
-    await this.validateResumeBeforeCreation(resumeData);
+    await this.validateResumeBeforeCreation(resume);
+
+    const { contacts, ...resumeData } = resume
 
     return await prisma.guestVacancyResponse.create({
       data: {
         vacancyId: vacancyId,
         text: null,
-        firstName,
-        lastName,
-        middleName,
-        isReadyToRelocate,
-        resume: resumeData,
+        resume: {
+          create: {
+            ...resumeData,
+            contacts: {
+              createMany: {
+                data: contacts,
+                skipDuplicates: true,
+              }
+            }
+          },
+        },
       },
     });
   }
@@ -186,7 +186,7 @@ export class GuestResponseService {
         await prisma.guestVacancyResponse.update({
           where: { id: guestResponseId },
           data: {
-            ...(updatedResume ? { resume: updatedResume } : {}),
+            ...(updatedResume ? updatedResume : {}),
           },
         });
       }
