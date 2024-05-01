@@ -19,7 +19,7 @@ export const expressAuthentication = async (request: Request, securityName: stri
   if (securityName !== "jwt") throw new Error("Invalid security name");
 
   if (!token) {
-    if(scopes && scopes.includes(PUBLIC_SCOPE)) return null;
+    if (scopes && scopes.includes(PUBLIC_SCOPE)) return null;
     throw new HttpError(401, "No token provided");
   }
 
@@ -27,7 +27,7 @@ export const expressAuthentication = async (request: Request, securityName: stri
   try {
     decoded = jwt.verify(token, authConfig.JWT_SECRET_KEY) as JwtModel["user"];
   } catch {
-    if(scopes && scopes.includes(PUBLIC_SCOPE)) return null;
+    if (scopes && scopes.includes(PUBLIC_SCOPE)) return null;
     throw new HttpError(401, "Token is invalid");
   }
 

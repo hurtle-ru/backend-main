@@ -1,4 +1,4 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 
 import { ApplicantAiChat } from "@prisma/client";
 import { BasicApplicant } from "../applicant/applicant.dto";
@@ -18,16 +18,19 @@ export const BasicApplicantAiChatSchema: yup.ObjectSchema<ApplicantAiChat> = yup
   updatedAt: yup.date().defined(),
   applicantId: yup.string().defined().length(36),
   employerId: yup.string().defined().length(36),
-})
+});
 
 export type CreateApplicantAiChatRequest = Pick<
   ApplicantAiChat,
   | "applicantId"
->
-export const CreateApplicantAiChatRequestSchema = BasicApplicantAiChatSchema.pick(["applicantId"])
+>;
+
+export const CreateApplicantAiChatRequestSchema = BasicApplicantAiChatSchema.pick([
+  "applicantId",
+]);
 
 export type GetApplicantAiChatResponse = BasicApplicantAiChat & {
   applicant?: BasicApplicant,
-  employer?: BasicEmployer,
+  employer?: BasicEmployer | null,
   history?: BasicApplicantAiChatMessage[];
 }

@@ -5,10 +5,13 @@ import * as yup from "yup";
 export function validateSyncByAtLeastOneSchema<T>(schemas: yup.Schema[], body: T): T {
   let firstError: any = null;
 
-  for (let schema of schemas) {
-    try { return schema.validateSync(body) }
-    catch (error) { firstError = firstError ?? error; console.log(error) }
-  };
-
+  for (const schema of schemas) {
+    try {
+      return schema.validateSync(body); 
+    } catch (error) {
+      firstError = firstError ?? error; console.log(error); 
+    }
+  }
+  // TODO: return all errors
   throw firstError;
 }

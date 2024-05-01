@@ -1,10 +1,17 @@
-import * as yup from "yup"
+import * as yup from "yup";
 
 import { VacancyResponse, VacancyResponseStatus } from "@prisma/client";
 import { BasicApplicant } from "../../applicant/applicant.dto";
 import { BasicVacancy } from "../vacancy.dto";
 import { BasicManager } from "../../manager/manager.dto";
-import { APPLICANT, MANAGER, RequesterApplicant, RequesterApplicantSchema, RequesterManager, RequesterManagerSchema } from "../../../infrastructure/controller/requester/requester.dto";
+import {
+  APPLICANT,
+  MANAGER,
+  RequesterApplicant,
+  RequesterApplicantSchema,
+  RequesterManager,
+  RequesterManagerSchema,
+} from "../../../infrastructure/controller/requester/requester.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 
 
@@ -24,15 +31,15 @@ const BasicVacancyResponseSchema: yup.ObjectSchema<BasicVacancyResponse> = yup.o
   isViewedByEmployer: yup.boolean().defined(),
   candidateId: yup.string().defined().length(36),
   vacancyId: yup.string().defined().length(36),
-})
+});
 
 export type CreateVacancyResponseRequestFromApplicant = Pick<BasicVacancyResponse,
   | "vacancyId"
   > & {_requester: APPLICANT}
 
-  export const CreateVacancyResponseRequestFromApplicantSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromApplicant> = BasicVacancyResponseSchema.pick(
-  ["vacancyId"]
-).concat(RequesterApplicantSchema)
+export const CreateVacancyResponseRequestFromApplicantSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromApplicant> = BasicVacancyResponseSchema.pick(
+  ["vacancyId"],
+).concat(RequesterApplicantSchema);
 
 export type CreateVacancyResponseRequestFromManager = Pick<BasicVacancyResponse,
   | "vacancyId"
@@ -40,8 +47,8 @@ export type CreateVacancyResponseRequestFromManager = Pick<BasicVacancyResponse,
 > & {_requester: MANAGER}
 
 export const CreateVacancyResponseRequestFromManagerSchema: yup.ObjectSchema<CreateVacancyResponseRequestFromManager> = BasicVacancyResponseSchema.pick(
-  ["vacancyId", "candidateId"]
-).concat(RequesterManagerSchema)
+  ["vacancyId", "candidateId"],
+).concat(RequesterManagerSchema);
 
 export type PatchVacancyResponseRequest = Partial<Pick<BasicVacancyResponse,
   | "status"
@@ -49,8 +56,8 @@ export type PatchVacancyResponseRequest = Partial<Pick<BasicVacancyResponse,
 >>
 
 export const PatchVacancyResponseRequestSchema: yup.ObjectSchema<PatchVacancyResponseRequest> = BasicVacancyResponseSchema.pick(
-  ["status", "isViewedByEmployer"]
-).partial()
+  ["status", "isViewedByEmployer"],
+).partial();
 
 export type GetVacancyResponseResponse = BasicVacancyResponse & {
   candidate?: BasicApplicant,

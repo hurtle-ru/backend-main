@@ -21,7 +21,7 @@ export class SberJazzService {
       headers: {"Content-Type": "application/json"},
     });
 
-    if(response.status === 200 && response.data && response.data.url) return response.data.url;
+    if (response.status === 200 && response.data?.url) return response.data.url;
 
     throw new Error("Error creating room", response.data);
   }

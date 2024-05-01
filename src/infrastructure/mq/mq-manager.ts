@@ -4,13 +4,13 @@ import { Job, Worker, Queue } from "bullmq";
 import { EmailWorker } from "../../external/email/mq/email.worker";
 import redis from "./redis.provider";
 import { TelegramWorker } from "../../external/telegram/mq/telegram.worker";
-import { ResumeOcrWorker } from "../../domain/resume-ocr/mq/resume-ocr.worker";
+import { ResumeOcrWorker } from "../../external/resume-ocr/mq/resume-ocr.worker";
 
 
 export class MqManager {
   private workers: Worker[] = [];
 
-  // The workers initialization is put in the run method because the initialization of them requires a redis connection, which may cause an error
+  // Инициализация рабочих помещена в метод run, потому что для их инициализации требуется подключение к redis, что может привести к ошибке
   constructor() {}
 
   public run() {
@@ -34,7 +34,7 @@ export class MqManager {
       });
 
       worker.on("error", (failedReason: Error) => {
-        if(failedReason.message.startsWith("WRONGPASS")) {
+        if (failedReason.message.startsWith("WRONGPASS")) {
           logger.error({ err: { stack: failedReason.stack } }, "Redis connection error");
           return;
         }

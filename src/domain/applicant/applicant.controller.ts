@@ -32,15 +32,20 @@ import { Readable } from "stream";
 import { Request as ExpressRequest } from "express";
 import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
-import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware"
+import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { Prisma } from "@prisma/client";
+import { ApplicantService } from "./applicant.service";
+import { SearchQuery } from "../../infrastructure/controller/search/search.dto";
 
 
 @injectable()
 @Route("api/v1/applicants")
 @Tags("Applicant")
 export class ApplicantController extends Controller {
-  constructor(private readonly artifactService: ArtifactService) {
+  constructor(
+    private readonly artifactService: ArtifactService,
+    private readonly applicantService: ApplicantService,
+  ) {
     super();
   }
 
@@ -49,7 +54,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async getMe(
     @Request() req: JwtModel,
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
   ): Promise<GetApplicantResponse> {
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
@@ -69,23 +74,51 @@ export class ApplicantController extends Controller {
   public async getAll(
     @Request() req: JwtModel,
     @Query() nickname?: string,
+    @Query() hadMeetingGte?: Date,
+    @Query() hadMeetingLte?: Date,
+    @Query() search?: SearchQuery,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
-    @Query() has?: ("resume" | "meetings" | "vacancyResponses")[]
+    @Query() has?: ("resume" | "meetings" | "vacancyResponses")[],
   ): Promise<PageResponse<GetApplicantResponse>> {
-    const where = {
+    let whereMeetings: Prisma.MeetingListRelationFilter = {};
+
+    if (has?.includes("meetings")) {
+      whereMeetings = { some: {} };
+    }
+
+    if (req.user.role === UserRole.MANAGER && (hadMeetingGte || hadMeetingLte)) {
+      whereMeetings = {
+        some: {
+          slot: {
+            dateTime: {
+              ...(hadMeetingGte && { gte: hadMeetingGte }),
+              ...(hadMeetingLte && { lte: hadMeetingLte }),
+            },
+          },
+        },
+      };
+    }
+
+    const searchInput =
+      req.user.role === UserRole.MANAGER && search && search.length > 0
+        ? this.applicantService.buildSearchInput(search)
+        : undefined;
+
+    const where: Prisma.ApplicantWhereInput = {
       nickname,
-      ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } } ),
-      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } } ),
-      ...(has?.includes("meetings") && { meetings: { some: {} } } ),
-      ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } } ),
+      meetings: whereMeetings,
+      ...searchInput,
+      ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } }),
+      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } }),
+      ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } }),
     };
 
     let includeResume: any = false;
-    if(include?.includes("resume") && req.user.role === UserRole.MANAGER)
+    if (include?.includes("resume") && req.user.role === UserRole.MANAGER)
       includeResume = true;
-    if(include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
+    if (include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
       includeResume = { where: { isVisibleToEmployers: true } };
 
     const [applicants, applicantsCount] = await Promise.all([
@@ -108,7 +141,7 @@ export class ApplicantController extends Controller {
   @Delete("me")
   @Security("jwt", [UserRole.APPLICANT])
   public async deleteMe(
-    @Request() req: JwtModel
+    @Request() req: JwtModel,
   ): Promise<void> {
     await prisma.applicant.archive(req.user.id);
   }
@@ -117,7 +150,7 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async patchMe(
     @Request() req: JwtModel,
-    @Body() body: PatchMeApplicantRequest
+    @Body() body: PatchMeApplicantRequest,
   ): Promise<BasicApplicant> {
     body = PatchMeApplicantRequestSchema.validateSync(body);
 
@@ -135,7 +168,7 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
   ): Promise<GetApplicantStatusResponse> {
-    if(req.user.role === UserRole.APPLICANT && req.user.id !== id) throw new HttpError(403, "Applicant can only get his own status");
+    if (req.user.role === UserRole.APPLICANT && req.user.id !== id) throw new HttpError(403, "Applicant can only get his own status");
 
     const applicant = await prisma.applicant.findUnique({
       where: { id },
@@ -179,7 +212,7 @@ export class ApplicantController extends Controller {
     const fileName = await this.artifactService.getFullFileName(`applicant/${id}/`, "avatar");
     const filePath = `applicant/${id}/${fileName}`;
 
-    if(fileName == null) throw new HttpError(404, "File not found");
+    if (fileName == null) throw new HttpError(404, "File not found");
 
     const response = req.res;
     if (response) {
@@ -234,7 +267,7 @@ export class ApplicantController extends Controller {
   ): Promise<void> {
     const applicant = await prisma.applicant.findUnique({ where: { id } });
 
-    if(!applicant) throw new HttpError(404, "Applicant not found");
+    if (!applicant) throw new HttpError(404, "Applicant not found");
     if (req.user.id !== id && req.user.role !== UserRole.MANAGER) throw new HttpError(403, "Not enough rights to edit another applicant");
 
     await prisma.applicant.archive(id);
@@ -247,27 +280,27 @@ export class ApplicantController extends Controller {
     @Request() req: JwtModel,
     @Path() uniqueField: string,
     @Query() uniqueFieldType: "id" | "nickname" = "id",
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[]
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[],
   ): Promise<GetApplicantResponse> {
     let includeQuery: Prisma.ApplicantInclude = {};
 
-    if(req.user) {
+    if (req.user) {
       switch (req.user.role) {
-        case UserRole.MANAGER:
-          if(include?.includes("resume")) includeQuery = { ...includeQuery, resume: true };
-          if(include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: true };
-          if(include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
-          if(include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
-          break;
-        case UserRole.EMPLOYER:
-          if(include?.includes("resume")) includeQuery = { ...includeQuery, resume: { where: { isVisibleToEmployers: true } } };
-          if(include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: { where: { employerId: req.user.id } } };
-          if(include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
-          if(include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
-          break;
+      case UserRole.MANAGER:
+        if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: true };
+        if (include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: true };
+        if (include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
+        if (include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
+        break;
+      case UserRole.EMPLOYER:
+        if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: { where: { isVisibleToEmployers: true } } };
+        if (include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: { where: { employerId: req.user.id } } };
+        if (include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
+        if (include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
+        break;
       }
     } else {
-      if(include?.includes("resume")) includeQuery = { ...includeQuery, resume: { where: { isVisibleToEmployers: true } } };
+      if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: { where: { isVisibleToEmployers: true } } };
     }
 
     let where = null;
@@ -288,12 +321,12 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.MANAGER])
   public async patchById(
     @Path() id: string,
-    @Body() body: PatchByIdApplicantRequest
+    @Body() body: PatchByIdApplicantRequest,
   ): Promise<BasicApplicant> {
     body = PatchByIdApplicantRequestSchema.validateSync(body);
 
     const where = { id };
-    if(!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
+    if (!await prisma.applicant.exists(where)) throw new HttpError(404, "Applicant not found");
 
     return prisma.applicant.update({
       where,

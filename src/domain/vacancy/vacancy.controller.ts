@@ -62,7 +62,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateVacancyRequest,
   ): Promise<BasicVacancy> {
-    body = CreateVacancyRequestSchema.validateSync(body)
+    body = CreateVacancyRequestSchema.validateSync(body);
 
     const vacancy = await prisma.vacancy.create({
       data: {
@@ -112,18 +112,18 @@ export class VacancyController extends Controller {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs | null = include?.includes("responses") ?? false;
     let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs | null = include?.includes("guestResponses") ?? false;
 
-    if(req.user) {
-      switch(req.user.role) {
-        case UserRole.APPLICANT:
-          if(includeResponses) includeResponses = { where: { candidateId: req.user.id } };
-          includeGuestResponses = false
+    if (req.user) {
+      switch (req.user.role) {
+      case UserRole.APPLICANT:
+        if (includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+        includeGuestResponses = false;
 
-          status = VacancyStatus.PUBLISHED;
-          isHidden = false
-          break;
+        status = VacancyStatus.PUBLISHED;
+        isHidden = false;
+        break;
       }
     } else {
-      if(includeResponses || includeGuestResponses) throw new HttpError(401, "User must be authorized to see vacancy responses")
+      if (includeResponses || includeGuestResponses) throw new HttpError(401, "User must be authorized to see vacancy responses");
       status = VacancyStatus.PUBLISHED;
       isHidden = false;
     }
@@ -147,7 +147,7 @@ export class VacancyController extends Controller {
         { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } } },
       ] : undefined,
       isHidden,
-    }
+    };
 
     const [vacancies, vacanciesCount] = await Promise.all([
       prisma.vacancy.findMany({
@@ -167,14 +167,14 @@ export class VacancyController extends Controller {
     ]);
 
     return new PageResponse(
-      vacancies.map(vacancy => {
+      vacancies.map((vacancy) => {
         const { uniqueViewerApplicantIds, uniqueViewerIps, ...vacancyWithoutViewers } = vacancy;
         return {
           ...vacancyWithoutViewers,
           viewersCount: vacancy.uniqueViewerApplicantIds.length + vacancy.uniqueViewerIps.length,
         };
       }),
-      page, size, vacanciesCount
+      page, size, vacanciesCount,
     );
   }
 
@@ -190,15 +190,15 @@ export class VacancyController extends Controller {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
     let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs = include?.includes("guestResponses") ?? false;
 
-    if(req.user.role === UserRole.EMPLOYER) {
+    if (req.user.role === UserRole.EMPLOYER) {
       where = { employerId: req.user.id };
 
-      if(include?.includes("responses.candidate")) {
+      if (include?.includes("responses.candidate")) {
         includeResponses = {
           include: { candidate: true },
         };
       }
-      if(include?.includes("responses.candidate.resume")) {
+      if (include?.includes("responses.candidate.resume")) {
         includeResponses = {
           include: {
             candidate: {
@@ -211,19 +211,19 @@ export class VacancyController extends Controller {
           },
         };
       }
-    } else if(req.user.role === UserRole.APPLICANT) {
+    } else if (req.user.role === UserRole.APPLICANT) {
       where = {
         responses: { some: { candidateId: req.user.id } },
         status: VacancyStatus.PUBLISHED,
         isHidden: false,
       };
 
-      if(includeResponses) {
+      if (includeResponses) {
         includeResponses = {
           where: { candidateId: req.user.id },
         };
       }
-      includeGuestResponses = false
+      includeGuestResponses = false;
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
@@ -244,14 +244,14 @@ export class VacancyController extends Controller {
     ]);
 
     return new PageResponse(
-      vacancies.map(vacancy => {
+      vacancies.map((vacancy) => {
         const { uniqueViewerApplicantIds, uniqueViewerIps, ...vacancyWithoutViewers } = vacancy;
         return {
           ...vacancyWithoutViewers,
           viewersCount: vacancy.uniqueViewerApplicantIds.length + vacancy.uniqueViewerIps.length,
         };
       }),
-      page, size, vacanciesCount
+      page, size, vacanciesCount,
     );
   }
 
@@ -276,11 +276,11 @@ export class VacancyController extends Controller {
       where: { id },
     });
 
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
-    if(vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) throw new HttpError(409, "Vacancy is unpublished or hidden");
+    if (!vacancy) throw new HttpError(404, "Vacancy not found");
+    if (vacancy.status !== VacancyStatus.PUBLISHED || vacancy.isHidden) throw new HttpError(409, "Vacancy is unpublished or hidden");
 
     if (req.user && req.user.role === UserRole.APPLICANT) {
-      if(vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
+      if (vacancy.uniqueViewerApplicantIds.includes(req.user.id)) throw new HttpError(409, "Applicant already viewed this vacancy");
 
       await prisma.vacancy.update({
         where: { id },
@@ -291,7 +291,7 @@ export class VacancyController extends Controller {
         },
       });
     } else if (requestIp) {
-      if(vacancy.uniqueViewerIps.includes(requestIp)) throw new HttpError(409, "Anonymous with this ip already viewed this vacancy");
+      if (vacancy.uniqueViewerIps.includes(requestIp)) throw new HttpError(409, "Anonymous with this ip already viewed this vacancy");
 
       await prisma.vacancy.update({
         where: { id },
@@ -318,7 +318,7 @@ export class VacancyController extends Controller {
       },
     });
 
-    const cities = citiesAggregation.map(aggregation => aggregation.city);
+    const cities = citiesAggregation.map((aggregation) => aggregation.city);
 
     return {
       cities,
@@ -340,12 +340,12 @@ export class VacancyController extends Controller {
         PatchVacancyRequestFromManagerSchema,
         PatchVacancyRequestFromEmployerSchema,
       ],
-      body
-    )
+      body,
+    );
 
     const { _requester, ...bodyData } = body;
-    if(req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
-    if(req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
+    if (req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if (req.user.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
 
     const where = {
       id,
@@ -353,7 +353,7 @@ export class VacancyController extends Controller {
     };
 
     const vacancy = await prisma.vacancy.findUnique({ where });
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+    if (!vacancy) throw new HttpError(404, "Vacancy not found");
 
     await prisma.vacancy.update({
       where,
@@ -368,32 +368,32 @@ export class VacancyController extends Controller {
   public async getById(
     @Request() req: JwtModel | { user: null },
     @Path() id: string,
-    @Query() include?: ("employer" | "guestResponses" | "responses" | "responses.candidate")[]
+    @Query() include?: ("employer" | "guestResponses" | "responses" | "responses.candidate")[],
   ): Promise<GetVacancyResponse> {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
     let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs = include?.includes("guestResponses") ?? false;
     let where: Prisma.VacancyWhereUniqueInput = { id };
 
-    if(req.user) {
+    if (req.user) {
       switch (req.user.role) {
-        case UserRole.APPLICANT:
-          if (includeResponses) includeResponses = { where: { candidateId: req.user.id } };
-          where = {
-            ...where,
-            status: VacancyStatus.PUBLISHED,
-            isHidden: false,
-          }
-          includeGuestResponses = false
-          break;
-        case UserRole.EMPLOYER:
-          if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
-          break;
-        case UserRole.MANAGER:
-          if (include?.includes("responses.candidate")) includeResponses = { include: { candidate: true } };
-          break;
+      case UserRole.APPLICANT:
+        if (includeResponses) includeResponses = { where: { candidateId: req.user.id } };
+        where = {
+          ...where,
+          status: VacancyStatus.PUBLISHED,
+          isHidden: false,
+        };
+        includeGuestResponses = false;
+        break;
+      case UserRole.EMPLOYER:
+        if (includeResponses) includeResponses = { where: { vacancy: { employerId: req.user.id } } };
+        break;
+      case UserRole.MANAGER:
+        if (include?.includes("responses.candidate")) includeResponses = { include: { candidate: true } };
+        break;
       }
     } else {
-      if(includeResponses || includeGuestResponses) throw new HttpError(401, "User must be authorized to see responses")
+      if (includeResponses || includeGuestResponses) throw new HttpError(401, "User must be authorized to see responses");
     }
 
     const vacancy = await prisma.vacancy.findUnique({
@@ -405,7 +405,7 @@ export class VacancyController extends Controller {
       },
     });
 
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+    if (!vacancy) throw new HttpError(404, "Vacancy not found");
 
     const { uniqueViewerApplicantIds, uniqueViewerIps, ...vacancyWithoutViewers } = vacancy;
     return {
@@ -423,7 +423,7 @@ export class VacancyController extends Controller {
     @Request() req: JwtModel,
   ): Promise<void> {
     const vacancy = await prisma.vacancy.findUnique({where: { id }});
-    if(!vacancy) throw new HttpError(404, "Vacancy not found");
+    if (!vacancy) throw new HttpError(404, "Vacancy not found");
 
     if (req.user.id !== vacancy.employerId && req.user.role !== UserRole.MANAGER) {
       throw new HttpError(403, "Not enough rights to edit another vacancy");

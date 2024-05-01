@@ -1,6 +1,6 @@
-import * as yup from 'yup'
+import * as yup from "yup";
 import { ResumeContact, ContactType } from "@prisma/client";
-import { yupOneOfEnum } from '../../../infrastructure/validation/requests/enum.yup';
+import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 
 
 export type BasicResumeContact = Omit<
@@ -16,7 +16,7 @@ export const BasicResumeContactSchema: yup.ObjectSchema<BasicResumeContact> = yu
   value: yup.string().defined().trim().min(0).max(255),
   preferred: yup.boolean().defined(),
   resumeId: yup.string().defined().length(36),
-})
+});
 
 
 export type CreateResumeContactRequest = Pick<BasicResumeContact,
@@ -33,7 +33,7 @@ export const CreateResumeContactRequestSchema: yup.ObjectSchema<CreateResumeCont
   "value",
   "preferred",
   "resumeId",
-])
+]);
 
 export type PatchResumeContactRequest = Partial<Pick<BasicResumeContact,
   | "name"
@@ -49,4 +49,4 @@ export const PatchResumeContactRequestSchema: yup.ObjectSchema<PatchResumeContac
   "value",
   "preferred",
   "resumeId",
-]).partial()
+]).partial();

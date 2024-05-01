@@ -40,7 +40,7 @@ export class MeetingScriptQuestionController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingScriptQuestionRequest,
   ): Promise<BasicMeetingScriptQuestion> {
-    body = CreateMeetingScriptQuestionRequestSchema.validateSync(body)
+    body = CreateMeetingScriptQuestionRequestSchema.validateSync(body);
 
     return prisma.meetingScriptQuestion.create({
       data: body,
@@ -55,7 +55,7 @@ export class MeetingScriptQuestionController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingScriptQuestionRequest,
   ): Promise<void> {
-    body = PatchMeetingScriptQuestionRequestSchema.validateSync(body)
+    body = PatchMeetingScriptQuestionRequestSchema.validateSync(body);
     const question = await prisma.meetingScriptQuestion.findUnique({
       where: { id },
       select: { id: true },
@@ -88,7 +88,7 @@ export class MeetingScriptQuestionController extends Controller {
       where: { questionId: id },
     });
 
-    if(usesCount > 0) throw new HttpError(409, "MeetingScriptQuestion is in use by some answers");
+    if (usesCount > 0) throw new HttpError(409, "MeetingScriptQuestion is in use by some answers");
 
     await prisma.meetingScriptQuestion.delete({
       where: { id },
@@ -101,7 +101,7 @@ export class MeetingScriptQuestionController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("answers" | "templates")[]
+    @Query() include?: ("answers" | "templates")[],
   ): Promise<GetMeetingScriptQuestionResponse> {
     const question = await prisma.meetingScriptQuestion.findUnique({
       where: { id },
@@ -111,7 +111,7 @@ export class MeetingScriptQuestionController extends Controller {
       },
     });
 
-    if(!question) throw new HttpError(404, "MeetingScriptQuestion not found");
+    if (!question) throw new HttpError(404, "MeetingScriptQuestion not found");
 
     return question;
   }

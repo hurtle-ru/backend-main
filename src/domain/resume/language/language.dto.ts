@@ -1,4 +1,4 @@
-import * as yup from "yup"
+import * as yup from "yup";
 import { ResumeLanguage } from "@prisma/client";
 
 
@@ -13,7 +13,7 @@ export const BasicResumeLanguageSchema: yup.ObjectSchema<BasicResumeLanguage> = 
   name: yup.string().defined().trim().max(100),
   level: yup.string().defined().trim().max(100).nullable(),
   resumeId: yup.string().defined().length(36),
-})
+});
 
 export type CreateResumeLanguageRequest = Pick<BasicResumeLanguage,
   | "name"
@@ -25,7 +25,7 @@ export const CreateResumeLanguageRequestSchema: yup.ObjectSchema<CreateResumeLan
   "name",
   "level",
   "resumeId",
-])
+]);
 
 export type PatchResumeLanguageRequest = Partial<Pick<BasicResumeLanguage,
   | "name"
@@ -37,4 +37,4 @@ export const PatchResumeLanguageRequestSchema: yup.ObjectSchema<PatchResumeLangu
   "name",
   "level",
   "resumeId",
-]).partial()
+]).partial();

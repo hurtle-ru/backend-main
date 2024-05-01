@@ -44,7 +44,7 @@ export class MeetingSlotController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingSlotRequest,
   ): Promise<BasicMeetingSlot> {
-    body = CreateMeetingSlotRequestSchema.validateSync(body)
+    body = CreateMeetingSlotRequestSchema.validateSync(body);
 
     return prisma.meetingSlot.create({
       data: {
@@ -65,7 +65,7 @@ export class MeetingSlotController extends Controller {
     @Request() req: JwtModel,
     @Body() body: CreateMeetingSlotsWithinRangeRequest,
   ): Promise<CreateMeetingSlotsWithinRangeResponse> {
-    if(body.startDate >= body.endDate) throw new HttpError(422, "startDate must be less than endDate");
+    if (body.startDate >= body.endDate) throw new HttpError(422, "startDate must be less than endDate");
 
     const startMinutes = body.startDate.getTime();
     const endMinutes = body.endDate.getTime();
@@ -74,14 +74,14 @@ export class MeetingSlotController extends Controller {
     if (intervalMilliseconds <= 0) throw new HttpError(422, "Interval must be greater than 0");
 
     const slotsToCreate: Prisma.MeetingSlotCreateManyInput[] = [];
-    for(let slotDateTime = startMinutes; slotDateTime <= endMinutes; slotDateTime += intervalMilliseconds) {
+    for (let slotDateTime = startMinutes; slotDateTime <= endMinutes; slotDateTime += intervalMilliseconds) {
       slotsToCreate.push({
         managerId: req.user.id,
         types: body.types,
         dateTime: new Date(slotDateTime),
       });
 
-      if(slotsToCreate.length >= CreateSlotsWithinRangeMaximum) {
+      if (slotsToCreate.length >= CreateSlotsWithinRangeMaximum) {
         throw new HttpError(422, "Given range goes beyond the limit of the maximum number of slots possible to create in a single request");
       }
     }
@@ -99,11 +99,11 @@ export class MeetingSlotController extends Controller {
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 80,
     @Query() types?: MeetingType[],
-    @Query() available: boolean = true,
+    @Query() available = true,
     @Query() afterDateTime?: Date,
     @Query() beforeDateTime?: Date,
   ): Promise<PageResponse<BasicMeetingSlot>> {
-    if(req.user.role !== UserRole.MANAGER && !available)
+    if (req.user.role !== UserRole.MANAGER && !available)
       throw new HttpError(403, "Only available slots are accessible to employers, applicants and guests");
 
     const currentDate = new Date();
@@ -122,7 +122,7 @@ export class MeetingSlotController extends Controller {
           { payments: { every: { status: MeetingPaymentStatus.FAIL } } }, // All payments are failed
         ],
       }),
-    }
+    };
 
     // TODO: fix pagination, slots count
     const [fetchedMeetingSlots, fetchedMeetingSlotsCount] = await Promise.all([
@@ -136,7 +136,7 @@ export class MeetingSlotController extends Controller {
     ]);
 
     const uniqueDateTimeSlotsMap = new Map();
-    for(const slot of fetchedMeetingSlots) {
+    for (const slot of fetchedMeetingSlots) {
       const dateTimeStr = slot.dateTime.toISOString();
       if (!uniqueDateTimeSlotsMap.has(dateTimeStr)) {
         uniqueDateTimeSlotsMap.set(dateTimeStr, slot);
@@ -144,7 +144,7 @@ export class MeetingSlotController extends Controller {
     }
     const meetingSlots = Array.from(uniqueDateTimeSlotsMap.values());
 
-    return new PageResponse(meetingSlots, page, size, meetingSlots.length)
+    return new PageResponse(meetingSlots, page, size, meetingSlots.length);
   }
 
   @Get("my")
@@ -156,9 +156,9 @@ export class MeetingSlotController extends Controller {
     @Query() types?: MeetingType[],
     @Query() afterDateTime?: Date,
     @Query() beforeDateTime?: Date,
-    @Query() available: boolean = false,
+    @Query() available = false,
   ): Promise<PageResponse<BasicMeetingSlot>> {
-    if(req.user.role !== UserRole.MANAGER && available)
+    if (req.user.role !== UserRole.MANAGER && available)
       throw new HttpError(403, "Only managers have access to see available slots with this method");
 
     const currentDate = new Date();
@@ -190,7 +190,7 @@ export class MeetingSlotController extends Controller {
       prisma.meetingSlot.count({ where }),
     ]);
 
-    return new PageResponse(meetingSlots, page, size, meetingSlotsCount)
+    return new PageResponse(meetingSlots, page, size, meetingSlotsCount);
   }
 
   @Delete("{id}")
@@ -203,10 +203,10 @@ export class MeetingSlotController extends Controller {
     const where = {
       id,
       managerId: req.user.id,
-    }
+    };
 
     const meetingSlot = await prisma.meetingSlot.findUnique({ where });
-    if(!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
+    if (!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
 
     await prisma.meetingSlot.delete({ where });
   }
@@ -219,15 +219,15 @@ export class MeetingSlotController extends Controller {
     @Path() id: string,
     @Body() body: PatchMeetingSlotRequest,
   ): Promise<BasicMeetingSlot> {
-    body = PatchMeetingSlotRequestSchema.validateSync(body)
+    body = PatchMeetingSlotRequestSchema.validateSync(body);
 
     const where = {
       id,
       managerId: req.user.id,
-    }
+    };
 
     const meetingSlot = await prisma.meetingSlot.findUnique({ where });
-    if(!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
+    if (!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
 
     return prisma.meetingSlot.update({
       where,
@@ -241,7 +241,7 @@ export class MeetingSlotController extends Controller {
   public async getById(
     @Request() req: JwtModel,
     @Path() id: string,
-    @Query() include?: ("meeting" | "manager")[]
+    @Query() include?: ("meeting" | "manager")[],
   ): Promise<GetMeetingSlotResponse> {
     const where = this.slotService.buildAccessWhereQuery(req.user.role as UserRole, req.user.id, id);
 
@@ -253,7 +253,7 @@ export class MeetingSlotController extends Controller {
       },
     });
 
-    if(!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
+    if (!meetingSlot) throw new HttpError(404, "MeetingSlot not found");
 
     return meetingSlot;
   }

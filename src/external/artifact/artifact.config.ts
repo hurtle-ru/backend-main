@@ -2,7 +2,7 @@ import { cleanEnv, str } from "envalid";
 import { int } from "../../infrastructure/validation/env/int.envalid";
 
 
-const MB = 2**20;
+const MB = 2 ** 20;
 const GB = 1024 * MB;
 
 export const artifactConfig = cleanEnv(process.env, {
@@ -17,14 +17,14 @@ export const AVAILABLE_IMAGE_FILE_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
-]
+];
 
 export const AVAILABLE_VIDEO_FILE_MIME_TYPES = [
   "video/mpeg",
   "video/mp4",
   "video/webm",
   "video/x-msvideo",
-]
+];
 
 export const AVAILABLE_DOCUMENT_FILE_MIME_TYPES = [
   "application/pdf",
@@ -37,7 +37,7 @@ export const AVAILABLE_DOCUMENT_FILE_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "application/vnd.openxmlformats-officedocument.presentationml.template",
   "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
-]
+];
 
 export const FILE_EXTENSION_MIME_TYPES: { [key: string]: string } = {
   ".png":  "image/png",
@@ -57,4 +57,4 @@ export const FILE_EXTENSION_MIME_TYPES: { [key: string]: string } = {
   ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   ".potx": "application/vnd.openxmlformats-officedocument.presentationml.template",
   ".ppsx": "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
-}
+};

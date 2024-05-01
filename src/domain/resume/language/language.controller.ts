@@ -23,19 +23,22 @@ import { BasicResumeLanguage, CreateResumeLanguageRequest, CreateResumeLanguageR
 @Tags("Resume Language")
 export class ResumeLanguageController extends Controller {
   @Post("")
-  @Security("jwt", [UserRole.APPLICANT])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody>(404, "Resume not found")
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateResumeLanguageRequest,
   ): Promise<BasicResumeLanguage> {
-    body = CreateResumeLanguageRequestSchema.validateSync(body)
+    body = CreateResumeLanguageRequestSchema.validateSync(body);
 
     const resume = await prisma.resume.findUnique({
-      where: { id: body.resumeId, applicantId: req.user.id },
+      where: {
+        id: body.resumeId,
+        ...(req.user.role === UserRole.APPLICANT && { applicantId: req.user.id })
+      },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return prisma.resumeLanguage.create({
       data: {
@@ -57,7 +60,7 @@ export class ResumeLanguageController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const language = await prisma.resumeLanguage.findUnique({ where });
     if (!language) throw new HttpError(404, "ResumeLanguage not found");
@@ -73,12 +76,12 @@ export class ResumeLanguageController extends Controller {
   @Response<HttpErrorBody>(404, "ResumeLanguage not found")
   public async deleteById(
     @Request() req: JwtModel,
-    @Path() id: string
+    @Path() id: string,
   ): Promise<void> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const language = await prisma.resumeLanguage.findUnique({ where });
     if (!language) throw new HttpError(404, "ResumeLanguage not found");
@@ -91,12 +94,12 @@ export class ResumeLanguageController extends Controller {
   @Response<HttpErrorBody>(404, "ResumeLanguage not found")
   public async getById(
     @Request() req: JwtModel,
-    @Path() id: string
+    @Path() id: string,
   ): Promise<BasicResumeLanguage> {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { resume: { applicantId: req.user.id } }),
-    }
+    };
 
     const language = await prisma.resumeLanguage.findUnique({ where });
     if (!language) throw new HttpError(404, "ResumeLanguage not found");

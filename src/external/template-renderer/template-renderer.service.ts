@@ -9,15 +9,15 @@ import fs from "fs";
 export class TemplateRendererService {
   private templateCache: Map<string, string> = new Map();
 
-  renderTemplate(templateType: string, templateName: string, templateExtension: string, context: any, shouldCacheTemplate: boolean = false): string {
+  renderTemplate(templateType: string, templateName: string, templateExtension: string, context: any, shouldCacheTemplate = false): string {
     const cacheKey = `${templateType}/${templateName}`;
     let templateText: string;
 
-    if(this.templateCache.has(cacheKey)) {
+    if (this.templateCache.has(cacheKey)) {
       templateText = this.templateCache.get(cacheKey)!;
     } else {
       templateText = this.loadTemplateText(templateType, templateName, templateExtension);
-      if(shouldCacheTemplate) this.templateCache.set(cacheKey, templateText);
+      if (shouldCacheTemplate) this.templateCache.set(cacheKey, templateText);
     }
 
     return renderTemplate(templateText, context);

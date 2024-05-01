@@ -1,0 +1,76 @@
+Prompt: Convert Resume PDF to JSON Resume
+
+Objective: Accurately convert resume PDF into JSON format adhering strictly to the JSON Type Schema.
+Instructions:
+
+Source Material: Use all information available from the resume PDF. Plain text from PDF is also provided. Do not add or invent details.
+
+Output Format: The JSON output should strictly follow the provided JSON Type Schema for a Resume object.
+You have to write every existing field on the resume: every candidate"s job, every place of education, every certification, every language, all the information.
+DO NOT SHORTEN ANY INFORMATION.
+Avoid using all caps unnecessarily, but feel free to use it where appropriate (e.g., in abbreviations).
+
+Unknown Fields: Assign "null" to any fields where information is not available or specified, in accordance with the nullability settings of the JSON Type Schema. Don"t write stubs in fields if the actual value is unknown, especially in ResumeContacts.
+
+Language Requirement: Include data only in the language in which the resume is written. Do not translate or modify the original text.
+
+Special rules for sections:
+experience: Include all places of work experience.
+education: Include all places of education.
+certificates: Include all places certificates.
+skills: Include all mentioned skills listed on the resume (each separately) as a list of technologies and abilities. Soft skills can also be included if explicitly mentioned in the resume.
+contact: Ensure that the "value" field contains only valid and appropriate content according to the specified "type". For instance, if the "type" is "LINKEDIN", the "value" should be a fully functional URL pointing to a LinkedIn profile, such as "https://www.linkedin.com/in/USERNAME". If a valid URL is not available, set "value" to "null". Exclude any contact details that do not have a meaningful "value".
+language: Include all languages (each separately) as list. The only valid values are specified in JSON Type Schema. Native knowledge of the language is L1.
+summary: If the candidate"s resume already includes a summary or information about himself rewrite it exactly. If not, generate it yourself, but don"t lie.
+title: The title of the resume (candidate"s specialty) should be concise, should be common knowledge in the industry. Bad example: ""
+city and country: Also must be included if mentioned any city or country in resume.
+
+JSON Type Schema:
+resume: {
+    firstName: string,
+    middleName: string | null,
+    lastName: string,
+    birthDate: Date | null,
+    title: string,
+    summary: string | null,
+    city: string | null,
+    country: string | null,
+    isReadyToRelocate: boolean | null,
+    skills: string[],
+    desiredSalary: number | null,
+    desiredSalaryCurrency: "RUB" | "USD"  | "EUR" | "GPB" | "GEL" | "AZN" | "BYR" | "KGS" | "KZT" | "UZS" | null,
+    certificates: {
+      name: string,
+      description: string | null,
+      year: number | null,
+    }[],
+    contacts: {
+      name: string | null,
+      type: "PHONE" | "EMAIL"  | "TELEGRAM" | "VK" | "FACEBOOK" | "LINKEDIN" | "GITHUB" | "OTHER",
+      value: string,
+      preferred: boolean,
+    }[],
+    education: {
+      name: string,
+      description: string | null,
+      degree: string | null,
+      startYear: number | null,
+      endYear: number | null,
+    }[],
+    experience: {
+      company: string | null,
+      position: string,
+      startMonth: number | null,
+      startYear: number | null,
+      endMonth: number | null,
+      endYear: number | null,
+      description: string | null,
+    }[],
+    languages: {
+      name: string,
+      level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | "L1" | null,
+    }[],
+}
+
+Plain text from PDF:
+{{ it.plainTextFromPdf }}

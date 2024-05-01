@@ -35,6 +35,7 @@
     "express-jwt": "^8.4.1",
     "fast_array_intersect": "^1.1.0",
     "google-auth-library": "^9.7.0",
+    "jsonrepair": "^3.6.1",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "mime": "^4.0.1",
@@ -43,8 +44,10 @@
     "node-cache": "^5.1.2",
     "node-telegram-bot-api": "^0.64.0",
     "nodemailer": "^6.9.7",
-    "openai": "^4.33.0",
+    "openai": "^4.38.3",
     "otp-generator": "^4.0.1",
+    "pdf-text-reader": "^4.0.1",
+    "pdfjs-dist": "^4.1.392",
     "pino": "^8.19.0",
     "pino-http": "^9.0.0",
     "qs": "^6.11.2",
@@ -58,6 +61,7 @@
     "yup-locales": "^1.2.20"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin-ts": "^1.7.2",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/body-parser": "^1.19.5",

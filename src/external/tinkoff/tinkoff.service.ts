@@ -41,7 +41,7 @@ export class TinkoffPaymentService {
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(
       "https://securepay.tinkoff.ru/v2/Init",
-      { ...requestBody, Token: this.makeToken(requestBody) }
+      { ...requestBody, Token: this.makeToken(requestBody) },
     );
 
     return response.data;
@@ -55,7 +55,7 @@ export class TinkoffPaymentService {
 
     const response = await axios.post<tinkoff.GetStandardPaymentStateResponse>(
       "https://securepay.tinkoff.ru/v2/GetState",
-      { ...requestBody, Token: this.makeToken(requestBody) }
+      { ...requestBody, Token: this.makeToken(requestBody) },
     );
 
     return response.data;
@@ -68,7 +68,7 @@ export class TinkoffPaymentService {
     };
 
     const sortedKeys = Object.keys(dataWithCredentials).sort();
-    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join("");
+    const concatenatedValues = sortedKeys.map((key) => String(dataWithCredentials[key])).join("");
 
     return this.sha256(concatenatedValues).toString();
   }

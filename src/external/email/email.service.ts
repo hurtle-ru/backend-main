@@ -16,7 +16,7 @@ export class EmailService {
 
   constructor(
     private readonly queue: EmailQueue,
-    private readonly templateRendererService: TemplateRendererService
+    private readonly templateRendererService: TemplateRendererService,
   ) {
     this.transporter = nodemailer.createTransport({
       host: emailConfig.MAIL_HOST,
@@ -56,7 +56,7 @@ export class EmailService {
           template.name,
           "html",
           template.context,
-          true
+          true,
         ),
       };
 

@@ -9,7 +9,7 @@ export function parseSortBy<T>(sortBys: string[] | undefined): T[] {
   const orders: T[] = [];
 
   if (sortBys) {
-    sortBys.forEach(sortBy => {
+    sortBys.forEach((sortBy) => {
       const [field, direction] = sortBy.split("_");
       if (direction === "asc" || direction === "desc") {
         // As TypeScript does not allow indexing by a variable of type string on a type parameter T directly,

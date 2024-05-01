@@ -1,18 +1,19 @@
-import { Resume, Prisma } from "@prisma/client";
-import { GetResumeResponse } from "./resume.dto";
+import { Prisma } from "@prisma/client";
 
+
+export type ResumeToCheckIsFilled = {
+  summary: string | null,
+  skills: string[],
+  certificates: object[],
+  education: object[],
+  experience: object[],
+  languages: object[],
+}
 
 export const resumePrismaExtension = Prisma.defineExtension({
   model: {
     resume: {
-      isFilled({ summary, skills, certificates, education, experience, languages }: {
-        summary: string | null,
-        skills: string[],
-        certificates: object[],
-        education: object[],
-        experience: object[],
-        languages: object[],
-      }): boolean {
+      isFilled({ summary, skills, certificates, education, experience, languages }: ResumeToCheckIsFilled): boolean {
         return !!(
           summary
           || (skills && skills.length > 0)

@@ -3,7 +3,7 @@ import axios from "axios";
 import { HttpError } from "../../../infrastructure/error/http.error";
 import { GetMineResumeResponse } from "./resume.dto";
 import { hh } from "../hh.dto";
-import camelize from "../../../util/camelize";
+import { camelize } from "../../../util/string.utils";
 
 @singleton()
 export class HhResumeService {
@@ -11,7 +11,7 @@ export class HhResumeService {
   }
 
   async getMine(accessToken: string): Promise<GetMineResumeResponse[]> {
-    const response = await axios.get(`https://api.hh.ru/resumes/mine`, {
+    const response = await axios.get("https://api.hh.ru/resumes/mine", {
       headers: { Authorization: `Bearer ${accessToken}` },
       validateStatus: () => true,
     });

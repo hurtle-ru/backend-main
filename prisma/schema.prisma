@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -180,7 +181,7 @@ model Resume {
   createdAt             DateTime                     @default(now())
   importedFrom          ResumeImportExternalService?
   importedId            String?                      @db.VarChar(512)
-  title                 String                       @db.VarChar(255)
+  title                 String?                      @db.VarChar(255)
   summary               String?                      @db.VarChar(5000)
   city                  String?                      @db.VarChar(255)
   skills                String[]                     @db.VarChar(5000)
@@ -234,7 +235,7 @@ model ResumeExperience {
   startYear   Int?
   endMonth    Int?
   endYear     Int?
-  description String? @db.VarChar(3000)
+  description String? @db.VarChar(6000)
   resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   resumeId    String
 }
@@ -415,8 +416,8 @@ model ApplicantAiChat {
 
   applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applicantId String
-  employer    Employer  @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  employerId  String
+  employer    Employer?  @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId  String?
 }
 
 model ApplicantAiChatMessage {
@@ -453,6 +454,7 @@ enum LanguageLevel {
 
 enum ResumeImportExternalService {
   HH
+  PDF_USING_GPT
 }
 
 enum Currency {

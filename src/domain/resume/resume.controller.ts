@@ -19,14 +19,17 @@ import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import {
   BasicResume,
-  CreateResumeRequest,
-  CreateResumeRequestSchema,
+  CreateResumeByApplicantRequest,
+  CreateResumeByApplicantRequestSchema,
+  CreateResumeByManagerRequest,
+  CreateResumeByManagerRequestSchema,
   GetResumeResponse,
   PatchByIdResumeRequest,
   PatchByIdResumeRequestSchema,
   PatchResumeResponse,
 } from "./resume.dto";
 import { Prisma } from "@prisma/client";
+import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
@@ -38,23 +41,31 @@ export class ResumeController extends Controller {
   }
 
   @Post("")
-  @Security("jwt", [UserRole.APPLICANT])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
   @Response<HttpErrorBody & { "error": "Resume already exists" }>(409)
   public async createEmpty(
-    @Request() req: JwtModel,
-    @Body() body: CreateResumeRequest,
+    @Request() req: JwtModel<UserRole.APPLICANT | UserRole.MANAGER>,
+    @Body() body: CreateResumeByApplicantRequest | CreateResumeByManagerRequest,
   ): Promise<BasicResume> {
-    body = CreateResumeRequestSchema.validateSync(body)
+    body = validateSyncByAtLeastOneSchema(
+      [
+        CreateResumeByApplicantRequestSchema,
+        CreateResumeByManagerRequestSchema
+      ],
+      body
+    )
+
+    const applicantId = body.role === UserRole.MANAGER ? body.applicantId : req.user.id
 
     const resume = await prisma.resume.findUnique({
-      where: { applicantId: req.user.id },
-    })
+      where: { applicantId },
+    });
     if (resume) throw new HttpError(409, "Resume already exists.");
 
     return prisma.resume.create({
       data: {
-        ...body,
-        applicant: { connect: { id: req.user.id } },
+        title: body.title,
+        applicant: { connect: { id: applicantId } },
         isVisibleToEmployers: true,
       },
     });
@@ -79,7 +90,7 @@ export class ResumeController extends Controller {
       },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return resume;
   }
@@ -94,10 +105,10 @@ export class ResumeController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: { id: req.user.id } }),
-    }
+    };
 
     const resume = await prisma.resume.findUnique({ where });
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     await prisma.resume.delete({ where });
   }
@@ -112,14 +123,14 @@ export class ResumeController extends Controller {
   ): Promise<GetResumeResponse> {
     let where: Prisma.ResumeWhereUniqueInput = { id };
 
-    if(req.user) {
-      switch(req.user.role) {
-        case UserRole.APPLICANT:
-          where = { ...where, applicantId: req.user.id };
-          break;
-        case UserRole.EMPLOYER:
-          where = { ...where, isVisibleToEmployers: true };
-          break;
+    if (req.user) {
+      switch (req.user.role) {
+      case UserRole.APPLICANT:
+        where = { ...where, applicantId: req.user.id };
+        break;
+      case UserRole.EMPLOYER:
+        where = { ...where, isVisibleToEmployers: true };
+        break;
       }
     } else {
       where = { ...where, isVisibleToEmployers: true };
@@ -137,7 +148,7 @@ export class ResumeController extends Controller {
       },
     });
 
-    if(!resume) throw new HttpError(404, "Resume not found or is not visible for employers");
+    if (!resume) throw new HttpError(404, "Resume not found or is not visible for employers");
 
     return resume;
   }
@@ -155,10 +166,10 @@ export class ResumeController extends Controller {
     const where = {
       id,
       ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
-    }
+    };
 
     const resume = await prisma.resume.findUnique({ where });
-    if(!resume) throw new HttpError(404, "Resume not found");
+    if (!resume) throw new HttpError(404, "Resume not found");
 
     return prisma.resume.update({
       where,

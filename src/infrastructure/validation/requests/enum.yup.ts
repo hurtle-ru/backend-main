@@ -6,5 +6,5 @@ export function yupOneOfEnum<T extends string>(enumObject: { [s: string]: T } | 
 }
 
 export function yupManyOfEnum<T extends string>(enumObject: { [s: string]: T } | ArrayLike<T>) {
-  return yup.array( yupOneOfEnum( enumObject ).defined() );
+  return yup.array(yupOneOfEnum(enumObject).defined());
 }

@@ -1,14 +1,19 @@
-import * as yup from "yup"
+import * as yup from "yup";
 
 import { GuestVacancyResponse, Resume, VacancyResponseStatus } from "@prisma/client";
 import { BasicVacancy, CreateVacancyRequest, CreateVacancyRequestSchema } from "../vacancy.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
 import { BasicResumeSchema } from "../../resume/resume.dto";
 import { BasicResumeCertificate, BasicResumeCertificateSchema } from "../../resume/certificate/certificate.dto";
-import { BasicResumeContact, BasicResumeContactSchema } from "../../resume/contact/contact.dto";
+import {
+  BasicResumeContact,
+  BasicResumeContactSchema,
+  PatchResumeContactRequest, PatchResumeContactRequestSchema,
+} from "../../resume/contact/contact.dto";
 import { BasicResumeEducation, BasicResumeEducationSchema } from "../../resume/education/education.dto";
 import { BasicResumeExperience, BasicResumeExperienceSchema } from "../../resume/experience/experience.dto";
 import { BasicResumeLanguage, BasicResumeLanguageSchema } from "../../resume/language/language.dto";
+import { FullRequired } from "../../../util/typescript.utils";
 
 
 export type BasicGuestVacancyResponse = Omit<
@@ -30,7 +35,7 @@ export type CreateGuestVacancyResponseRequestResume = Pick<
     | "name"
     | "description"
     | "year"
-    >[];
+  >[];
   contacts: Pick<
     BasicResumeContact,
     | "name"
@@ -115,7 +120,7 @@ const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyRespons
   lastName: yup.string().defined(),
   middleName: yup.string().defined().nullable(),
   isReadyToRelocate: yup.boolean().defined().nullable(),
-})
+});
 
 export type CreateGuestVacancyResponseRequest = Pick<
   BasicGuestVacancyResponse,
@@ -154,3 +159,39 @@ export const PatchGuestVacancyResponseRequestSchema: yup.ObjectSchema<PatchGuest
   "status",
   "isViewedByEmployer",
 ]).partial();
+
+export type CreateQueuedWithOcrGuestVacancyResponseResponse = {
+  jobId: string
+}
+
+export type PatchGuestVacancyResponseQueuedWithOcrRequest = {
+  overwriteResumeFields?: {
+    contacts?: FullRequired<
+      Pick<
+        PatchResumeContactRequest,
+        | "type"
+        | "name"
+        | "preferred"
+        | "value"
+      >
+    >[],
+  }
+};
+
+export const PatchGuestVacancyResponseQueuedWithOcrRequestSchema: yup.ObjectSchema<PatchGuestVacancyResponseQueuedWithOcrRequest> = yup.object({
+  overwriteResumeFields: yup.object({
+    contacts: yup.array().of(BasicResumeContactSchema.pick([
+      "type",
+      "name",
+      "preferred",
+      "value",
+    ])),
+  }).partial(),
+});
+
+export type MetadataCreateGuestVacancyResponse = {
+  callback: "create-guest-vacancy-response"
+  vacancyId: string,
+  guestResponseId: string | null,
+  errorDuringCreation: boolean | null,
+} & PatchGuestVacancyResponseQueuedWithOcrRequest;

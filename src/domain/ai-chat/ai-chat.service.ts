@@ -12,6 +12,7 @@ import { BasicApplicant } from "../applicant/applicant.dto";
 @singleton()
 export class ApplicantAiChatService {
   TEMPLATE_TYPE = "prompt-templates";
+
   TEMPLATE_EXTENSION = "txt";
 
   constructor(
@@ -25,13 +26,13 @@ export class ApplicantAiChatService {
     chat: {
       id: string,
       history: ApplicantAiChatMessage[],
-    }
+    },
   ): Promise<BasicApplicantAiChatMessage> {
     const completion = await this.chatgptService.generateChatCompletion(
       question, [
         { content: systemPrompt, role: "system" },
         ...this.mapHistory(chat.history),
-      ]
+      ],
     );
 
     return prisma.applicantAiChatMessage.create({
@@ -55,25 +56,25 @@ export class ApplicantAiChatService {
       this.TEMPLATE_TYPE, "resume", this.TEMPLATE_EXTENSION, {
         applicant,
         resume: applicant.resume,
-      }, true
+      }, true,
     );
 
     const renderedInterviews = this.templateRendererService.renderTemplate(
       this.TEMPLATE_TYPE, "interviews", this.TEMPLATE_EXTENSION, {
         interviews: applicant.interviews,
-      }, true
+      }, true,
     );
 
     return this.templateRendererService.renderTemplate(
       this.TEMPLATE_TYPE, "applicant-ai-chat-question", this.TEMPLATE_EXTENSION, {
         resume: renderedResume,
         interviews: renderedInterviews,
-      }, true
+      }, true,
     );
   }
 
   private mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
-    return history.flatMap(message => [
+    return history.flatMap((message) => [
       { content: message.prompt, role: "user" },
       { content: message.response, role: "assistant" },
     ]);

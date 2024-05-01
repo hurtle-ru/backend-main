@@ -16,7 +16,7 @@ export const BasicApplicantAiChatMessageSchema: yup.ObjectSchema<BasicApplicantA
   promptTokens: yupUint32().defined(),
   completionTokens: yupUint32().defined(),
   chatId: yup.string().defined().length(36),
-})
+});
 
 export type GetApplicantAiChatMessageResponse = BasicApplicantAiChatMessage & {
   chat?: BasicApplicantAiChat
@@ -27,7 +27,7 @@ export type CreateApplicantAiChatMessageRequest = Pick<BasicApplicantAiChatMessa
 > & { question: string }
 
 export const CreateApplicantAiChatMessageRequestSchema: yup.ObjectSchema<CreateApplicantAiChatMessageRequest> = BasicApplicantAiChatMessageSchema.pick(
-  ["chatId"]
+  ["chatId"],
 ).shape({
   question: yup.string().trim().min(4).max(4000).defined(),
 });
