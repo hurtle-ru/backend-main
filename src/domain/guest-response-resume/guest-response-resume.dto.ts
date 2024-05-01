@@ -3,6 +3,7 @@ import * as yup from "yup";
 import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";
 import { BasicGuestVacancyResponse } from "../vacancy/guest-response/guest-response.dto";
+import { BasicGuestVacancyResponseResumeContact } from "./contact/contact.dto";
 
 export type BasicGuestVacancyResponseResume = Pick<
   GuestVacancyResponseResume,
