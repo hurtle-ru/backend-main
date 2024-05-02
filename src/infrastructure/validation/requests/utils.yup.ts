@@ -12,6 +12,6 @@ export function validateSyncByAtLeastOneSchema<T>(schemas: yup.Schema[], body: T
       firstError = firstError ?? error; console.log(error); 
     }
   }
-
+  // TODO: return all errors
   throw firstError;
 }

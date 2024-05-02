@@ -227,7 +227,7 @@ export class VacancyResponseController extends Controller {
         skip: (page - 1) * size,
         take: size,
         where: where!,
-        orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationInput>(sortBy),
+        orderBy: parseSortBy<Prisma.VacancyResponseOrderByWithRelationAndSearchRelevanceInput>(sortBy),
         include: {
           candidateRecommendedBy: include?.includes("candidateRecommendedBy"),
           vacancy: include?.includes("vacancy.employer")

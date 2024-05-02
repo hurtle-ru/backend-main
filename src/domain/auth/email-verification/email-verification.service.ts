@@ -14,7 +14,7 @@ export class EmailVerificationService {
     return otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
   }
 
-  async sendEmail(logger: pino.Logger, name: string, email: string, code: string) {
+  async sendEmail(name: string, email: string, code: string) {
     const encodedEmail = encodeURIComponent(email);
     const encodedCode = encodeURIComponent(code);
 

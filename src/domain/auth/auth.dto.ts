@@ -10,15 +10,15 @@ import {
   HhAuthorizationCodeRequestSchema,
 } from "../../external/hh/auth/auth.dto";
 import { HhToken } from "@prisma/client";
-import { APPLICANT, APPLICANT_SCHEMA } from "../../infrastructure/controller/requester/requester.dto";
+import { APPLICANT, APPLICANT_SCHEMA, EMPLOYER } from "../../infrastructure/controller/requester/requester.dto";
 import { GoogleTokenSchema } from "../../external/google/auth/auth.dto";
 import { BasicEmployer, BasicEmployerSchema } from "../employer/employer.dto";
 
 
-export interface JwtModel {
+export interface JwtModel<R = UserRole | typeof GUEST_ROLE> {
   user: {
     id: string; // Contains model id or email if the user is Guest
-    role: UserRole | typeof GUEST_ROLE;
+    role: R;
     iat: number;
   };
 }
@@ -154,6 +154,26 @@ export const AuthWithHhRequestSchema: yup.ObjectSchema<AuthWithHhRequest> = HhAu
 });
 
 export { HH_AUTHORIZATION_CODE, HH_TOKEN };
+
+export type AuthGetEmailCodeRequest = Pick<BasicApplicant, "email"> & {
+  role: APPLICANT | EMPLOYER;
+}
+
+export const AuthGetEmailCodeRequestSchema: yup.ObjectSchema<AuthGetEmailCodeRequest> =
+  BasicApplicantSchema.pick(["email"]).shape({
+    role: yup.string().defined().oneOf([APPLICANT, EMPLOYER] as const)
+  })
+
+export type AuthWithEmailCodeRequest = Pick<BasicApplicant, "email"> & {
+  code: string
+  role: APPLICANT | EMPLOYER;
+}
+
+export const AuthWithEmailCodeRequestSchema: yup.ObjectSchema<AuthWithEmailCodeRequest> =
+  BasicApplicantSchema.pick(["email"]).shape({
+    role: yup.string().defined().oneOf([APPLICANT, EMPLOYER] as const),
+    code: yup.string().trim().defined().min(1),
+  })
 
 export type MetadataImportAsApplicantResume = {
   callback: "import-as-applicant-resume"

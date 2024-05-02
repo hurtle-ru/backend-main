@@ -34,13 +34,18 @@ import path from "path";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { Prisma } from "@prisma/client";
+import { ApplicantService } from "./applicant.service";
+import { SearchQuery } from "../../infrastructure/controller/search/search.dto";
 
 
 @injectable()
 @Route("api/v1/applicants")
 @Tags("Applicant")
 export class ApplicantController extends Controller {
-  constructor(private readonly artifactService: ArtifactService) {
+  constructor(
+    private readonly artifactService: ArtifactService,
+    private readonly applicantService: ApplicantService,
+  ) {
     super();
   }
 
@@ -49,13 +54,14 @@ export class ApplicantController extends Controller {
   @Security("jwt", [UserRole.APPLICANT])
   public async getMe(
     @Request() req: JwtModel,
-    @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
+    @Query() include?: ("resume" | "meetings" | "vacancyResponses" | "aiChats")[],
   ): Promise<GetApplicantResponse> {
     const applicant = await prisma.applicant.findUnique({
       where: { id: req.user.id },
       include: {
         resume: include?.includes("resume"),
         meetings: include?.includes("meetings"),
+        aiChats: (include?.includes("aiChats") && { where: { employerId: null }}),
         vacancyResponses: include?.includes("vacancyResponses"),
       },
     });
@@ -71,6 +77,7 @@ export class ApplicantController extends Controller {
     @Query() nickname?: string,
     @Query() hadMeetingGte?: Date,
     @Query() hadMeetingLte?: Date,
+    @Query() search?: SearchQuery,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() include?: ("resume" | "meetings" | "vacancyResponses")[],
@@ -95,11 +102,17 @@ export class ApplicantController extends Controller {
       };
     }
 
+    const searchInput =
+      req.user.role === UserRole.MANAGER && search && search.length > 0
+        ? this.applicantService.buildSearchInput(search)
+        : undefined;
+
     const where: Prisma.ApplicantWhereInput = {
       nickname,
       meetings: whereMeetings,
+      ...searchInput,
       ...(has?.includes("resume") && req.user.role === UserRole.MANAGER && { NOT: { resume: null } }),
-      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { resume: { isVisibleToEmployers: true } }),
+      ...(has?.includes("resume") && req.user.role === UserRole.EMPLOYER && { NOT: { resume: null } }),
       ...(has?.includes("vacancyResponses") && { vacancyResponses: { some: {} } }),
     };
 
@@ -107,7 +120,7 @@ export class ApplicantController extends Controller {
     if (include?.includes("resume") && req.user.role === UserRole.MANAGER)
       includeResume = true;
     if (include?.includes("resume") && req.user.role === UserRole.EMPLOYER)
-      includeResume = { where: { isVisibleToEmployers: true } };
+      includeResume = true;
 
     const [applicants, applicantsCount] = await Promise.all([
       prisma.applicant.findMany({
@@ -281,14 +294,14 @@ export class ApplicantController extends Controller {
         if (include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
         break;
       case UserRole.EMPLOYER:
-        if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: { where: { isVisibleToEmployers: true } } };
+        if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: true };
         if (include?.includes("aiChats")) includeQuery = { ...includeQuery, aiChats: { where: { employerId: req.user.id } } };
         if (include?.includes("meetings")) includeQuery = { ...includeQuery, meetings: true };
         if (include?.includes("vacancyResponses")) includeQuery = { ...includeQuery, vacancyResponses: true };
         break;
       }
     } else {
-      if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: { where: { isVisibleToEmployers: true } } };
+      if (include?.includes("resume")) includeQuery = { ...includeQuery, resume: true };
     }
 
     let where = null;

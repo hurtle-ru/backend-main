@@ -31,6 +31,6 @@ export const CreateApplicantAiChatRequestSchema = BasicApplicantAiChatSchema.pic
 
 export type GetApplicantAiChatResponse = BasicApplicantAiChat & {
   applicant?: BasicApplicant,
-  employer?: BasicEmployer,
+  employer?: BasicEmployer | null,
   history?: BasicApplicantAiChatMessage[];
 }
