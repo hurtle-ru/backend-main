@@ -35,9 +35,11 @@ import { HhAuthService } from "../../external/hh/auth/auth.service";
 import { HhApplicantService } from "../../external/hh/applicant/applicant.service";
 import { BasicHhToken } from "../../external/hh/auth/auth.dto";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+
 import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
 import { logger } from "../../infrastructure/logger/logger";
 import { hh } from "../../external/hh/hh.dto";
+
 
 @injectable()
 @Route("api/v1/auth")

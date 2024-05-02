@@ -53,7 +53,8 @@ export class ArtifactService {
       let fileType: string | null = null;
 
       try {
-        fileType = FILE_EXTENSION_MIME_TYPES[path.extname(filePath)];
+        const fileExtension = path.extname(filePath) as keyof typeof FILE_EXTENSION_MIME_TYPES;
+        fileType = FILE_EXTENSION_MIME_TYPES[fileExtension];
       } catch {}
 
       const stream = syncFs.createReadStream(path.join(process.cwd(), filePath), { highWaterMark: artifactConfig.READ_STREAM_HIGH_WATER_MARK });

@@ -1,26 +1,26 @@
 import { injectable } from "tsyringe";
 import {
   Body,
-  Controller, Delete,
+  Controller, Delete, Deprecated,
   Get, Middlewares, Patch,
   Path,
-  Post,
+  Post, Produces,
   Query,
   Request,
   Response,
   Route,
-  Security,
+  Security, SuccessResponse,
   Tags, UploadedFile,
 } from "tsoa";
 import {
   BasicGuestVacancyResponse,
-  CreateGuestVacancyResponseRequest,
-  CreateGuestVacancyResponseRequestSchema,
   CreateQueuedWithOcrGuestVacancyResponseResponse,
-  GetGuestVacancyResponseResponse, PatchGuestVacancyResponseQueuedWithOcrRequest,
+  GetGuestVacancyResponseResponse,
+  PatchGuestVacancyResponseByEmployerRequest, PatchGuestVacancyResponseByEmployerRequestSchema,
+  PatchGuestVacancyResponseByManagerRequest, PatchGuestVacancyResponseByManagerRequestSchema,
+  PatchGuestVacancyResponseByPublicRequest, PatchGuestVacancyResponseByPublicRequestSchema,
+  PatchGuestVacancyResponseQueuedWithOcrRequest,
   PatchGuestVacancyResponseQueuedWithOcrRequestSchema,
-  PatchGuestVacancyResponseRequest,
-  PatchGuestVacancyResponseRequestSchema,
 } from "./guest-response.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
@@ -31,15 +31,20 @@ import { PageResponse } from "../../../infrastructure/controller/pagination/page
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 import { GuestResponseService } from "./guest-response.service";
-import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
 import { ArtifactService } from "../../../external/artifact/artifact.service";
 import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
+import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
+import { Request as ExpressRequest } from "express";
+import { Readable } from "stream";
+import { validateSyncByAtLeastOneSchema } from "../../../infrastructure/validation/requests/utils.yup";
 
 
 @injectable()
 @Route("api/v1/guestVacancyResponses")
 @Tags("Guest Vacancy Response")
 export class GuestVacancyResponseController extends Controller {
+  public static readonly RESUME_FILE_MIME_TYPE = "application/pdf";
+
   constructor(
     private readonly artifactService: ArtifactService,
     private readonly guestResponseService: GuestResponseService,
@@ -48,6 +53,7 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Post("queuedWithOcr")
+  @Deprecated()
   @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
   @Response<HttpErrorBody & {"error":
@@ -61,14 +67,17 @@ export class GuestVacancyResponseController extends Controller {
     @UploadedFile("file") multerFile: Express.Multer.File,
     @Query() vacancyId: string,
   ): Promise<CreateQueuedWithOcrGuestVacancyResponseResponse> {
-    await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
-    await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
+    throw new HttpError(410, "Gone");
 
-    const { id } = await this.guestResponseService.enqueueCreationWithOcr(multerFile, vacancyId);
-    return { jobId: id! };
+    // await this.artifactService.validateFileAttributes(multerFile, [FILE_EXTENSION_MIME_TYPES[".pdf"]], artifactConfig. MAX_DOCUMENT_FILE_SIZE);
+    // await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
+    //
+    // const { id } = await this.guestResponseService.enqueueCreationWithOcr(multerFile, vacancyId);
+    // return { jobId: id! };
   }
 
   @Patch("queuedWithOcr/{jobId}/resume")
+  @Deprecated()
   @Middlewares(rateLimit({limit: 100, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async patchQueuedWithOcrById(
@@ -77,50 +86,63 @@ export class GuestVacancyResponseController extends Controller {
     @Body() body: PatchGuestVacancyResponseQueuedWithOcrRequest,
   ) {
     body = PatchGuestVacancyResponseQueuedWithOcrRequestSchema.validateSync(body);
-
-    const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
-    if (!job) throw new HttpError(404, "Job not found");
-
-    await this.guestResponseService.patchQueuedWithOcrJob(job, body);
+    //
+    // const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    // if (!job) throw new HttpError(404, "Job not found");
+    //
+    // await this.guestResponseService.patchQueuedWithOcrJob(job, body);
   }
 
   @Get("queuedWithOcr/{jobId}")
+  @Deprecated()
   @Middlewares(rateLimit({limit: 1200, interval: 3600 * 24}))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getQueuedWithOcrById(
     @Request() req: JwtModel,
     @Path() jobId: string,
   ) {
-    const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    throw new HttpError(410, "Gone");
 
-    if (!job) throw new HttpError(404, "Job not found");
-
-    return job;
+    // const job = await this.guestResponseService.getQueuedWithOcrJob(jobId);
+    //
+    // if (!job) throw new HttpError(404, "Job not found");
+    //
+    // return job;
   }
 
   @Post("")
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
   @Response<HttpErrorBody & {"error":
       | "Vacancy is unpublished or hidden"
-      | "Applicant resume is unfilled or does not exist"
   }>(409)
+  @Response<HttpErrorBody & {"error": "File is too large"}>(413)
+  @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
   public async create(
-    @Request() req: JwtModel,
-    @Body() body: CreateGuestVacancyResponseRequest,
+    @Request() req: { user: undefined },
+    @UploadedFile("file") multerFile: Express.Multer.File,
+    @Query() vacancyId: string,
   ): Promise<BasicGuestVacancyResponse> {
-    body = CreateGuestVacancyResponseRequestSchema.validateSync(body);
+    await this.artifactService.validateFileAttributes(
+      multerFile, [GuestVacancyResponseController.RESUME_FILE_MIME_TYPE],
+      artifactConfig.MAX_DOCUMENT_FILE_SIZE,
+    );
 
-    await this.guestResponseService.validateVacancyBeforeCreation(body.vacancyId);
-    const { resume, ...bodyData} = body;
-    await this.guestResponseService.validateResumeBeforeCreation(resume);
+    await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
 
-
-    return prisma.guestVacancyResponse.create({
+    const guestVacancyResponse = await prisma.guestVacancyResponse.create({
       data: {
-        ...bodyData,
-        resume,
+        vacancyId,
+        status: "NEW_APPLICATION",
+        moderationStatus: "UNDER_REVIEW",
+        resume: {
+          create: {},
+        },
       },
     });
+
+    await this.guestResponseService.saveResumeFile(multerFile, guestVacancyResponse.id);
+
+    return guestVacancyResponse;
   }
 
   @Get("my")
@@ -150,11 +172,13 @@ export class GuestVacancyResponseController extends Controller {
         },
       },
       resume: (candidate_resume_minDesiredSalary || candidate_resume_maxDesiredSalary) ? {
-        path: ["desiredSalary"],
-        gte: candidate_resume_minDesiredSalary ?? undefined,
-        lte: candidate_resume_maxDesiredSalary ?? undefined,
+        desiredSalary: {
+          gte: candidate_resume_minDesiredSalary ?? undefined,
+          lte: candidate_resume_maxDesiredSalary ?? undefined,
+        },
       } : undefined,
     };
+
     if (req.user.role === UserRole.EMPLOYER) {
       where = { ...where, vacancy: { employerId: req.user.id } };
     }
@@ -177,27 +201,35 @@ export class GuestVacancyResponseController extends Controller {
     return new PageResponse(guestVacancyResponses, page, size, guestVacancyResponsesCount);
   }
 
+  @Get("{id}/resumeFile")
+  @Middlewares(rateLimit({limit: 500, interval: 60}))
+  @Response<HttpErrorBody & {"error": "File not found" | "GuestVacancyResponse not found"}>(404)
+  @Produces(GuestVacancyResponseController.RESUME_FILE_MIME_TYPE)
+  public async getResumeFileById(
+    @Request() req: ExpressRequest,
+    @Path() id: string,
+  ): Promise<Readable | null> {
+    const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
+      where: { id },
+    });
+
+    if (!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
+
+    return this.guestResponseService.getResumeFile(req, id);
+  }
+
   @Get("{id}")
-  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
   public async getById(
     @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
-    @Query() include?: ("vacancy")[],
+    @Query() include?: ("vacancy" | "resume")[],
   ): Promise<GetGuestVacancyResponseResponse> {
     let where = null;
 
     if (req.user) {
       switch (req.user.role) {
-      case UserRole.APPLICANT:
-        where = {
-          id,
-          vacancy: {
-            isHidden: false,
-            status: { equals: VacancyStatus.PUBLISHED },
-          },
-        };
-        break;
       case UserRole.EMPLOYER:
         where = { id, vacancy: { employerId: req.user.id } };
         break;
@@ -219,6 +251,7 @@ export class GuestVacancyResponseController extends Controller {
       where: where!,
       include: {
         vacancy: include?.includes("vacancy"),
+        resume: include?.includes("resume"),
       },
     });
 
@@ -227,36 +260,45 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
+  @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
+  @Response<HttpErrorBody & {"error": "Invalid body request for public scope"}>(403)
+  @Response<HttpErrorBody & {"error": "Invalid body request for employer"}>(403)
+  @Response<HttpErrorBody & {"error": "Invalid body request for manager"}>(403)
   public async patchById(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
-    @Body() body: PatchGuestVacancyResponseRequest,
+    @Body() body:
+      | PatchGuestVacancyResponseByPublicRequest
+      | PatchGuestVacancyResponseByEmployerRequest
+      | PatchGuestVacancyResponseByManagerRequest,
   ): Promise<BasicGuestVacancyResponse> {
-    body = PatchGuestVacancyResponseRequestSchema.validateSync(body);
+    body = validateSyncByAtLeastOneSchema([
+      PatchGuestVacancyResponseByPublicRequestSchema,
+      PatchGuestVacancyResponseByEmployerRequestSchema,
+      PatchGuestVacancyResponseByManagerRequestSchema,
+    ], body);
+
+    const { _requester, ...bodyData } = body;
+
+    if (!req.user && _requester !== PUBLIC_SCOPE) throw new HttpError(403, "Invalid body request for public scope");
+    if (req.user?.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
+    if (req.user?.role === UserRole.MANAGER && _requester !== UserRole.MANAGER) throw new HttpError(403, "Invalid body request for manager");
 
     const where = {
       id,
-      ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
+      ...(req.user?.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     };
 
     const guestVacancyResponse = await prisma.guestVacancyResponse.findUnique({
-      where: where,
-      select: {
-        vacancy: {
-          select: {
-            employerId: true,
-          },
-        },
-      },
+      where,
     });
 
     if (!guestVacancyResponse) throw new HttpError(404, "GuestVacancyResponse not found");
 
     return prisma.guestVacancyResponse.update({
       where: where,
-      data: body,
+      data: bodyData,
     });
   }
 
@@ -272,7 +314,7 @@ export class GuestVacancyResponseController extends Controller {
       ...(req.user.role === UserRole.EMPLOYER && { vacancy: { employerId: req.user.id } }),
     };
 
-    if (!await prisma.guestVacancyResponse.exists(where)) throw new HttpError(404, "VacancyResponse not found");
+    if (!await prisma.guestVacancyResponse.exists(where)) throw new HttpError(404, "GuestVacancyResponse not found");
 
     await prisma.guestVacancyResponse.delete({ where });
   }

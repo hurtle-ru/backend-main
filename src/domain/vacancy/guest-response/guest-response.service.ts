@@ -16,13 +16,21 @@ import {
 import { Job, QueueEvents } from "bullmq";
 import { logger } from "../../../infrastructure/logger/logger";
 import redis from "../../../infrastructure/mq/redis.provider";
+import path from "path";
+import { ArtifactService } from "../../../external/artifact/artifact.service";
+import { Readable } from "stream";
+import { Request } from "express";
 
 
 @injectable()
 @singleton()
 export class GuestResponseService {
+  public static readonly ARTIFACT_DIR = "guest-response";
+  public static readonly RESUME_FILE_NAME = "resume";
+
   constructor(
     private readonly resumeOcrService: ResumeOcrService,
+    private readonly artifactService: ArtifactService,
   ) {
   }
 
@@ -39,6 +47,35 @@ export class GuestResponseService {
     if (!resume || !prisma.resume.isFilled(resume)) {
       throw new HttpError(409, "Applicant resume is unfilled or does not exist");
     }
+  }
+
+  public async saveResumeFile(multerFile: Express.Multer.File, id: string) {
+    const extension = path.extname(multerFile.originalname);
+    await this.artifactService.saveDocumentFile(multerFile, this.getResumeFilePath(id, extension));
+  }
+
+  public async getResumeFile(req: Request, id: string): Promise<Readable | null> {
+    const savedResumeFileName = await this.artifactService.getFullFileName(
+      `${GuestResponseService.ARTIFACT_DIR}/${id}/`,
+      GuestResponseService.RESUME_FILE_NAME,
+    );
+
+    if (savedResumeFileName == null) throw new HttpError(404, "File not found");
+    const filePath = `${GuestResponseService.ARTIFACT_DIR}/${id}/${savedResumeFileName}`;
+
+    const response = req.res;
+    if (response) {
+      req.log.trace("File path: ", filePath);
+      const [stream, fileOptions] = await this.artifactService.loadFile(filePath);
+
+      if (fileOptions.mimeType) response.setHeader("Content-Type", fileOptions.mimeType);
+      response.setHeader("Content-Length", fileOptions.size.toString());
+
+      stream.pipe(response);
+      return stream;
+    }
+
+    return null;
   }
 
   public async enqueueCreationWithOcr(multerFile: Express.Multer.File, vacancyId: string) {
@@ -98,26 +135,26 @@ export class GuestResponseService {
       resume = this.createOverwrittenResume(overwriteResumeFields, resume);
     }
 
-    const {
-      firstName,
-      lastName,
-      middleName,
-      isReadyToRelocate,
-      ...resumeData
-    } = resume;
-
     await this.validateVacancyBeforeCreation(vacancyId);
-    await this.validateResumeBeforeCreation(resumeData);
+    await this.validateResumeBeforeCreation(resume);
+
+    const { contacts, ...resumeData } = resume
 
     return await prisma.guestVacancyResponse.create({
       data: {
         vacancyId: vacancyId,
         text: null,
-        firstName,
-        lastName,
-        middleName,
-        isReadyToRelocate,
-        resume: resumeData,
+        resume: {
+          create: {
+            ...resumeData,
+            contacts: {
+              createMany: {
+                data: contacts,
+                skipDuplicates: true,
+              }
+            }
+          },
+        },
       },
     });
   }
@@ -126,7 +163,7 @@ export class GuestResponseService {
     return this.resumeOcrService.getJob(jobId);
   }
 
-  async patchQueuedWithOcrJob(job: GetResumeOcrJobResponse, body: PatchGuestVacancyResponseQueuedWithOcrRequest) {
+  public async patchQueuedWithOcrJob(job: GetResumeOcrJobResponse, body: PatchGuestVacancyResponseQueuedWithOcrRequest) {
     const { overwriteResumeFields } = body;
     const { id, data } = job;
 
@@ -149,11 +186,19 @@ export class GuestResponseService {
         await prisma.guestVacancyResponse.update({
           where: { id: guestResponseId },
           data: {
-            ...(updatedResume ? { resume: updatedResume } : {}),
+            ...(updatedResume ? updatedResume : {}),
           },
         });
       }
     }
+  }
+
+  public getResumeFilePath(responseId: string, extension: string) {
+    return path.join(
+      GuestResponseService.ARTIFACT_DIR,
+      responseId,
+      GuestResponseService.RESUME_FILE_NAME  + extension,
+    );
   }
 
   private createOverwrittenResume(

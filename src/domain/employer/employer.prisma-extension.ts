@@ -34,6 +34,11 @@ export const employerPrismaExtension = Prisma.defineExtension({
                     offer: true,
                   },
                 },
+                guestResponses: {
+                  include: {
+                    resume: true,
+                  },
+                },
               },
             },
             applicantAiChats: {
