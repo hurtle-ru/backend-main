@@ -1,8 +1,7 @@
-import { ContactType, Currency, GuestVacancyResponseResumeContact } from "@prisma/client";
+import { ContactType, GuestVacancyResponseResumeContact } from "@prisma/client";
 import * as yup from "yup";
-import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
-import { BasicGuestVacancyResponse } from "../../vacancy/guest-response/guest-response.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";
+
 
 export type BasicGuestVacancyResponseResumeContact = Pick<
   GuestVacancyResponseResumeContact,

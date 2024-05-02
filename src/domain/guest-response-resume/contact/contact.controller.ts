@@ -10,6 +10,7 @@ import {
 } from "./contact.dto";
 import { GuestVacancyResponseResumeContact } from "@prisma/client";
 
+
 @injectable()
 @Route("api/v1/guestVacancyResponseResumes/contacts")
 @Tags("Guest Vacancy Response Resume Contact")
