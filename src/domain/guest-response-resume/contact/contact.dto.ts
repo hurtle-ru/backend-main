@@ -22,6 +22,23 @@ export const BasicGuestVacancyResponseResumeContactSchema: yup.ObjectSchema<Basi
   resumeId: yup.string().defined(),
 });
 
+export type CreateGuestVacancyResponseResumeContactRequest = Pick<
+  BasicGuestVacancyResponseResumeContact,
+  | "name"
+  | "type"
+  | "value"
+  | "preferred"
+  | "resumeId"
+>;
+
+export const CreateGuestVacancyResponseResumeContactRequestSchema: yup.ObjectSchema<CreateGuestVacancyResponseResumeContactRequest> = BasicGuestVacancyResponseResumeContactSchema.pick([
+  "name",
+  "type",
+  "value",
+  "preferred",
+  "resumeId"
+]);
+
 export type PatchGuestVacancyResponseResumeContactRequest = Partial<
   Pick<
     BasicGuestVacancyResponseResumeContact,

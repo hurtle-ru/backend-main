@@ -1,10 +1,12 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Patch, Path, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Get, Middlewares, Patch, Path, Post, Query, Request, Response, Route, Security, Tags } from "tsoa";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import {
   BasicGuestVacancyResponseResumeContact,
+  CreateGuestVacancyResponseResumeContactRequest,
+  CreateGuestVacancyResponseResumeContactRequestSchema,
   PatchGuestVacancyResponseResumeContactRequest,
   PatchGuestVacancyResponseResumeContactRequestSchema,
 } from "./contact.dto";
@@ -25,7 +27,6 @@ export class GuestVacancyResponseResumeContactController extends Controller {
   public async getById(
     @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
-    @Query() include?: ("response" | "contacts")[],
   ): Promise<GuestVacancyResponseResumeContact> {
     const where = { id };
 
@@ -35,6 +36,22 @@ export class GuestVacancyResponseResumeContactController extends Controller {
 
     if (!guestVacancyResponseResumeContact) throw new HttpError(404, "GuestVacancyResponseResumeContact not found");
     return guestVacancyResponseResumeContact;
+  }
+
+  @Post("")
+  @Security("jwt", [UserRole.MANAGER, PUBLIC_SCOPE])
+  @Response<HttpErrorBody & {"error": "Guest resume not found"}>(404)
+  public async create(
+    @Body() body: CreateGuestVacancyResponseResumeContactRequest,
+  ): Promise<GuestVacancyResponseResumeContact> {
+    body = CreateGuestVacancyResponseResumeContactRequestSchema.validateSync(body)
+
+    const resume = await prisma.guestVacancyResponseResume.findUnique({ where: { id: body.resumeId } })
+    if (!resume) throw new HttpError(404, "Guest resume not found")
+
+    return await prisma.guestVacancyResponseResumeContact.create({
+      data: body,
+    })
   }
 
   @Patch("{id}")

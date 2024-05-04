@@ -44,6 +44,7 @@ import { getIp } from "../../infrastructure/controller/express-request/express-r
 import { VacancyService } from "./vacancy.service";
 
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
+import { SearchQuery } from "../../infrastructure/controller/search/search.dto";
 
 
 @injectable()
@@ -89,9 +90,9 @@ export class VacancyController extends Controller {
   public async getAll(
     @Request() req: JwtModel | { user: null },
     @Query() include?: ("employer" | "responses" | "guestResponses")[],
+    @Query() search?: SearchQuery,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-    @Query() nameOrEmployerName?: string,
     @Query() employerId?: string,
     @Query() teamRole?: VacancyTeamRole[],
     @Query() experience?: VacancyExperience[],
@@ -112,6 +113,10 @@ export class VacancyController extends Controller {
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs | null = include?.includes("responses") ?? false;
     let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs | null = include?.includes("guestResponses") ?? false;
 
+    const searchInput = search && search.length > 0
+      ? this.vacancyService.buildSearchInput(search)
+      : undefined;
+
     if (req.user) {
       switch (req.user.role) {
       case UserRole.APPLICANT:
@@ -130,6 +135,7 @@ export class VacancyController extends Controller {
 
     where = {
       ...where,
+      ...searchInput,
       employerId: employerId ?? undefined,
       teamRole: { in: teamRole ?? undefined },
       experience: { in: experience ?? undefined },
@@ -142,10 +148,6 @@ export class VacancyController extends Controller {
       workplaceModel: { in: workplaceModel ?? undefined },
       status: status ?? undefined,
       employer: { isStartup: employer_isStartup ?? undefined },
-      OR: nameOrEmployerName ? [
-        { name: { contains: nameOrEmployerName, mode: "insensitive" } },
-        { employer: { name: { contains: nameOrEmployerName, mode: "insensitive" } } },
-      ] : undefined,
       isHidden,
     };
 
