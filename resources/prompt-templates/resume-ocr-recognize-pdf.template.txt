@@ -35,6 +35,7 @@ resume: {
     firstName: string,
     middleName: string | null,
     lastName: string,
+    birthDate: Date | null,
     title: string,
     summary: string | null,
     city: string | null,

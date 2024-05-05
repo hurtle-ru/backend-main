@@ -47,7 +47,6 @@ import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.con
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus } from "@prisma/client";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
-import { AxiosError } from "axios";
 import { logger } from "../../infrastructure/logger/logger";
 
 

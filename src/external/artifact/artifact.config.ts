@@ -39,7 +39,47 @@ export const AVAILABLE_DOCUMENT_FILE_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
 ];
 
-export const FILE_EXTENSION_MIME_TYPES: { [key: string]: string } = {
+const FILE_EXTENSIONS = [
+  ".png",
+  ".webp",
+  ".jpg",
+  ".mpga",
+  ".mp4",
+  ".webm",
+  ".avi",
+  ".pdf",
+  ".docx",
+  ".doc",
+  ".dotx",
+  ".xls",
+  ".xlsx",
+  ".xltx",
+  ".pptx",
+  ".potx",
+  ".ppsx",
+] as const;
+
+const MIME_TYPES = [
+  "image/png",
+  "image/webp",
+  "image/jpeg",
+  "video/mpeg",
+  "video/mp4",
+  "video/webm",
+  "video/x-msvideo",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.openxmlformats-officedocument.presentationml.template",
+  "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+] as const;
+
+export const FILE_EXTENSION_MIME_TYPES: Record<typeof FILE_EXTENSIONS[number], typeof MIME_TYPES[number]> = {
   ".png":  "image/png",
   ".webp": "image/webp",
   ".jpg":  "image/jpeg",
@@ -57,4 +97,4 @@ export const FILE_EXTENSION_MIME_TYPES: { [key: string]: string } = {
   ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   ".potx": "application/vnd.openxmlformats-officedocument.presentationml.template",
   ".ppsx": "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
-};
+} as const;

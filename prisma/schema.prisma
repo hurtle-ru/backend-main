@@ -106,6 +106,16 @@ model HhToken {
   expiresIn     Int
 }
 
+model AuthByEmailCode {
+  code      String   @id @db.VarChar(6)
+  email     String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      String   @db.VarChar(30)
+
+  @@unique([email, role])
+}
+
 model EmailVerification {
   code      String   @id @db.VarChar(6)
   createdAt DateTime @default(now())
@@ -383,19 +393,48 @@ model VacancyResponse {
 }
 
 model GuestVacancyResponse {
-  id                 String                @id @default(uuid())
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
-  text               String?               @db.VarChar(3000)
-  status             VacancyResponseStatus @default(NEW_APPLICATION)
-  isViewedByEmployer Boolean               @default(false)
-  resume             Json
-  vacancy            Vacancy               @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  id                 String                          @id @default(uuid())
+  createdAt          DateTime                        @default(now())
+  updatedAt          DateTime                        @updatedAt
+  text               String?                         @db.VarChar(3000)
+  status             VacancyResponseStatus           @default(NEW_APPLICATION)
+  moderationStatus   VacancyResponseModerationStatus @default(UNDER_REVIEW)
+  isViewedByEmployer Boolean                         @default(false)
+  vacancy            Vacancy                         @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
   vacancyId          String
-  firstName          String                @db.VarChar(50)
-  lastName           String                @db.VarChar(50)
-  middleName         String?               @db.VarChar(50)
-  isReadyToRelocate  Boolean?
+  resume             GuestVacancyResponseResume?
+}
+
+model GuestVacancyResponseResume {
+  id                    String                              @id @default(uuid())
+  createdAt             DateTime                            @default(now())
+  updatedAt             DateTime                            @updatedAt
+  importedFrom          ResumeImportExternalService?
+  importedId            String?                             @db.VarChar(512)
+  title                 String?                             @db.VarChar(255)
+  firstName             String?                             @db.VarChar(50)
+  lastName              String?                             @db.VarChar(50)
+  middleName            String?                             @db.VarChar(50)
+  birthDate             DateTime?
+  skills                String[]                            @db.VarChar(5000)
+  summary               String?                             @db.VarChar(5000)
+  isVisibleToEmployers  Boolean                             @default(true)
+  isReadyToRelocate     Boolean?
+  desiredSalary         Int?
+  desiredSalaryCurrency Currency?
+  contacts              GuestVacancyResponseResumeContact[]
+  response              GuestVacancyResponse                @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  responseId            String                              @unique
+}
+
+model GuestVacancyResponseResumeContact {
+  id        String                     @id @default(uuid())
+  name      String?                    @db.VarChar(255)
+  type      ContactType
+  value     String                     @db.VarChar(255)
+  preferred Boolean                    @default(false)
+  resume    GuestVacancyResponseResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumeId  String
 }
 
 model ApplicantAiChat {
@@ -531,6 +570,12 @@ enum VacancyResponseStatus {
   OFFER_MADE
   HIRED
   REJECTED
+}
+
+enum VacancyResponseModerationStatus {
+  UNDER_REVIEW
+  FAILED_TO_PASS_REVIEW
+  PUBLISHED
 }
 
 enum OfferStatus {

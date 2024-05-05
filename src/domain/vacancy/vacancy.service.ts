@@ -1,8 +1,8 @@
 import { injectable, singleton } from "tsyringe";
-import { VacancyEmploymentType, VacancyExperience, VacancyStatus } from "@prisma/client";
+import { Prisma, VacancyEmploymentType, VacancyExperience, VacancyStatus } from "@prisma/client";
 import { TelegramService } from "../../external/telegram/telegram.service";
-import { appConfig } from "../../infrastructure/app.config";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
+import SearchingUtils from "../../infrastructure/searching/utils";
 
 @injectable()
 @singleton()
@@ -57,5 +57,36 @@ export class VacancyService {
         },
       },
     });
+  }
+
+  public buildSearchInput(searchQuery: string): Prisma.VacancyWhereInput {
+    const searchWords = SearchingUtils.getSearchWords(searchQuery);
+    const mode = Prisma.QueryMode.insensitive
+
+    const scalarFieldsInput = searchWords.flatMap((word): Prisma.VacancyWhereInput[] => [
+      { name: { contains: word, mode } },
+      { city: { contains: word, mode } },
+
+      { employer: { name: { contains: word, mode } } },
+    ]);
+
+    return {
+      OR: [
+        ...scalarFieldsInput,
+      ],
+    };
+  }
+
+  public buildSearchInputWithFts(searchQuery: string): Prisma.VacancyFindManyArgs["where"] {
+    searchQuery = SearchingUtils.prepareSearchQueryForFts(searchQuery);
+    const mode = Prisma.QueryMode.insensitive
+
+    return {
+      OR: [
+        { name: { search: searchQuery, mode } },
+        { city: { search: searchQuery, mode } },
+        { employer: { name: { search: searchQuery, mode } } },
+      ],
+    };
   }
 }
