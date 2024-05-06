@@ -14,7 +14,6 @@ import {
 } from "tsoa";
 import {
   BasicGuestVacancyResponse,
-  CreateGuestVacancyResponseResponse,
   CreateQueuedWithOcrGuestVacancyResponseResponse,
   GetGuestVacancyResponseResponse,
   PatchGuestVacancyResponseByEmployerRequest, PatchGuestVacancyResponseByEmployerRequestSchema,
@@ -122,7 +121,7 @@ export class GuestVacancyResponseController extends Controller {
     @Request() req: { user: undefined },
     @UploadedFile("file") multerFile: Express.Multer.File,
     @Query() vacancyId: string,
-  ): Promise<CreateGuestVacancyResponseResponse> {
+  ): Promise<GetGuestVacancyResponseResponse> {
     await this.artifactService.validateFileAttributes(
       multerFile, [GuestVacancyResponseController.RESUME_FILE_MIME_TYPE],
       artifactConfig.MAX_DOCUMENT_FILE_SIZE,
@@ -131,7 +130,7 @@ export class GuestVacancyResponseController extends Controller {
     await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
 
     const guestVacancyResponse = await prisma.guestVacancyResponse.create({
-      include: { resume: true },
+      include: { resume: true, vacancy: true },
       data: {
         vacancyId,
         status: "NEW_APPLICATION",
