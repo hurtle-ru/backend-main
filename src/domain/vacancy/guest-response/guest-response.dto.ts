@@ -42,6 +42,20 @@ const BasicGuestVacancyResponseSchema: yup.ObjectSchema<BasicGuestVacancyRespons
   vacancyId: yup.string().defined().max(36),
 });
 
+export type CreateGuestVacancyResponseResponse = Pick<
+  GuestVacancyResponse,
+  | "id"
+  | "createdAt"
+  | "updatedAt"
+  | "text"
+  | "status"
+  | "moderationStatus"
+  | "isViewedByEmployer"
+  | "vacancyId"
+> & {
+  resume: BasicGuestVacancyResponseResume | null,
+};
+
 export type GetGuestVacancyResponseResponse = BasicGuestVacancyResponse & {
   vacancy?: BasicVacancy,
   resume?: BasicGuestVacancyResponseResume | null,
