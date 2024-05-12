@@ -347,7 +347,7 @@ export class AuthController extends Controller {
   @Post("getEmailCode")
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with provided credentials not found"}>(404)
-  @Response<HttpErrorBody & {"error": "User with provided credentials has not verified email"}>(404)
+  @Response<HttpErrorBody & {"error": "User with provided credentials has not verified email"}>(400)
   public async authGetEmailCode(
     @Request() req: ExpressRequest,
     @Body() body: AuthGetEmailCodeRequest,

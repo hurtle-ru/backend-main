@@ -121,7 +121,7 @@ export class GuestVacancyResponseController extends Controller {
     @Request() req: { user: undefined },
     @UploadedFile("file") multerFile: Express.Multer.File,
     @Query() vacancyId: string,
-  ): Promise<BasicGuestVacancyResponse> {
+  ): Promise<GetGuestVacancyResponseResponse> {
     await this.artifactService.validateFileAttributes(
       multerFile, [GuestVacancyResponseController.RESUME_FILE_MIME_TYPE],
       artifactConfig.MAX_DOCUMENT_FILE_SIZE,
@@ -130,6 +130,7 @@ export class GuestVacancyResponseController extends Controller {
     await this.guestResponseService.validateVacancyBeforeCreation(vacancyId);
 
     const guestVacancyResponse = await prisma.guestVacancyResponse.create({
+      include: { resume: true, vacancy: true },
       data: {
         vacancyId,
         status: "NEW_APPLICATION",
