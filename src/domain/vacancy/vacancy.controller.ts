@@ -33,7 +33,7 @@ import {
   Currency,
   Prisma,
   VacancyEmploymentType, VacancyExperience,
-  VacancyReportingForm, VacancyStatus, VacancyTeamRole,
+  VacancyReportingForm, VacancyResponseModerationStatus, VacancyStatus, VacancyTeamRole,
   VacancyWorkingHours,
   VacancyWorkplaceModel,
 } from "@prisma/client";
@@ -183,14 +183,23 @@ export class VacancyController extends Controller {
   @Get("my")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.APPLICANT])
   public async getMy(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel<UserRole.EMPLOYER | UserRole.APPLICANT>,
     @Query() include?: ("employer" | "guestResponses" | "responses" | "responses.candidate" | "responses.candidate.resume")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
   ): Promise<PageResponse<GetVacancyResponse>> {
     let where = null;
     let includeResponses: boolean | Prisma.Vacancy$responsesArgs = include?.includes("responses") ?? false;
+
     let includeGuestResponses: boolean | Prisma.Vacancy$guestResponsesArgs = include?.includes("guestResponses") ?? false;
+    includeGuestResponses = includeGuestResponses && {
+      "APPLICANT": false,
+      "EMPLOYER": {
+        where: {
+          moderationStatus: VacancyResponseModerationStatus.PUBLISHED
+        }
+      },
+    }[req.user.role]
 
     if (req.user.role === UserRole.EMPLOYER) {
       where = { employerId: req.user.id };
@@ -225,7 +234,6 @@ export class VacancyController extends Controller {
           where: { candidateId: req.user.id },
         };
       }
-      includeGuestResponses = false;
     }
 
     const [vacancies, vacanciesCount] = await Promise.all([
