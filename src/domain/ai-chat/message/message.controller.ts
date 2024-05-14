@@ -38,8 +38,10 @@ export class ApplicantAiChatMessageController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   @Middlewares(rateLimit({limit: 10, interval: 20}))
   @Response<HttpErrorBody & {"error": "AI Chat not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Applicant resume not found"}>(409)
-  @Response<HttpErrorBody & {"error": "Completed applicant interviews with transcript not found"}>(409)
+  @Response<HttpErrorBody & {"error":
+    "Applicant resume not found"
+    | "Completed applicant interviews with transcript not found"
+  }>(409)
   @Response<HttpErrorBody & {"error": "External text generation service is unavailable"}>(503)
   public async create(
     @Request() req: ExpressRequest & JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER>,
@@ -71,14 +73,9 @@ export class ApplicantAiChatMessageController extends Controller {
     if (!chat) throw new HttpError(404, "AI Chat not found");
     if (!chat.applicant.resume) throw new HttpError(409, "Applicant resume not found");
 
-    const applicantInterviews = chat.applicant.meetings.filter((m) =>
-      m.type === MeetingType.INTERVIEW
-      && m.status === MeetingStatus.COMPLETED
-      && m.transcript
-      && m.transcript.trim().length > 0,
-    );
-
-    if (applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
+    if (!this.applicantAiChatService.existCompletedMeetingsWithTranscript(chat.applicant.meetings)) {
+      throw new HttpError(409, "Completed applicant interviews with transcript not found");
+    }
 
     const systemPrompt = this.applicantAiChatService.getSystemPrompt({
       ...chat.applicant,

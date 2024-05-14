@@ -34,9 +34,12 @@ export class ApplicantAiChatController extends Controller {
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
   @Response<HttpErrorBody & {"error": "AI Chat already exists"}>(409)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Applicant resume not found or invisible to employers"}>(409)
-  @Response<HttpErrorBody & {"error": "Completed applicant interviews with transcript not found"}>(409)
-  @Response<HttpErrorBody & {"error": "Applicant can make AI chat only with himself resume"}>(409)
+  @Response<HttpErrorBody & {
+    "error":
+    "Applicant resume not found or invisible to employers"
+    | "Completed applicant interviews with transcript not found"
+    | "Applicant can make AI chat only with himself resume"
+  }>(409)
   public async create(
     @Request() req: JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER>,
     @Body() body: CreateApplicantAiChatRequest,
@@ -72,14 +75,9 @@ export class ApplicantAiChatController extends Controller {
     )
       throw new HttpError(409, "Applicant resume not found or invisible to employers");
 
-    const applicantInterviews = applicant.meetings.filter((m) =>
-      m.type === MeetingType.INTERVIEW
-      && m.status === MeetingStatus.COMPLETED
-      && m.transcript
-      && m.transcript.trim().length > 0,
-    );
-
-    if (applicantInterviews.length === 0) throw new HttpError(409, "Completed applicant interviews with transcript not found");
+    if (!this.applicantAiChatService.existCompletedMeetingsWithTranscript(applicant.meetings)) {
+      throw new HttpError(409, "Completed applicant interviews with transcript not found");
+    }
 
     return prisma.applicantAiChat.create({
       data: {
@@ -119,6 +117,9 @@ export class ApplicantAiChatController extends Controller {
 
     if (!chat) throw new HttpError(404, "AI Chat not found");
 
-    return chat;
+    const meetings = await prisma.meeting.findMany({ where: { applicantId: chat.applicantId } })
+    const canCreateMessage = this.applicantAiChatService.existCompletedMeetingsWithTranscript(meetings)
+
+    return { ...chat, canCreateMessage };
   }
 }
