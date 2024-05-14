@@ -2,10 +2,11 @@ import { injectable, singleton } from "tsyringe";
 import { ChatGPTService } from "../../external/chatgpt/chatgpt.service";
 import { BasicApplicantAiChatMessage } from "./message/message.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
-import { ApplicantAiChatMessage, Meeting, Resume } from "@prisma/client";
+import { ApplicantAiChatMessage, Meeting, MeetingStatus, MeetingType, Resume } from "@prisma/client";
 import { TemplateRendererService } from "../../external/template-renderer/template-renderer.service";
 import { ChatCompletionMessageParam } from "openai/resources";
 import { BasicApplicant } from "../applicant/applicant.dto";
+import { BasicMeeting } from "../meeting/meeting.dto";
 
 
 @injectable()
@@ -71,6 +72,15 @@ export class ApplicantAiChatService {
         interviews: renderedInterviews,
       }, true,
     );
+  }
+
+  existCompletedMeetingsWithTranscript(meetings: BasicMeeting[],): boolean {
+    return meetings.filter((m) =>
+      m.type === MeetingType.INTERVIEW
+      && m.status === MeetingStatus.COMPLETED
+      && m.transcript
+      && m.transcript.trim().length > 0,
+    ).length !== 0;
   }
 
   private mapHistory(history: ApplicantAiChatMessage[]): ChatCompletionMessageParam[] {
