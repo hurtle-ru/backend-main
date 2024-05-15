@@ -18,7 +18,11 @@ export class SberJazzService {
       roomType: "ANONYMOUS",
       roomTitle: name,
     }, {
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer " + sberjazzConfig.SALUTE_JAZZ_API_KEY
+      },
     });
 
     if (response.status === 200 && response.data?.url) return response.data.url;
