@@ -14,18 +14,18 @@ export class SberJazzService {
    */
   async createRoom(name: string): Promise<string> {
     const url = `${sberjazzConfig.API_BASE}/room/create`;
+
     const response = await axios.post(url, {
-      roomType: "ANONYMOUS",
-      roomTitle: name,
+      roomTitle: name
     }, {
       headers: {
+        "Authorization": `Bearer ${sberjazzConfig.SALUTE_JAZZ_API_KEY}`,
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization": "Bearer " + sberjazzConfig.SALUTE_JAZZ_API_KEY
-      },
+      }
     });
 
-    if (response.status === 200 && response.data?.url) return response.data.url;
+    if (response.status === 200 && response.data?.roomUrl) return response.data.roomUrl;
 
     throw new Error("Error creating room", response.data);
   }
