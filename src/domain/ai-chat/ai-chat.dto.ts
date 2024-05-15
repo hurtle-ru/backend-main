@@ -33,4 +33,5 @@ export type GetApplicantAiChatResponse = BasicApplicantAiChat & {
   applicant?: BasicApplicant,
   employer?: BasicEmployer | null,
   history?: BasicApplicantAiChatMessage[];
+  canCreateMessage: boolean;
 }
