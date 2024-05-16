@@ -174,8 +174,3 @@ export const AuthWithEmailCodeRequestSchema: yup.ObjectSchema<AuthWithEmailCodeR
     role: yup.string().defined().oneOf([APPLICANT, EMPLOYER] as const),
     code: yup.string().trim().defined().min(1),
   })
-
-export type MetadataImportAsApplicantResume = {
-  callback: "import-as-applicant-resume"
-  applicantId: string,
-};
