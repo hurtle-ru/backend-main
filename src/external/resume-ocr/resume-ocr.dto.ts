@@ -3,7 +3,8 @@ import { Currency } from "@prisma/client";
 import { ContactType } from ".prisma/client";
 import { DeepNullable } from "../../util/typescript.utils";
 import { MetadataCreateGuestVacancyResponse } from "../../domain/vacancy/guest-response/guest-response.dto";
-import { MetadataImportAsApplicantResume } from "../../domain/auth/auth.dto";
+import { MetadataImportResumeWithOcr } from "../../domain/resume-ocr/resume-ocr.dto";
+
 
 export const RESUME_OCR_JOB_NAME = "recognizePdfWithResumeOcr";
 export const RESUME_OCR_QUEUE_NAME = "resumeOcr";
@@ -12,7 +13,7 @@ export interface ResumeOcrJobData {
   fileName: string,
   recognizedResume?: string,
   mappedResume?: GetRecognizedResumeResponse,
-  metadata?: MetadataCreateGuestVacancyResponse | MetadataImportAsApplicantResume,
+  metadata?: MetadataCreateGuestVacancyResponse | MetadataImportResumeWithOcr,
 }
 
 export const enum ResumeOcrJobStatus {
