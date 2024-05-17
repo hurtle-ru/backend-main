@@ -1,7 +1,7 @@
 import { injectable, singleton } from "tsyringe";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError } from "../../infrastructure/error/http.error";
-import { ResumeOcrService as _ResumeOcrService } from "../../external/resume-ocr/resume-ocr.service";
+import { ResumeOcrService as ExternalResumeOcrService } from "../../external/resume-ocr/resume-ocr.service";
 import {
   GetRecognizedResumeResponse,
   GetResumeOcrJobResponse,
@@ -15,12 +15,10 @@ import {
 } from "./resume-ocr.dto";
 import { Job, QueueEvents } from "bullmq";
 import { logger } from "../../infrastructure/logger/logger";
-import redis from "../../infrastructure/mq/redis.provider";
 import path from "path";
 import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import { Request } from "express";
-import { ResumeToCheckIsFilled } from "../resume/resume.prisma-extension";
 
 
 @injectable()
@@ -45,11 +43,10 @@ export class ResumeOcrService {
         }, `Error during process after import resume OCR, error: ${e}`);
       }
     }
-  }
+  });
 
-  )
   constructor(
-    private readonly resumeOcrService: _ResumeOcrService,
+    private readonly externalResumeOcrService: ExternalResumeOcrService,
     private readonly artifactService: ArtifactService,
   ) {}
 
@@ -83,8 +80,8 @@ export class ResumeOcrService {
   }
 
   public async enqueueImportWithOcr(multerFile: Express.Multer.File, applicantId: string) {
-    const fileName = await this.resumeOcrService.savePdf(multerFile);
-    const job = await this.resumeOcrService.enqueueRecognizePdf({
+    const fileName = await this.externalResumeOcrService.savePdf(multerFile);
+    const job = await this.externalResumeOcrService.enqueueRecognizePdf({
       fileName,
       metadata: {
         callback: MetadataImportResumeWithOcrCallbackName,
@@ -110,12 +107,12 @@ export class ResumeOcrService {
 
       certificates, contacts, education, experience, languages, isReadyToRelocate,
       ...resumeScalar
-    } = resume
+    } = resume;
 
     const validatedResumeData = OcrMappedResumeSchema.validateSync({
       certificates, contacts, education, experience, languages, isReadyToRelocate,
-      ...resumeScalar
-    })
+      ...resumeScalar,
+    });
 
     const resumeData = {
       createdAt: validatedResumeData.createdAt,
@@ -131,40 +128,40 @@ export class ResumeOcrService {
       certificates: {
         createMany: {
           data: validatedResumeData.certificates,
-        }
+        },
       },
       contacts: {
         createMany: {
           data: validatedResumeData.contacts,
-        }
+        },
       },
       education: {
         createMany: {
           data: validatedResumeData.education,
-        }
+        },
       },
       experience: {
         createMany: {
           data: validatedResumeData.experience,
-        }
+        },
       },
       languages: {
         createMany: {
           data: validatedResumeData.languages,
-        }
+        },
       },
-    }
+    };
 
-    await prisma.resume.deleteMany({ where: { applicantId }})
+    await prisma.resume.deleteMany({ where: { applicantId }});
     const created = await prisma.resume.create({
       data: { applicantId, ...resumeData },
-    })
-    logger.info({ applicantId }, "Success import resume with Ocr")
-    return created
+    });
+    logger.info({ applicantId }, "Success import resume with Ocr");
+    return created;
   }
 
   public async getQueuedWithOcrJob(jobId: string): Promise<GetResumeOcrJobResponse | null> {
-    return this.resumeOcrService.getJob(jobId);
+    return this.externalResumeOcrService.getJob(jobId);
   }
 
   public async patchQueuedWithOcrJob(job: GetResumeOcrJobResponse, body: PatchImportResumeWithOcrQueuedRequest) {
@@ -177,7 +174,7 @@ export class ResumeOcrService {
         ? this.createOverwrittenResume(overwriteResumeFields, data.mappedResume)
         : null;
 
-      await this.resumeOcrService.patchJobData(id, {
+      await this.externalResumeOcrService.patchJobData(id, {
         metadata: {
           ...metadata,
           overwriteResumeFields,
