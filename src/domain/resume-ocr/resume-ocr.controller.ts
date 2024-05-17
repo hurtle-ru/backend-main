@@ -24,6 +24,7 @@ import { ArtifactService } from "../../external/artifact/artifact.service";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { prisma } from "../../infrastructure/database/prisma.provider";
+import { logger } from "../../infrastructure/logger/logger";
 
 
 @injectable()
@@ -57,7 +58,7 @@ export class ResumeOcrController extends Controller {
     if (req.user.role === UserRole.MANAGER) {
       if (!applicantId) { throw new HttpError(400, "Manager must provide applicant id") }
 
-      if (!prisma.applicant.exists({ id: applicantId })) {
+      if (!await prisma.applicant.exists({ id: applicantId })) {
         throw new HttpError(404, "Applicant does not exist")
       }
     }
