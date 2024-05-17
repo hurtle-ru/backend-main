@@ -138,7 +138,7 @@ export class GuestResponseService {
     await this.validateVacancyBeforeCreation(vacancyId);
     await this.validateResumeBeforeCreation(resume);
 
-    const { contacts, ...resumeData } = resume
+    const { contacts, ...resumeData } = resume;
 
     return await prisma.guestVacancyResponse.create({
       data: {
@@ -151,8 +151,8 @@ export class GuestResponseService {
               createMany: {
                 data: contacts,
                 skipDuplicates: true,
-              }
-            }
+              },
+            },
           },
         },
       },

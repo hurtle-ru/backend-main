@@ -6,6 +6,6 @@ export const sberjazzConfig = {
 
   ...cleanEnv(process.env, {
     SALUTE_JAZZ_API_KEY: str(),
-  })
+  }),
 
 };

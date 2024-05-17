@@ -49,7 +49,7 @@ module.exports = {
     "keyword-spacing": ["error", { "before": true, "after": true }],
     "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
     "no-extra-semi": "error",
-    "max-len": ["error", { "code": 180 }],
+    "max-len": ["error", { "code": 200 }],
     "quotes": ["error", "double"],
     "semi": ["error", "always"],
     "indent": ["error", 2],

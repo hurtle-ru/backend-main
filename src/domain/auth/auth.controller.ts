@@ -352,17 +352,17 @@ export class AuthController extends Controller {
     @Request() req: ExpressRequest,
     @Body() body: AuthGetEmailCodeRequest,
   ): Promise<void> {
-    body = AuthGetEmailCodeRequestSchema.validateSync(body)
+    body = AuthGetEmailCodeRequestSchema.validateSync(body);
 
     const user = await {
       "APPLICANT": prisma.applicant.findUnique({ where: { email: body.email } }),
-      "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } })
-    }[body.role]
+      "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } }),
+    }[body.role];
 
-    if (!user) throw new HttpError(404, "User with provided credentials not found")
-    if (!user.isEmailConfirmed) throw new HttpError(404, "User with provided credentials has not verified email")
+    if (!user) throw new HttpError(404, "User with provided credentials not found");
+    if (!user.isEmailConfirmed) throw new HttpError(404, "User with provided credentials has not verified email");
 
-    this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName)
+    this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName);
   }
 
   @Post("withEmailCode")
@@ -372,19 +372,19 @@ export class AuthController extends Controller {
     @Request() req: ExpressRequest,
     @Body() body: AuthWithEmailCodeRequest,
   ): Promise<CreateAccessTokenResponse> {
-    body = AuthWithEmailCodeRequestSchema.validateSync(body)
+    body = AuthWithEmailCodeRequestSchema.validateSync(body);
 
     try {
       await prisma.authByEmailCode.delete({ where: {
         code: body.code,
         email: body.email,
         role: body.role,
-      }})
+      }});
 
       const user = await {
         "APPLICANT": prisma.applicant.findUnique({ where: { email: body.email } }),
         "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } }),
-      }[body.role]
+      }[body.role];
 
       return {
         token: this.authService.createToken({
@@ -393,13 +393,11 @@ export class AuthController extends Controller {
             "EMPLOYER": UserRole.EMPLOYER,
           }[body.role],
           id: user!.id,
-        })
-      }
-    }
-
-    catch (error) {
-      logger.error(error)
-      throw new HttpError(401, "Invalid provided credentials or code")
+        }),
+      };
+    } catch (error) {
+      logger.error(error);
+      throw new HttpError(401, "Invalid provided credentials or code");
     }
   }
 }

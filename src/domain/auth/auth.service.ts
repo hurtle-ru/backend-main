@@ -143,10 +143,10 @@ export class AuthService {
       },
       update: {
         code: this.generateCode(),
-      }
-    })
+      },
+    });
 
-    await this.sendAuthByEmailCodeEmail(role, email, name, authByEmailCodeRequest.code)
+    await this.sendAuthByEmailCodeEmail(role, email, name, authByEmailCodeRequest.code);
   }
 
   private generateCode(): string {

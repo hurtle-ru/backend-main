@@ -54,8 +54,8 @@ export class ApplicantAiChatMessageController extends Controller {
       ...{
         "APPLICANT": { applicantId: req.user.id, employerId: null },
         "EMPLOYER": { employerId: req.user.id },
-      }[req.user.role]
-    }
+      }[req.user.role],
+    };
 
     const chat = await prisma.applicantAiChat.findUnique({
       where,

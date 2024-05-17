@@ -36,7 +36,7 @@ export const CreateGuestVacancyResponseResumeContactRequestSchema: yup.ObjectSch
   "type",
   "value",
   "preferred",
-  "resumeId"
+  "resumeId",
 ]);
 
 export type PatchGuestVacancyResponseResumeContactRequest = Partial<

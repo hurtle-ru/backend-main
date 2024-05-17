@@ -8,7 +8,7 @@ export default class SearchingUtils {
       .trim()
       .toLowerCase()
       .replaceAll("-", " ")
-      .replace(/  +/g, " ")
+      .replace(/  +/g, " ");
 
     const allowedChars = ENGLISH_ALPHABET_LOWER + RUSSIAN_ALPHABET_LOWER + DIGITS + "@. ";
     searchQuery = _.filter(searchQuery, char => allowedChars.includes(char)).join("");

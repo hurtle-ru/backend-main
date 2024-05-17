@@ -8,7 +8,7 @@ import SearchingUtils from "../../infrastructure/searching/utils";
 export class ApplicantService {
   public buildSearchInput(searchQuery: string): Prisma.ApplicantWhereInput {
     const searchWords = SearchingUtils.getSearchWords(searchQuery);
-    const mode = Prisma.QueryMode.insensitive
+    const mode = Prisma.QueryMode.insensitive;
 
     const scalarFieldsInput = searchWords.flatMap((word): Prisma.ApplicantWhereInput[] => [
       { email: { contains: word, mode } },
@@ -39,7 +39,7 @@ export class ApplicantService {
 
   public buildSearchInputWithFts(searchQuery: string): Prisma.ApplicantFindManyArgs["where"] {
     searchQuery = SearchingUtils.prepareSearchQueryForFts(searchQuery);
-    const mode = Prisma.QueryMode.insensitive
+    const mode = Prisma.QueryMode.insensitive;
 
     return {
       OR: [

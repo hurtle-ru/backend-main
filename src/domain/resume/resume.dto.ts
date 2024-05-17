@@ -68,7 +68,7 @@ export type CreateResumeByManagerRequest = Pick<
 
 export const CreateResumeByManagerRequestSchema: yup.ObjectSchema<CreateResumeByManagerRequest> = BasicResumeSchema.pick([
   "title",
-  "applicantId"
+  "applicantId",
 ]).shape({ role: MANAGER_SCHEMA });
 
 export type PatchByIdResumeRequest = Partial<Pick<
