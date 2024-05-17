@@ -196,10 +196,10 @@ export class VacancyController extends Controller {
       "APPLICANT": false,
       "EMPLOYER": {
         where: {
-          moderationStatus: VacancyResponseModerationStatus.PUBLISHED
-        }
+          moderationStatus: VacancyResponseModerationStatus.PUBLISHED,
+        },
       },
-    }[req.user.role]
+    }[req.user.role];
 
     if (req.user.role === UserRole.EMPLOYER) {
       where = { employerId: req.user.id };

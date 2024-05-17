@@ -35,7 +35,7 @@ export const BasicResumeSchema: yup.ObjectSchema<BasicResume> = yup.object({
   title: yup.string().defined().trim().min(0).max(255).nullable(),
   summary: yup.string().defined().trim().min(0).max(3000).nullable(),
   city: yup.string().defined().trim().min(0).max(255).nullable(),
-  skills: yup.array().of(yup.string().defined().trim().min(0).max(50)).defined().max(30),
+  skills: yup.array().of(yup.string().defined().trim().min(0).max(50)).defined().max(70),
   isVisibleToEmployers: yup.boolean().defined(),
   desiredSalary: yupUint32().defined().nullable(),
   desiredSalaryCurrency: yupOneOfEnum(Currency).defined().nullable(),
@@ -68,7 +68,7 @@ export type CreateResumeByManagerRequest = Pick<
 
 export const CreateResumeByManagerRequestSchema: yup.ObjectSchema<CreateResumeByManagerRequest> = BasicResumeSchema.pick([
   "title",
-  "applicantId"
+  "applicantId",
 ]).shape({ role: MANAGER_SCHEMA });
 
 export type PatchByIdResumeRequest = Partial<Pick<

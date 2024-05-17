@@ -61,7 +61,7 @@ export class VacancyService {
 
   public buildSearchInput(searchQuery: string): Prisma.VacancyWhereInput {
     const searchWords = SearchingUtils.getSearchWords(searchQuery);
-    const mode = Prisma.QueryMode.insensitive
+    const mode = Prisma.QueryMode.insensitive;
 
     const scalarFieldsInput = searchWords.flatMap((word): Prisma.VacancyWhereInput[] => [
       { name: { contains: word, mode } },
@@ -79,7 +79,7 @@ export class VacancyService {
 
   public buildSearchInputWithFts(searchQuery: string): Prisma.VacancyFindManyArgs["where"] {
     searchQuery = SearchingUtils.prepareSearchQueryForFts(searchQuery);
-    const mode = Prisma.QueryMode.insensitive
+    const mode = Prisma.QueryMode.insensitive;
 
     return {
       OR: [

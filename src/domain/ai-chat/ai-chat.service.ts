@@ -74,7 +74,7 @@ export class ApplicantAiChatService {
     );
   }
 
-  existCompletedMeetingsWithTranscript(meetings: BasicMeeting[],): boolean {
+  existCompletedMeetingsWithTranscript(meetings: BasicMeeting[]): boolean {
     return meetings.filter((m) =>
       m.type === MeetingType.INTERVIEW
       && m.status === MeetingStatus.COMPLETED

@@ -16,13 +16,13 @@ export class SberJazzService {
     const url = `${sberjazzConfig.API_BASE}/room/create`;
 
     const response = await axios.post(url, {
-      roomTitle: name
+      roomTitle: name,
     }, {
       headers: {
         "Authorization": `Bearer ${sberjazzConfig.SALUTE_JAZZ_API_KEY}`,
         "Content-Type": "application/json",
         "Accept": "application/json",
-      }
+      },
     });
 
     if (response.status === 200 && response.data?.roomUrl) return response.data.roomUrl;

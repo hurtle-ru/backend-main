@@ -56,8 +56,8 @@ export class ApplicantAiChatController extends Controller {
         employerId: {
           "APPLICANT": null,
           "EMPLOYER": req.user.id,
-        }[req.user.role]
-      }
+        }[req.user.role],
+      },
     ))
       throw new HttpError(409, "AI Chat already exists");
 
@@ -99,10 +99,10 @@ export class ApplicantAiChatController extends Controller {
     @Query() include?: ("applicant" | "employer" | "history")[],
   ): Promise<GetApplicantAiChatResponse> {
     const where = {
-      "APPLICANT": { id, employerId: null, },
-      "EMPLOYER": { id, employerId: req.user.id, },
-      "MANAGER": { id, }
-    }[req.user.role]
+      "APPLICANT": { id, employerId: null },
+      "EMPLOYER": { id, employerId: req.user.id },
+      "MANAGER": { id },
+    }[req.user.role];
 
     const chat = await prisma.applicantAiChat.findUnique({
       where,
@@ -117,8 +117,8 @@ export class ApplicantAiChatController extends Controller {
 
     if (!chat) throw new HttpError(404, "AI Chat not found");
 
-    const meetings = await prisma.meeting.findMany({ where: { applicantId: chat.applicantId } })
-    const canCreateMessage = this.applicantAiChatService.existCompletedMeetingsWithTranscript(meetings)
+    const meetings = await prisma.meeting.findMany({ where: { applicantId: chat.applicantId } });
+    const canCreateMessage = this.applicantAiChatService.existCompletedMeetingsWithTranscript(meetings);
 
     return { ...chat, canCreateMessage };
   }

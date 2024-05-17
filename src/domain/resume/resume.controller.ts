@@ -50,12 +50,12 @@ export class ResumeController extends Controller {
     body = validateSyncByAtLeastOneSchema(
       [
         CreateResumeByApplicantRequestSchema,
-        CreateResumeByManagerRequestSchema
+        CreateResumeByManagerRequestSchema,
       ],
-      body
-    )
+      body,
+    );
 
-    const applicantId = body.role === UserRole.MANAGER ? body.applicantId : req.user.id
+    const applicantId = body.role === UserRole.MANAGER ? body.applicantId : req.user.id;
 
     const resume = await prisma.resume.findUnique({
       where: { applicantId },

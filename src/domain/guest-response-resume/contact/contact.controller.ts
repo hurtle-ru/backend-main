@@ -44,14 +44,14 @@ export class GuestVacancyResponseResumeContactController extends Controller {
   public async create(
     @Body() body: CreateGuestVacancyResponseResumeContactRequest,
   ): Promise<GuestVacancyResponseResumeContact> {
-    body = CreateGuestVacancyResponseResumeContactRequestSchema.validateSync(body)
+    body = CreateGuestVacancyResponseResumeContactRequestSchema.validateSync(body);
 
-    const resume = await prisma.guestVacancyResponseResume.findUnique({ where: { id: body.resumeId } })
-    if (!resume) throw new HttpError(404, "Guest resume not found")
+    const resume = await prisma.guestVacancyResponseResume.findUnique({ where: { id: body.resumeId } });
+    if (!resume) throw new HttpError(404, "Guest resume not found");
 
     return await prisma.guestVacancyResponseResumeContact.create({
       data: body,
-    })
+    });
   }
 
   @Patch("{id}")
