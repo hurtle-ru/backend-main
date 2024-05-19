@@ -252,12 +252,18 @@ export class MeetingController extends Controller {
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
+    @Query() afterDateTime?: Date,
+    @Query() beforeDateTime?: Date,
     @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[],
   ): Promise<PageResponse<GetMeetingResponse>> {
     const where = {
       applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
       employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
       slot: req.user.role === UserRole.MANAGER ? { managerId: req.user.id } : undefined,
+      dateTime: {
+        ...(afterDateTime && { gte: afterDateTime }),
+        ...(beforeDateTime && { lte: beforeDateTime }),
+      },
     };
 
     const [meetings, meetingsCount] = await Promise.all([
