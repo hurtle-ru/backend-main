@@ -16,7 +16,7 @@ export class BaseWorker<DataType = any, ResultType = any, NameType extends strin
     this.on("failed", (job, err) => {
       -
       logger.error({
-        err: { stack: err.stack },
+        error: { stack: err.stack },
         jobId: job?.id,
         queueName: queueName,
       }, `Job failed with error: ${err.message}`,
@@ -25,7 +25,7 @@ export class BaseWorker<DataType = any, ResultType = any, NameType extends strin
 
     this.on("error", (err) => {
       logger.error({
-        err: { stack: err.stack },
+        error: { stack: err.stack },
         queueName: queueName,
       }, `Unexpected error in worker: ${err.message}`,
       );

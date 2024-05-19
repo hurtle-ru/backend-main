@@ -147,7 +147,7 @@ export class MeetingService {
       if (reminderDelay > 0) {
         await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
           .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
-          .catch((error) => logger.error(error, "Error scheduling meeting reminder"));
+          .catch((error) => logger.error({ error }, "Error scheduling meeting reminder"));
       }
     }
   }

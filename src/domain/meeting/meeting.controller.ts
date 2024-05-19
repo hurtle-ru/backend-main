@@ -158,9 +158,12 @@ export class MeetingController extends Controller {
     try {
       roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
     } catch (error) {
-      logger.error("Can not create Sber jazz room, error: " + String(error));
+      logger.error({ error }, "Can not create Sber jazz room");
 
-      this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({...user!, id: req.user.id}, body, error);
+      await this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({
+        ...user!,
+        id: req.user.id,
+      }, body, error);
 
       throw new HttpError(409, "Related service not available, retry later");
     }

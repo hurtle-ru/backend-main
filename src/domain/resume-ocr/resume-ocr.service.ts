@@ -40,7 +40,8 @@ export class ResumeOcrService {
       } catch (e) {
         logger.error({
           job,
-        }, `Error during process after import resume OCR, error: ${e}`);
+          error: e,
+        }, "Error during process after import resume OCR");
       }
     }
   });

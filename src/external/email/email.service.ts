@@ -65,7 +65,7 @@ export class EmailService {
 
       return true;
     } catch (error) {
-      logger.error("Error occurred during sending email: %s", error);
+      logger.error({ error }, "Error occurred during sending email: %s");
       throw error;
     }
   }
