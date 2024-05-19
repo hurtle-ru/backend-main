@@ -45,7 +45,7 @@ import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
-import { MeetingStatus } from "@prisma/client";
+import { MeetingStatus, Prisma } from "@prisma/client";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 import { logger } from "../../infrastructure/logger/logger";
 
@@ -256,13 +256,15 @@ export class MeetingController extends Controller {
     @Query() beforeDateTime?: Date,
     @Query() include?: ("feedback" | "scriptProtocols" | "applicant" | "employer" | "slot")[],
   ): Promise<PageResponse<GetMeetingResponse>> {
-    const where = {
+    const where: Prisma.MeetingWhereInput = {
       applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
       employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
-      slot: req.user.role === UserRole.MANAGER ? { managerId: req.user.id } : undefined,
-      dateTime: {
-        ...(afterDateTime && { gte: afterDateTime }),
-        ...(beforeDateTime && { lte: beforeDateTime }),
+      slot: {
+        managerId: req.user.role === UserRole.MANAGER ? req.user.id : undefined,
+        dateTime: {
+          ...(afterDateTime && { gte: afterDateTime }),
+          ...(beforeDateTime && { lte: beforeDateTime }),
+        },
       },
     };
 
