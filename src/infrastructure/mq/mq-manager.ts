@@ -35,11 +35,11 @@ export class MqManager {
 
       worker.on("error", (failedReason: Error) => {
         if (failedReason.message.startsWith("WRONGPASS")) {
-          logger.error({ err: { stack: failedReason.stack } }, "Redis connection error");
+          logger.error({ error: { stack: failedReason.stack } }, "Redis connection error");
           return;
         }
 
-        logger.error(failedReason, "Redis connection error");
+        logger.error({ error: failedReason }, "Redis connection error");
       });
 
       worker.run();

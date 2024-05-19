@@ -24,7 +24,7 @@ const app = express();
 
 mqManager.run();
 startServer().catch((error) => {
-  logger.fatal(error, "Failed to start the server");
+  logger.fatal({ error }, "Failed to start the server");
   process.exit(1);
 });
 
