@@ -1,17 +1,23 @@
 import { injectable, singleton } from "tsyringe";
 import intersect from "fast_array_intersect";
-import { MeetingType } from "@prisma/client";
-import { GUEST_ROLE, UserRole } from "../auth/auth.dto";
+import { MeetingType, MeetingPayment, Meeting, MeetingSlot } from "@prisma/client";
+import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
+import { Request as ExpressRequest } from "express";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { EmailService } from "../../external/email/email.service";
-import { MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
+import { BaseMeetingDescription, MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
 import { CreateMeetingByApplicantOrEmployerRequest, CreateMeetingGuestRequest, UserMeetingCreator, MeetingCreator } from "./meeting.dto";
 import { HtmlFormatter } from "../../external/telegram/telegram.service.text-formatter";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { MeetingPaymentService } from "./payment/payment.service";
+import { HttpError } from "../../infrastructure/error/http.error";
+import { logger } from "../../infrastructure/logger/logger";
+import { BasicManager } from "../manager/manager.dto";
 
 
 @injectable()
@@ -23,24 +29,106 @@ export class MeetingService {
     private readonly formatter: HtmlFormatter,
     private readonly emailService: EmailService,
     private readonly adminPanelService: AdminPanelService,
+    private readonly paymentService: MeetingPaymentService,
   ) {}
 
   doesUserHaveAccessToMeetingSlot(userRole: UserRole | typeof GUEST_ROLE, slotTypes: MeetingType[]): boolean {
     return intersect([MeetingTypeByRole[userRole], slotTypes]).length > 0;
   }
 
-  async createRoom(
+  async tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(user: MeetingCreator & { id: string }, body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest): Promise<string | never> {
+    try {
+      return await this.createSaluteJazzRoom(body.type, user!);
+    } catch (error) {
+      logger.error({ error }, "Can not create Sber jazz room");
+
+      await this.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({
+        ...user!,
+        id: user.id,
+      }, body, error);
+
+      throw new HttpError(409, "Related service not available, retry later");
+    }
+  }
+
+  async createSaluteJazzRoom(
     meetingType: MeetingType,
-    user: { _type: "user", firstName: string, lastName: string }
-        | { _type: "guest" },
+    user: MeetingCreator,
   ): Promise<string> {
     const meetingName = MeetingNameByType[meetingType];
 
-    let roomName;
-    if (user._type === "guest") roomName = `Хартл ${meetingName}`;
-    else if (user._type === "user") roomName = `${user.lastName} ${user.firstName[0]}. | Хартл ${meetingName}`;
+    return await this.jazzService.createRoom({
+      "guest": `Хартл ${meetingName}`,
+      "user": `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`
+    }[user._type]);
+  }
 
-    return await this.jazzService.createRoom(roomName!);
+  async notifyMeetingCreatedToAdminGroupAndUserEmail(
+    user: MeetingCreator,
+    meeting: Pick<Meeting, "id" | "name" | "type" | "roomUrl">,
+    slot: Pick<MeetingSlot, "dateTime"> & { manager: Pick<BasicManager, "name" | "id"> },
+    req: ExpressRequest & JwtModel
+  ) {
+    await this.sendMeetingCreatedToAdminGroup(
+      { name: meeting.name, id: meeting.id, dateTime: slot.dateTime, type: meeting.type },
+      { name: slot.manager.name, id: slot.manager.id },
+      { ...user!, id: req.user.id, role: req.user.role },
+    );
+
+    await this.sendMeetingCreatedToEmail(
+      req.log,
+      user!.email,
+      { link: meeting.roomUrl, dateTime: slot.dateTime },
+    );
+  }
+
+  async scheduleMeetingReminderToEmail(
+    logger: pino.Logger,
+    userEmail: string,
+    meeting: { link: string, dateTime: Date },
+  )  {
+    const date = moment(meeting.dateTime)
+      .locale("ru")
+      .tz(appConfig.TZ)
+      .format("D MMM YYYY г. HH:mm по московскому времени");
+
+    const emailData = {
+      to: userEmail,
+      subject: "Напоминание о встрече!",
+      template: {
+        name: "remind_about_meeting",
+        context: { link: meeting.link, date },
+      },
+    };
+
+    for (const minutesBefore of ReminderMinutesBeforeMeeting) {
+      const reminderDelay = this.calculateReminderDelay(meeting.dateTime, minutesBefore);
+
+      if (reminderDelay > 0) {
+        await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
+          .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
+          .catch((error) => logger.error({ error }, "Error scheduling meeting reminder"));
+      }
+    }
+  }
+
+  // TODO: replace roomUrl with meeting id
+  async removeMeetingReminderToEmail(
+    logger: pino.Logger,
+    userEmail: string,
+    roomUrl: string,
+  ) {
+    const jobs = await this.emailService.findIncompleteJobsByEmailAndLink(userEmail, roomUrl);
+    for (const job of jobs) {
+      if (job.id) {
+        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job");
+        try {
+          await this.emailService.removeJob(job.id);
+        } catch (e) {
+          logger.error({ jobId: job.id }, "Error while removing job");
+        }
+      }
+    }
   }
 
   async sendMeetingCreatedToAdminGroup(
@@ -122,36 +210,6 @@ export class MeetingService {
     });
   }
 
-  async scheduleMeetingReminderToEmail(
-    logger: pino.Logger,
-    userEmail: string,
-    meeting: { link: string, dateTime: Date },
-  )  {
-    const date = moment(meeting.dateTime)
-      .locale("ru")
-      .tz(appConfig.TZ)
-      .format("D MMM YYYY г. HH:mm по московскому времени");
-
-    const emailData = {
-      to: userEmail,
-      subject: "Напоминание о встрече!",
-      template: {
-        name: "remind_about_meeting",
-        context: { link: meeting.link, date },
-      },
-    };
-
-    for (const minutesBefore of ReminderMinutesBeforeMeeting) {
-      const reminderDelay = this.calculateReminderDelay(meeting.dateTime, minutesBefore);
-
-      if (reminderDelay > 0) {
-        await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
-          .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
-          .catch((error) => logger.error({ error }, "Error scheduling meeting reminder"));
-      }
-    }
-  }
-
   async sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
     user: MeetingCreator & { id: string },
     body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
@@ -192,25 +250,6 @@ export class MeetingService {
     });
   }
 
-  // TODO: replace roomUrl with meeting id
-  async removeMeetingReminderToEmail(
-    logger: pino.Logger,
-    userEmail: string,
-    roomUrl: string,
-  ) {
-    const jobs = await this.emailService.findIncompleteJobsByEmailAndLink(userEmail, roomUrl);
-    for (const job of jobs) {
-      if (job.id) {
-        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job");
-        try {
-          await this.emailService.removeJob(job.id);
-        } catch (e) {
-          logger.error({ jobId: job.id }, "Error while removing job");
-        }
-      }
-    }
-  }
-
   getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
     return {
       "APPLICANT": appConfig.DOMAIN + "/account/meetings/",
@@ -222,6 +261,43 @@ export class MeetingService {
   calculateReminderDelay(meetingDateTime: Date, minutesBefore: number): number {
     const reminderTime = new Date(meetingDateTime.getTime() - minutesBefore * 60 * 1000); // 60000 ms in a minute
     return reminderTime.getTime() - new Date().getTime();
+  }
+
+  async findFutureSlotById(slotId: string) {
+    return await prisma.meetingSlot.findUnique({
+      where: {
+        id: slotId,
+        dateTime: { gte: new Date() },
+      },
+      select: {
+        meeting: true,
+        types: true,
+        dateTime: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            dueDate: true,
+            status: true,
+            guestEmail: true,
+            successCode: true,
+            type: true,
+          },
+        },
+      },
+    });
+  }
+
+  buildMeetingDescriptionByType(meetingType: MeetingType, specifiedDescription: string) {
+    if (meetingType === MeetingType.INTERVIEW) {
+      return BaseMeetingDescription
+    }
+    return specifiedDescription;
   }
 
   private getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage(

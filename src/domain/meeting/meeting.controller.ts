@@ -76,12 +76,12 @@ export class MeetingController extends Controller {
       | "MeetingSlot already booked"
       | "Meeting requires MeetingPayment with SUCCESS status"
       | "Invalid MeetingPayment success code"
-      | "Paid meeting type and passed type from request body dont match"
+      | "Paid meeting type and passed type from request body don`t match"
       | "Related service not available, retry later"
   }>(409)
   @Response<HttpErrorBody & { "error": "Too Many Requests" }>(429)
   public async create(
-    @Request() req: ExpressRequest & JwtModel,
+    @Request() req: ExpressRequest & JwtModel<typeof GUEST_ROLE | UserRole.APPLICANT | UserRole.EMPLOYER>,
     @Body() body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
   ): Promise<BasicMeeting> {
     body = validateSyncByAtLeastOneSchema([
@@ -92,113 +92,48 @@ export class MeetingController extends Controller {
 
     const { _requester, ...bodyData } = body;
 
-    if (req.user.role === UserRole.APPLICANT && _requester !== UserRole.APPLICANT) throw new HttpError(403, "Invalid body request for applicant");
-    if (req.user.role === UserRole.EMPLOYER && _requester !== UserRole.EMPLOYER) throw new HttpError(403, "Invalid body request for employer");
-    if (req.user.role === GUEST_ROLE && _requester !== GUEST_ROLE) throw new HttpError(403, "Invalid body request for guest");
+    if (req.user.role !== _requester) {
+      throw new HttpError(403, `Invalid body request for ${req.user.role.toLowerCase()}`)
+    }
 
-    const slot = await prisma.meetingSlot.findUnique({
-      where: {
-        id: bodyData.slotId,
-        dateTime: { gte: new Date() },
-      },
-      select: {
-        meeting: true,
-        types: true,
-        dateTime: true,
-        manager: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        payments: {
-          select: {
-            id: true,
-            dueDate: true,
-            status: true,
-            guestEmail: true,
-            successCode: true,
-            type: true,
-          },
-        },
-      },
-    });
-
+    const slot = await this.meetingService.findFutureSlotById(bodyData.slotId)
     if (!slot) throw new HttpError(404, "MeetingSlot not found");
     if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+
     if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
-    // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
-    if (this.paymentService.doesMeetingTypeRequiresPayment(bodyData.type)) {
-      const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id);
+    this.paymentService.checkPaymentExistsAndMatchesSpecifiedDataOrThrow(req.user.id, slot.payments, bodyData)
 
-      if (!slotPaymentPaidByGuest)
-        throw new HttpError(409, "Meeting requires MeetingPayment with SUCCESS status");
-
-      if (slotPaymentPaidByGuest.successCode !== (bodyData as CreateMeetingGuestRequest).successCode)
-        throw new HttpError(409, "Invalid MeetingPayment success code");
-
-      if (slotPaymentPaidByGuest.type !== bodyData.type)
-        throw new HttpError(409, "Paid meeting type and passed type from request body dont match");
-    }
-
-    let user: MeetingCreator | null = null;
-
-    const findArgs = {
+    const findArgs: Prisma.ApplicantFindUniqueArgs | Prisma.EmployerFindUniqueArgs = {
       where: { id: req.user.id },
       select: { firstName: true, lastName: true, email: true },
     };
 
-    if (req.user.role === UserRole.APPLICANT) user = { _type: "user", ...await prisma.applicant.findUnique(findArgs) as any };
-    if (req.user.role === UserRole.EMPLOYER) user = { _type: "user", ...await prisma.employer.findUnique(findArgs) as any };
-    else if (req.user.role === GUEST_ROLE) user = { _type: "guest", email: req.user.id };
+    const user: MeetingCreator = {
+      "APPLICANT": { _type: "user", ...await prisma.applicant.findUnique(findArgs as Prisma.ApplicantFindUniqueArgs) as any },
+      "EMPLOYER": { _type: "user", ...await prisma.employer.findUnique(findArgs as Prisma.EmployerFindUniqueArgs) as any },
+      "GUEST": { _type: "guest", email: req.user.id }
+    }[req.user.role]
 
-    let roomUrl = "";
-    try {
-      roomUrl = await this.meetingService.createRoom(bodyData.type, user!);
-    } catch (error) {
-      logger.error({ error }, "Can not create Sber jazz room");
-
-      await this.meetingService.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup({
-        ...user!,
-        id: req.user.id,
-      }, body, error);
-
-      throw new HttpError(409, "Related service not available, retry later");
-    }
-
-    let description = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
-        + "\n Также, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
-        + "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
-
-    if (bodyData.type !== "INTERVIEW") description = bodyData.description;
+    const roomUrl = await this.meetingService.tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow({ ...user, id: req.user.id }, body)
 
     const meeting = await prisma.meeting.create({
       data: {
         roomUrl,
+        description: this.meetingService.buildMeetingDescriptionByType(bodyData.type, bodyData.description),
         name: bodyData.name,
-        description: description,
         slotId: bodyData.slotId,
         type: bodyData.type,
-        applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
-        employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
-        guestEmail: req.user.role === GUEST_ROLE ? req.user.id : undefined,
+        ...{
+          "APPLICANT": { applicantId: req.user.id},
+          "EMPLOYER": { employerId: req.user.id},
+          "GUEST": { guestEmail: req.user.id},
+        }[req.user.role]
       },
     });
 
-    await this.meetingService.sendMeetingCreatedToAdminGroup(
-      { name: bodyData.name, id: meeting.id, dateTime: slot.dateTime, type: bodyData.type },
-      { name: slot.manager.name, id: slot.manager.id },
-      { ...user!, id: req.user.id, role: req.user.role },
-    );
-
-    await this.meetingService.sendMeetingCreatedToEmail(
-      req.log,
-      user!.email,
-      { link: roomUrl, dateTime: slot.dateTime },
-    );
-
+    await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(user, meeting, slot, req)
     await this.meetingService.scheduleMeetingReminderToEmail(
       req.log,
       user!.email,

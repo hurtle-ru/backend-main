@@ -1,10 +1,12 @@
 import { injectable, singleton } from "tsyringe";
 import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service";
-import { MeetingType } from "@prisma/client";
+import { MeetingPayment, MeetingType } from "@prisma/client";
 import { meetingPriceByType, paymentConfig } from "./payment.config";
 import { MeetingNameByType } from "../meeting.config";
 import { MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
 import otpGenerator from "otp-generator";
+import { prisma } from "../../../infrastructure/database/prisma.provider";
+import { HttpError } from "../../../infrastructure/error/http.error";
 
 
 @injectable()
@@ -44,6 +46,26 @@ export class MeetingPaymentService {
       url: response.PaymentURL,
       amount: meetingPriceByType[type],
     };
+  }
+
+  async checkPaymentExistsAndMatchesSpecifiedDataOrThrow(
+    userId: string,
+    slotPayments: Pick<MeetingPayment, "successCode" | "type" | "status" | "guestEmail">[],
+    data: {type: MeetingType, successCode?: string}):
+  Promise<never | void> {
+    // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
+    if (this.doesMeetingTypeRequiresPayment(data.type)) {
+      const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slotPayments, userId);
+
+      if (!slotPaymentPaidByGuest)
+        throw new HttpError(409, "Meeting requires MeetingPayment with SUCCESS status");
+
+      if (slotPaymentPaidByGuest.successCode !== data.successCode)
+        throw new HttpError(409, "Invalid MeetingPayment success code");
+
+      if (slotPaymentPaidByGuest.type !== data.type)
+        throw new HttpError(409, "Paid meeting type and passed type from request body don`t match");
+    }
   }
 
   doesMeetingTypeRequiresPayment(type: MeetingType): boolean {
