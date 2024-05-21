@@ -69,7 +69,6 @@ export type CreateMeetingRequest = Pick<
 
 export const CreateMeetingRequestSchema: yup.ObjectSchema<CreateMeetingRequest> = BasicMeetingSchema.pick([
   "name",
-  "description",
   "slotId",
   "type",
 ]);
