@@ -263,6 +263,18 @@ export class MeetingService {
     return reminderTime.getTime() - new Date().getTime();
   }
 
+  async getAvailableForBookingSlotOrThrow(slotId: string, requester_role: JwtModel["user"]["role"]) {
+    const slot = await this.findFutureSlotById(slotId)
+
+    if (!slot) throw new HttpError(404, "MeetingSlot not found");
+    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+
+    if (!this.doesUserHaveAccessToMeetingSlot(requester_role, slot.types))
+      throw new HttpError(403, "User does not have access to this MeetingSlot type");
+
+    return slot
+  }
+
   async findFutureSlotById(slotId: string) {
     return await prisma.meetingSlot.findUnique({
       where: {

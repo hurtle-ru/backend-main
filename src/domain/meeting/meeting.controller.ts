@@ -96,13 +96,7 @@ export class MeetingController extends Controller {
       throw new HttpError(403, `Invalid body request for ${req.user.role.toLowerCase()}`)
     }
 
-    const slot = await this.meetingService.findFutureSlotById(bodyData.slotId)
-    if (!slot) throw new HttpError(404, "MeetingSlot not found");
-    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
-
-    if (!this.meetingService.doesUserHaveAccessToMeetingSlot(req.user.role, slot.types))
-      throw new HttpError(403, "User does not have access to this MeetingSlot type");
-
+    const slot = await this.meetingService.getAvailableForBookingSlotOrThrow(bodyData.slotId, req.user.role)
     this.paymentService.checkPaymentExistsAndMatchesSpecifiedDataOrThrow(req.user.id, slot.payments, bodyData)
 
     const findArgs: Prisma.ApplicantFindUniqueArgs | Prisma.EmployerFindUniqueArgs = {
@@ -134,11 +128,7 @@ export class MeetingController extends Controller {
     });
 
     await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(user, meeting, slot, req)
-    await this.meetingService.scheduleMeetingReminderToEmail(
-      req.log,
-      user!.email,
-      { link: roomUrl, dateTime: slot.dateTime },
-    );
+    await this.meetingService.scheduleMeetingReminderToEmail(req.log, user!.email, { link: roomUrl, dateTime: slot.dateTime },);
 
     return meeting;
   }
