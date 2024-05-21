@@ -62,7 +62,6 @@ export type GetMeetingResponse = BasicMeeting & {
 export type CreateMeetingRequest = Pick<
   Meeting,
   | "name"
-  | "description"
   | "slotId"
   | "type"
 >;

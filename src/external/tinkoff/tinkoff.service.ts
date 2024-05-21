@@ -10,7 +10,7 @@ export class TinkoffPaymentService {
   constructor() {}
 
   /**
-   * Инициирует платежную сессию
+   * Инициирует платежную сессию. На данный момент метод поддерживает только платежи с продажей 1-й услуги за платеж.
    * @param {string} orderId Уникальный идентификатор заказа, для которого проводится платёж
    * @param {number} amount Целое число, выражающее сумму в **копейках**. Например, сумма 3руб. 12коп. - это число 312
    * @param {string} description Описание заказа
@@ -18,6 +18,8 @@ export class TinkoffPaymentService {
    * @param {string} failUrl URL, куда будет переведен клиент в случае неуспешной оплаты
    * @param {string} notificationUrl URL (вебхук), куда Тинькофф Касса отправит запрос по завершении оплаты
    * @param {string} dueDate Срок жизни платежа, после которого оплата будет невозможна
+   * @param {string} clientEmail Email клиента
+   * @param {string} itemName Наименование товара. Максимальное количество символов - 128
    */
   async initPayment(
     orderId: string,
@@ -27,6 +29,9 @@ export class TinkoffPaymentService {
     failUrl: string,
     notificationUrl: string,
     dueDate: string,
+    clientEmail: string,
+    itemName: string,
+
   ): Promise<tinkoff.InitTinkoffPaymentResponse> {
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
@@ -37,6 +42,23 @@ export class TinkoffPaymentService {
       FailURL: failUrl,
       NotificationUrl: notificationUrl,
       RedirectDueDate: dueDate,
+      Receipt: {
+        FfdVersion: "1.2",
+        Taxation: "usn_income",
+        Email: clientEmail,
+        Items: [
+          {
+            Name: itemName,
+            Price: amount,
+            Quantity: 1,
+            Amount: amount, // Quantity * Amount
+            Tax: "none",
+            PaymentMethod: "full_payment",
+            PaymentObject: "service",
+            MeasurementUnit: "шт",
+          },
+        ],
+      },
     };
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(

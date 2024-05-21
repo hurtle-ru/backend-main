@@ -39,6 +39,11 @@ export const AVAILABLE_DOCUMENT_FILE_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
 ];
 
+export const AVAILABLE_PASSPORT_FILE_MIME_TYPES = [
+  ...AVAILABLE_IMAGE_FILE_MIME_TYPES,
+  "application/pdf",
+];
+
 const FILE_EXTENSIONS = [
   ".png",
   ".webp",

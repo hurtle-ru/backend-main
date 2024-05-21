@@ -25,14 +25,9 @@ import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.err
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { MeetingService } from "../meeting.service";
 import { MeetingPaymentService } from "./payment.service";
-import { meetingPriceByType, paymentConfig } from "./payment.config";
+import { paymentConfig } from "./payment.config";
 import moment from "moment";
-import { tinkoffConfig } from "../../../external/tinkoff/tinkoff.config";
-import { MeetingPayment } from "@prisma/client";
-import { BasicMeetingSlot } from "../slot/slot.dto";
 import { GUEST_ROLE, JwtModel } from "../../auth/auth.dto";
-import { type } from "node:os";
-
 
 @injectable()
 @Route("api/v1/meetingPayments")
@@ -53,9 +48,9 @@ export class MeetingPaymentController extends Controller {
   @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type" }>(403)
   @Response<HttpErrorBody & { "error":
-    | "MeetingSlot already booked or paid"
-    | "Payment is not required to book meeting of this type"
-    | "Pending payment already exists on this slot"
+      | "MeetingSlot already booked or paid"
+      | "Payment is not required to book meeting of this type"
+      | "Pending payment already exists on this slot"
   }>(409)
   public async create(
     @Request() req: JwtModel,
@@ -97,13 +92,14 @@ export class MeetingPaymentController extends Controller {
       .add(paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES, "minutes")
       .format("YYYY-MM-DDTHH:mm:ssZ");
 
+    const guestEmail = req.user.id;
     const successCode = this.paymentService.generateCode();
     const failCode = this.paymentService.generateCode();
 
     const meetingPayment = await prisma.meetingPayment.create({
       data: {
         slotId: body.slotId,
-        guestEmail: req.user.id,
+        guestEmail,
         dueDate,
         successCode,
         failCode,
@@ -112,11 +108,12 @@ export class MeetingPaymentController extends Controller {
     });
 
     const paymentSession = await this.paymentService.initPaymentSession(
-      body.type as keyof typeof meetingPriceByType,
+      body.type,
       meetingPayment.id,
       successCode,
       failCode,
       dueDate,
+      guestEmail,
     );
 
     const updatedPayment = await prisma.meetingPayment.update({
@@ -143,7 +140,7 @@ export class MeetingPaymentController extends Controller {
   public async processTinkoffNotification(
     @Body() body: MeetingPaymentTinkoffNotificationRequest,
   ): Promise<"OK"> {
-    if (!await this.paymentService.verifyToken(body)) throw new HttpError(401, "Invalid token");
+    if (!this.paymentService.verifyToken(body)) throw new HttpError(401, "Invalid token");
 
     const mappedStatus = TinkoffPaymentStatusToMeetingPaymentStatus[body.Status];
     await prisma.meetingPayment.update({
