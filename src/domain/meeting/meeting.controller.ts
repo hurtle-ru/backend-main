@@ -32,6 +32,8 @@ import {
   CreateMeetingByEmployerRequestSchema,
   PatchMeetingByManagerRequestSchema,
   MeetingCreator,
+  PatchMeetingByApplicantOrEmployerRequest,
+  PatchMeetingByApplicantOrEmployerSchemaRequest,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -65,7 +67,7 @@ export class MeetingController extends Controller {
   @Post("")
   @Security("jwt", [GUEST_ROLE, UserRole.APPLICANT, UserRole.EMPLOYER])
   @Middlewares(rateLimit({limit: 10, interval: 60}))
-  @Response<HttpErrorBody & { "error": "MeetingSlot not found" }>(404)
+  @Response<HttpErrorBody & { "error": "Meeting not found" | "MeetingSlot not found" }>(404)
   @Response<HttpErrorBody & { "error":
       | "Invalid body request for applicant"
       | "Invalid body request for employer"
@@ -96,7 +98,7 @@ export class MeetingController extends Controller {
       throw new HttpError(403, `Invalid body request for ${req.user.role.toLowerCase()}`)
     }
 
-    const slot = await this.meetingService.getAvailableForBookingSlotOrThrow(bodyData.slotId, req.user.role)
+    const slot = await this.meetingService.doesSlotAvailableForBookingOrThrow(bodyData.slotId, req.user.role)
     this.paymentService.checkPaymentExistsAndMatchesSpecifiedDataOrThrow(req.user.id, slot.payments, bodyData)
 
     const findArgs: Prisma.ApplicantFindUniqueArgs | Prisma.EmployerFindUniqueArgs = {
@@ -110,7 +112,7 @@ export class MeetingController extends Controller {
       "GUEST": { _type: "guest", email: req.user.id }
     }[req.user.role]
 
-    const roomUrl = await this.meetingService.tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow({ ...user, id: req.user.id }, body)
+    const roomUrl = await this.meetingService.tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow({ ...user, id: req.user.id, role: _requester }, body)
 
     const meeting = await prisma.meeting.create({
       data: {
@@ -393,14 +395,27 @@ export class MeetingController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("jwt", [UserRole.MANAGER])
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
+  @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type"}>(403)
+  @Response<HttpErrorBody & {"error":
+    "Can`t reschedule paid meeting"
+    | "Specified slot hasn`t same meeting type"
+    | "MeetingSlot already booked"
+    | "New slot must be different from the old"
+    | "Meeting requires MeetingPayment with SUCCESS status"
+    | "Related service not available, retry later"
+  }>(409)
   public async patchById(
-    @Request() req: JwtModel,
-    @Body() body: PatchMeetingByManagerRequest,
+    @Request() req: ExpressRequest & JwtModel,
+    @Body() body: PatchMeetingByApplicantOrEmployerRequest | PatchMeetingByManagerRequest,
     @Path() id: string,
   ): Promise<BasicMeeting> {
-    body = PatchMeetingByManagerRequestSchema.validateSync(body);
+    let bodyData;
+    if (req.user.role === UserRole.MANAGER) {
+      bodyData = PatchMeetingByManagerRequestSchema.validateSync(body);
+    }
+    else bodyData = PatchMeetingByApplicantOrEmployerSchemaRequest.validateSync(body);
 
     const where = { id };
 
@@ -410,9 +425,45 @@ export class MeetingController extends Controller {
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
 
+    if ("slotId" in bodyData && bodyData.slotId) {
+      if (bodyData.slotId === meeting.slotId) {
+        throw new HttpError(409, "New slot must be different from the old")
+      }
+
+      if (this.paymentService.doesMeetingTypeRequiresPayment(meeting.type)) {
+        throw new HttpError(409, "Can`t reschedule paid meeting")
+      }
+
+      const new_slot = await this.meetingService.doesSlotAvailableForBookingOrThrow(bodyData.slotId, req.user.role)
+
+      if (!new_slot.types.includes(meeting.type)) {
+        throw new HttpError(409, "Specified slot has not same meeting type")
+      }
+
+      const creator = await this.meetingService.getMeetingApplicantOrEmployerCreator(meeting)
+
+      this.meetingService.removeMeetingReminderToEmail(
+        req.log, creator.email, meeting.roomUrl
+      )
+
+      const roomUrl = await this.meetingService.tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(
+        {
+          ...creator,
+          id: req.user.id,
+          role: meeting.applicantId ? UserRole.APPLICANT : UserRole.EMPLOYER
+        },
+        meeting
+      )
+
+      bodyData = { roomUrl, ...bodyData }
+
+      await this.meetingService.scheduleMeetingReminderToEmail(req.log, creator.email, { link: roomUrl, dateTime: new_slot.dateTime },);
+      await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData, }, new_slot, req, true)
+    }
+
     return await prisma.meeting.update({
       where,
-      data: body,
+      data: bodyData,
     });
   }
 
