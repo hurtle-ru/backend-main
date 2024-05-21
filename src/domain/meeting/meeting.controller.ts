@@ -194,13 +194,21 @@ export class MeetingController extends Controller {
     await this.meetingService.sendMeetingCreatedToEmail(
       req.log,
       user!.email,
-      { link: roomUrl, dateTime: slot.dateTime },
+      {
+        link: roomUrl,
+        dateTime: slot.dateTime,
+        emailDescriptionOnCreate: MeetingBusinessInfoByTypes[bodyData.type].emailDescriptionOnCreate,
+      },
     );
 
     await this.meetingService.scheduleMeetingReminderToEmail(
       req.log,
       user!.email,
-      { link: roomUrl, dateTime: slot.dateTime },
+      {
+        link: roomUrl,
+        dateTime: slot.dateTime,
+        emailDescriptionOnRemind: MeetingBusinessInfoByTypes[bodyData.type].emailDescriptionOnRemind,
+      },
     );
 
     return meeting;

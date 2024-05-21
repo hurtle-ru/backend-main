@@ -83,7 +83,7 @@ export class MeetingService {
   async sendMeetingCreatedToEmail(
     logger: pino.Logger,
     userEmail: string,
-    meeting: { link: string, dateTime: Date },
+    meeting: { link: string, dateTime: Date, emailDescriptionOnCreate: string },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -95,7 +95,11 @@ export class MeetingService {
       subject: "Встреча забронирована!",
       template: {
         name: "create_meeting",
-        context: { date, link: meeting.link },
+        context: {
+          date,
+          link: meeting.link,
+          emailDescriptionOnCreate: meeting.emailDescriptionOnCreate,
+        },
       },
     });
   }
@@ -125,7 +129,7 @@ export class MeetingService {
   async scheduleMeetingReminderToEmail(
     logger: pino.Logger,
     userEmail: string,
-    meeting: { link: string, dateTime: Date },
+    meeting: { link: string, dateTime: Date, emailDescriptionOnRemind: string },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -137,7 +141,11 @@ export class MeetingService {
       subject: "Напоминание о встрече!",
       template: {
         name: "remind_about_meeting",
-        context: { link: meeting.link, date },
+        context: {
+          link: meeting.link,
+          date,
+          emailDescriptionOnRemind: meeting.emailDescriptionOnRemind,
+        },
       },
     };
 
