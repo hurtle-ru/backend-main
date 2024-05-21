@@ -122,7 +122,6 @@ export type ExportAllRequest = {
   secret: string,
 }
 
-// Данные для экспорта: {Имя, Способ связи, Рекрутер}
 export type ExportAllResponse = {
   status: MeetingStatus,
   managerName: string
