@@ -86,13 +86,20 @@ export class TinkoffPaymentService {
   }
 
   makeToken(requestData: Record<string, any | number | undefined>): string {
-    const dataWithCredentials: Record<string, any | number> = {
+    const dataWithCredentialsRaw: Record<string, any | number> = {
       ...Object.fromEntries(Object.entries(requestData).filter(([_, value]) => value !== undefined)),
       Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
     };
 
-    const sortedKeys = Object.keys(dataWithCredentials).sort();
-    const concatenatedValues = sortedKeys.map((key) => String(dataWithCredentials[key])).join("");
+    const filteredData: Record<string, any | number> = {};
+    for (const [key, value] of Object.entries(dataWithCredentialsRaw)) {
+      if (typeof value !== "object" || value === null) {
+        filteredData[key] = value;
+      }
+    }
+
+    const sortedKeys = Object.keys(filteredData).sort();
+    const concatenatedValues = sortedKeys.map((key) => String(filteredData[key])).join("");
 
     return this.sha256(concatenatedValues).toString();
   }
