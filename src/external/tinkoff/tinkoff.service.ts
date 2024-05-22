@@ -3,6 +3,7 @@ import { singleton } from "tsyringe";
 import { tinkoffConfig } from "./tinkoff.config";
 import { tinkoff } from "./tinkoff.dto";
 import crypto from "crypto";
+import { logger } from "../../infrastructure/logger/logger";
 
 
 @singleton()
@@ -66,6 +67,7 @@ export class TinkoffPaymentService {
       { ...requestBody, Token: this.makeToken(requestBody) },
     );
 
+    logger.debug({ requestBody, responseData: response.data }, "TinkoffService: init payment");
     return response.data;
   }
 
