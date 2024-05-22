@@ -41,13 +41,17 @@ import { Request as ExpressRequest } from "express";
 import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
-import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import {
+  artifactConfig,
+  AVAILABLE_PASSPORT_FILE_MIME_TYPES,
+  AVAILABLE_VIDEO_FILE_MIME_TYPES,
+} from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
-import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus, Prisma } from "@prisma/client";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 import { logger } from "../../infrastructure/logger/logger";
+import { MeetingBusinessInfoByTypes, meetingConfig } from "./meeting.config";
 
 
 @injectable()
@@ -168,17 +172,11 @@ export class MeetingController extends Controller {
       throw new HttpError(409, "Related service not available, retry later");
     }
 
-    let description = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
-        + "\n Также, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
-        + "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
-
-    if (bodyData.type !== "INTERVIEW") description = bodyData.description;
-
     const meeting = await prisma.meeting.create({
       data: {
         roomUrl,
         name: bodyData.name,
-        description: description,
+        description: MeetingBusinessInfoByTypes[bodyData.type].description,
         slotId: bodyData.slotId,
         type: bodyData.type,
         applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
@@ -196,13 +194,21 @@ export class MeetingController extends Controller {
     await this.meetingService.sendMeetingCreatedToEmail(
       req.log,
       user!.email,
-      { link: roomUrl, dateTime: slot.dateTime },
+      {
+        link: roomUrl,
+        dateTime: slot.dateTime,
+        emailDescriptionOnCreate: MeetingBusinessInfoByTypes[bodyData.type].emailDescriptionOnCreate,
+      },
     );
 
     await this.meetingService.scheduleMeetingReminderToEmail(
       req.log,
       user!.email,
-      { link: roomUrl, dateTime: slot.dateTime },
+      {
+        link: roomUrl,
+        dateTime: slot.dateTime,
+        emailDescriptionOnRemind: MeetingBusinessInfoByTypes[bodyData.type].emailDescriptionOnRemind,
+      },
     );
 
     return meeting;
