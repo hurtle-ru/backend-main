@@ -43,23 +43,23 @@ export class TinkoffPaymentService {
       FailURL: failUrl,
       NotificationUrl: notificationUrl,
       RedirectDueDate: dueDate,
-      Receipt: {
-        FfdVersion: "1.2",
-        Taxation: "usn_income",
-        Email: clientEmail,
-        Items: [
-          {
-            Name: itemName,
-            Price: amount,
-            Quantity: 1,
-            Amount: amount, // Quantity * Amount
-            Tax: "none",
-            PaymentMethod: "full_payment",
-            PaymentObject: "service",
-            MeasurementUnit: "шт",
-          },
-        ],
-      },
+      // Receipt: {
+      //   FfdVersion: "1.2",
+      //   Taxation: "usn_income",
+      //   Email: clientEmail,
+      //   Items: [
+      //     {
+      //       Name: itemName,
+      //       Price: amount,
+      //       Quantity: 1,
+      //       Amount: amount, // Quantity * Amount
+      //       Tax: "none",
+      //       PaymentMethod: "full_payment",
+      //       PaymentObject: "service",
+      //       MeasurementUnit: "шт",
+      //     },
+      //   ],
+      // },
     };
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(
