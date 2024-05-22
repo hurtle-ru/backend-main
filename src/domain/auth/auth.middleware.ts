@@ -4,6 +4,7 @@ import { GUEST_ROLE, JwtModel, PUBLIC_SCOPE, UserRole } from "./auth.dto";
 import { HttpError } from "../../infrastructure/error/http.error";
 import { authConfig } from "./auth.config";
 import { prisma } from "../../infrastructure/database/prisma.provider";
+import { parseCookies } from "../../infrastructure/controller/express-request/express-request.utils";
 
 
 /**
@@ -14,8 +15,7 @@ import { prisma } from "../../infrastructure/database/prisma.provider";
  * @throws {HttpError} 401: User does not exist
  */
 export const expressAuthentication = async (request: Request, securityName: string, scopes?: string[]): Promise<any> => {
-  const token = request.header("Authorization");
-
+  const token = request.header("Authorization") || parseCookies(request.headers.cookie)["access_token"];
   if (securityName !== "jwt") throw new Error("Invalid security name");
 
   if (!token) {

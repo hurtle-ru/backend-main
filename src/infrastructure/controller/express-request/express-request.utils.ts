@@ -9,3 +9,14 @@ export function getHeaderFirstValue(header: string, req: Request): string | unde
 export function getIp(req: Request): string | undefined {
   return getHeaderFirstValue("x-real-ip", req) || req.ip;
 }
+
+export function parseCookies(cookieHeader: string | undefined): { [key: string]: string } {
+  const cookies: { [key: string]: string } = {};
+  if (cookieHeader) {
+    cookieHeader.split(";").forEach(cookie => {
+      const parts = cookie.split("=");
+      cookies[parts.shift()!.trim()] = decodeURI(parts.join("="));
+    });
+  }
+  return cookies;
+}
