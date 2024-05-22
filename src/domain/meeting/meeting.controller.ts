@@ -425,7 +425,7 @@ export class MeetingController extends Controller {
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
 
-    if ("slotId" in bodyData && bodyData.slotId) {
+    if (bodyData.slotId) {
       if (bodyData.slotId === meeting.slotId) {
         throw new HttpError(409, "New slot must be different from the old")
       }
