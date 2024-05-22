@@ -16,7 +16,6 @@ export function parseCookies(cookieHeader: string | undefined): { [key: string]:
     cookieHeader.split(";").forEach(cookie => {
       const parts = cookie.split("=");
       cookies[parts.shift()!.trim()] = decodeURI(parts.join("="));
-      console.log("COOK",cookieHeader, decodeURI(parts.join("=")))
     });
   }
   return cookies;
