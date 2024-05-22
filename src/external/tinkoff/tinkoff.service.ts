@@ -91,6 +91,7 @@ export class TinkoffPaymentService {
       Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
     };
 
+    // Фильтруем вложенные объекты и массивы, оставляем только скалярные значения
     const filteredData: Record<string, any | number> = {};
     for (const [key, value] of Object.entries(dataWithCredentialsRaw)) {
       if (typeof value !== "object" || value === null) {
@@ -98,9 +99,13 @@ export class TinkoffPaymentService {
       }
     }
 
+    // Сортируем ключи по алфавиту
     const sortedKeys = Object.keys(filteredData).sort();
-    const concatenatedValues = sortedKeys.map((key) => String(filteredData[key])).join("");
 
+    // Конкатенируем значения в одну строку
+    const concatenatedValues = sortedKeys.map(key => String(filteredData[key])).join("");
+
+    // Возвращаем хеш строку
     return this.sha256(concatenatedValues).toString();
   }
 
