@@ -97,7 +97,7 @@ export class MeetingSlotController extends Controller {
   public async getAll(
     @Request() req: JwtModel,
     @Query() page: PageNumber = 1,
-    @Query() size: PageSizeNumber = 80,
+    @Query() size: PageSizeNumber = 800,
     @Query() types?: MeetingType[],
     @Query() available = true,
     @Query() afterDateTime?: Date,
@@ -142,6 +142,7 @@ export class MeetingSlotController extends Controller {
         uniqueDateTimeSlotsMap.set(dateTimeStr, slot);
       }
     }
+
     const meetingSlots = Array.from(uniqueDateTimeSlotsMap.values());
 
     return new PageResponse(meetingSlots, page, size, meetingSlots.length);
