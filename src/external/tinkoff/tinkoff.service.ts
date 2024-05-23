@@ -70,7 +70,6 @@ export class TinkoffPaymentService {
       { ...requestBody, Token: this.makeToken(requestBody) },
     );
 
-    logger.debug({ requestBody, responseData: response.data }, "TinkoffService: init payment");
     return response.data;
   }
 
