@@ -1,37 +1,31 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../error/http.error";
-import { RateInfo, RateLimiterConfig } from "./rate-limiter.dto";
-import { getHeaderFirstValue, getIp } from "../controller/express-request/express-request.utils";
+import { RateLimiterConfig } from "./rate-limiter.dto";
+import { getIp } from "../controller/express-request/express-request.utils";
+import redis from "../mq/redis.provider";
+import { join } from "path";
 
 
-const MILLISECONDS_IN_SECOND = 1000;
+const INITIAL_RATE = 0
 
-const USERS_RATE_MAP = new Map<string, RateInfo>();
-const IPS_RATE_MAP = new Map<string, RateInfo>();
+const BASE_RATE_LIMIT_REDIS_RATE_KEY = "rate-limit"
+const GLOBAL_RATE_KEY = "global"
+
+const USERS_RATE_KEY = "users"
+const IPS_RATE_KEY = "ips"
+
+const ROUTES_RATE_KEY = "routes"
+
+const GLOBAL_USERS_RATE_KEY = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, GLOBAL_RATE_KEY, USERS_RATE_KEY);
+const GLOBAL_IPS_RATE_KEY = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, GLOBAL_RATE_KEY, IPS_RATE_KEY);
 
 
-function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: RateLimiterConfig): RateInfo {
-  const currentTime = Date.now();
+async function updateRate(identifier: string, rate: string, config: RateLimiterConfig): Promise<number> {
+  identifier = join(rate, identifier)
 
-  if (!rateMap.has(identifier)) {
-    const rate = { count: 1, lastReset: currentTime };
+  await redis.set(identifier, INITIAL_RATE.toString(), 'EX', config.interval, "NX");
 
-    rateMap.set(identifier, rate);
-
-    return rate;
-  }
-
-  const rate = rateMap.get(identifier)!;
-
-  if (currentTime - rate.lastReset > config.interval) {
-    rate.count = 1;
-    rate.lastReset = currentTime;
-
-  } else {
-    rate.count++;
-  }
-
-  return rate;
+  return await redis.incr(identifier)
 }
 
 
@@ -42,17 +36,15 @@ function updateRate(identifier: string, rateMap: Map<string, RateInfo>, config: 
 * @param {number} config.interval Interval in seconds
 */
 export function userRateLimit(config: RateLimiterConfig) {
-  config.interval *= MILLISECONDS_IN_SECOND;
-
-  return function(req: Request, res: Response, next: NextFunction) {
+  return async function(req: Request, res: Response, next: NextFunction) {
     const ip = getIp(req);
-    const token = getHeaderFirstValue("Authorization", req);
+    const token = req.header("Authorization");
 
-    const userRate = token ? updateRate(token, USERS_RATE_MAP, config).count : 0;
-    const ipRate = ip ? updateRate(ip, IPS_RATE_MAP, config).count : 0;
+    const userRate = token ? await updateRate(token, GLOBAL_USERS_RATE_KEY, config) : 0;
+    const ipRate = ip ? await updateRate(ip, GLOBAL_IPS_RATE_KEY, config) : 0;
 
     if (Math.max(userRate, ipRate) > config.limit) {
-      throw new HttpError(429, "Too Many Requests");
+      return next(new HttpError(429, "Too Many Requests"));
     }
 
     next();
@@ -66,20 +58,17 @@ export function userRateLimit(config: RateLimiterConfig) {
 * @param {number} config.interval Interval in seconds
 */
 export function routeRateLimit(config: RateLimiterConfig) {
-  const usersRateMap = new Map<string, RateInfo>();
-  const ipsRateMap = new Map<string, RateInfo>();
+  return async function(req: Request, res: Response, next: NextFunction) {
+    const baseRateName = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, ROUTES_RATE_KEY, req.baseUrl, req.path)
 
-  config.interval *= MILLISECONDS_IN_SECOND;
-
-  return function(req: Request, res: Response, next: NextFunction) {
     const ip = getIp(req);
-    const token = getHeaderFirstValue("Authorization", req);
+    const token = req.header("Authorization");
 
-    const userRate = token ? updateRate(token, usersRateMap, config).count : 0;
-    const ipRate = ip ? updateRate(ip, ipsRateMap, config).count : 0;
+    const userRate = token ? await updateRate(token, join(baseRateName, USERS_RATE_KEY), config) : 0;
+    const ipRate = ip ? await updateRate(ip, join(baseRateName, IPS_RATE_KEY), config) : 0;
 
     if (Math.max(userRate, ipRate) > config.limit) {
-      throw new HttpError(429, "Too Many Requests");
+      return next(new HttpError(429, "Too Many Requests"));
     }
 
     next();
