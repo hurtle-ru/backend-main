@@ -6,6 +6,9 @@ import crypto from "crypto";
 import { logger } from "../../infrastructure/logger/logger";
 
 
+/* Проверка подписей на стороне Тинькофф работает крайне нестабильно и некорректно.
+*  Некоторые поля (даже скалярные) Тинькофф без всякого упоминания в документации будет игнорировать при сверке подписей.
+*/
 @singleton()
 export class TinkoffPaymentService {
   constructor() {}
@@ -43,23 +46,23 @@ export class TinkoffPaymentService {
       FailURL: failUrl,
       NotificationUrl: notificationUrl,
       RedirectDueDate: dueDate,
-      // Receipt: {
-      //   FfdVersion: "1.2",
-      //   Taxation: "usn_income",
-      //   Email: clientEmail,
-      //   Items: [
-      //     {
-      //       Name: itemName,
-      //       Price: amount,
-      //       Quantity: 1,
-      //       Amount: amount, // Quantity * Amount
-      //       Tax: "none",
-      //       PaymentMethod: "full_payment",
-      //       PaymentObject: "service",
-      //       MeasurementUnit: "шт",
-      //     },
-      //   ],
-      // },
+      Receipt: {
+        FfdVersion: "1.2",
+        Taxation: "usn_income",
+        Email: clientEmail,
+        Items: [
+          {
+            Name: itemName,
+            Price: amount,
+            Quantity: 1,
+            Amount: amount, // Quantity * Amount
+            Tax: "none",
+            PaymentMethod: "full_payment",
+            PaymentObject: "service",
+            MeasurementUnit: "шт",
+          },
+        ],
+      },
     };
 
     const response = await axios.post<tinkoff.InitTinkoffPaymentResponse>(
@@ -86,30 +89,29 @@ export class TinkoffPaymentService {
   }
 
   makeToken(requestData: Record<string, any | number | undefined>): string {
-    const dataWithCredentialsRaw: Record<string, any | number> = {
-      ...Object.fromEntries(Object.entries(requestData).filter(([_, value]) => value !== undefined)),
+    const ignoreKeys = ["NotificationUrl"];
+
+    const dataWithCredentials: Record<string, any | number> = {
+      ...Object.fromEntries(Object.entries(requestData).filter(([key, value]) =>
+        value !== undefined
+        && value !== null
+        && typeof value !== "object"
+        && !ignoreKeys.includes(key),
+      )),
       Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
     };
 
-    // Фильтруем вложенные объекты и массивы, оставляем только скалярные значения
-    const filteredData: Record<string, any | number> = {};
-    for (const [key, value] of Object.entries(dataWithCredentialsRaw)) {
-      if (typeof value !== "object" || value === null) {
-        filteredData[key] = value;
-      }
-    }
-
     // Сортируем ключи по алфавиту
-    const sortedKeys = Object.keys(filteredData).sort();
+    const sortedKeys = Object.keys(dataWithCredentials).sort();
 
     // Конкатенируем значения в одну строку
-    const concatenatedValues = sortedKeys.map(key => String(filteredData[key])).join("");
+    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join("");
 
     // Возвращаем хеш строку
-    return this.sha256(concatenatedValues).toString();
+    return this.sha256(concatenatedValues).toLowerCase();
   }
 
   sha256(input: string): string {
-    return crypto.createHash("sha256").update(input).digest("hex");
+    return crypto.createHash("sha256").update(input, "utf8").digest("hex");
   }
 }
