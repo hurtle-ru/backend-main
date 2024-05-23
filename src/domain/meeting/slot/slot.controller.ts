@@ -107,7 +107,7 @@ export class MeetingSlotController extends Controller {
       throw new HttpError(403, "Only available slots are accessible to employers, applicants and guests");
 
     const currentDate = new Date();
-    const where = {
+    const where: Prisma.MeetingSlotWhereInput = {
       meeting: available ? null : undefined,
       types: types ? { hasSome: types } : undefined,
       dateTime: {

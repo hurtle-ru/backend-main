@@ -4,11 +4,11 @@ import { MeetingPayment, MeetingPaymentStatus, Prisma } from "@prisma/client";
 export const meetingPaymentPrismaExtension = Prisma.defineExtension({
   model: {
     meetingPayment: {
-      isExpired({ status, dueDate }: Pick<MeetingPayment, "status" | "dueDate">): boolean {
-        return status !== "SUCCESS" && new Date() > dueDate;
+      isPendingExpired({ status, dueDate }: Pick<MeetingPayment, "status" | "dueDate">): boolean {
+        return status === "PENDING" && new Date() > dueDate;
       },
-      hasUnexpired(payments: Pick<MeetingPayment, "status" | "dueDate">[]): boolean {
-        return payments.some((p) => !Prisma.getExtensionContext(this).isExpired(p));
+      hasPendingUnexpired(payments: Pick<MeetingPayment, "status" | "dueDate">[]): boolean {
+        return payments.some((p) => !Prisma.getExtensionContext(this).isPendingExpired(p));
       },
       getPaidByGuest<T extends Pick<MeetingPayment, "status" | "guestEmail">>(
         payments: T[], guestEmail: string,
