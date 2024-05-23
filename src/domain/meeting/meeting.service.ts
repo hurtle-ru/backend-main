@@ -83,7 +83,7 @@ export class MeetingService {
   async sendMeetingCreatedToEmail(
     logger: pino.Logger,
     userEmail: string,
-    meeting: { link: string, dateTime: Date, emailDescriptionOnCreate: string },
+    meeting: { name: string, link: string, dateTime: Date, emailDescriptionOnCreate: string },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -97,6 +97,7 @@ export class MeetingService {
         name: "create_meeting",
         context: {
           date,
+          meetingName: meeting.name,
           link: meeting.link,
           emailDescriptionOnCreate: meeting.emailDescriptionOnCreate,
         },
@@ -108,7 +109,7 @@ export class MeetingService {
     logger: pino.Logger,
     userEmail: string,
     role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE,
-    meeting: { name: string, dateTime: Date },
+    meeting: { applicantName: string, name: string, dateTime: Date },
   )  {
     const link = this.getMeetingCreateLink(role);
     const date = moment(meeting.dateTime)
@@ -121,7 +122,12 @@ export class MeetingService {
       subject: "Встреча отменена!",
       template: {
         name: "cancel_meeting",
-        context: { name: meeting.name, date, link },
+        context: {
+          name: meeting.applicantName,
+          meetingName: meeting.name,
+          date,
+          link,
+        },
       },
     });
   }
@@ -129,7 +135,7 @@ export class MeetingService {
   async scheduleMeetingReminderToEmail(
     logger: pino.Logger,
     userEmail: string,
-    meeting: { link: string, dateTime: Date, emailDescriptionOnRemind: string },
+    meeting: { link: string, name: string, dateTime: Date, emailDescriptionOnRemind: string },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -142,8 +148,9 @@ export class MeetingService {
       template: {
         name: "remind_about_meeting",
         context: {
-          link: meeting.link,
           date,
+          meetingName: meeting.name,
+          link: meeting.link,
           emailDescriptionOnRemind: meeting.emailDescriptionOnRemind,
         },
       },

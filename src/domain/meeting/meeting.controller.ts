@@ -197,6 +197,7 @@ export class MeetingController extends Controller {
       {
         link: roomUrl,
         dateTime: slot.dateTime,
+        name: MeetingBusinessInfoByTypes[bodyData.type].name,
         emailDescriptionOnCreate: MeetingBusinessInfoByTypes[bodyData.type].emailDescriptionOnCreate,
       },
     );
@@ -207,6 +208,7 @@ export class MeetingController extends Controller {
       {
         link: roomUrl,
         dateTime: slot.dateTime,
+        name: MeetingBusinessInfoByTypes[bodyData.type].name,
         emailDescriptionOnRemind: MeetingBusinessInfoByTypes[bodyData.type].emailDescriptionOnRemind,
       },
     );
@@ -545,7 +547,11 @@ export class MeetingController extends Controller {
       req.log,
       userEmail!,
       role,
-      { name: userFirstName!, dateTime: meeting.slot.dateTime },
+      {
+        applicantName: userFirstName!,
+        name: MeetingBusinessInfoByTypes[meeting.type].name,
+        dateTime: meeting.slot.dateTime,
+      },
     );
 
     await this.meetingService.removeMeetingReminderToEmail(
