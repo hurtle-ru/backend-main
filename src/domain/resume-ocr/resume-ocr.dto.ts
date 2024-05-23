@@ -43,7 +43,7 @@ export const PatchImportResumeWithOcrQueuedRequestSchema: yup.ObjectSchema<Patch
 });
 
 
-export const MetadataImportResumeWithOcrCallbackName = "import-with-ocr-applicant-resume"
+export const MetadataImportResumeWithOcrCallbackName = "import-with-ocr-applicant-resume";
 type MetadataImportResumeWithOcrCallbackNameType = "import-with-ocr-applicant-resume"
 
 export type MetadataImportResumeWithOcr = {

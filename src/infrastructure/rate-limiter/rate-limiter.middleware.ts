@@ -6,26 +6,26 @@ import redis from "../mq/redis.provider";
 import { join } from "path";
 
 
-const INITIAL_RATE = 0
+const INITIAL_RATE = 0;
 
-const BASE_RATE_LIMIT_REDIS_RATE_KEY = "rate-limit"
-const GLOBAL_RATE_KEY = "global"
+const BASE_RATE_LIMIT_REDIS_RATE_KEY = "rate-limit";
+const GLOBAL_RATE_KEY = "global";
 
-const USERS_RATE_KEY = "users"
-const IPS_RATE_KEY = "ips"
+const USERS_RATE_KEY = "users";
+const IPS_RATE_KEY = "ips";
 
-const ROUTES_RATE_KEY = "routes"
+const ROUTES_RATE_KEY = "routes";
 
 const GLOBAL_USERS_RATE_KEY = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, GLOBAL_RATE_KEY, USERS_RATE_KEY);
 const GLOBAL_IPS_RATE_KEY = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, GLOBAL_RATE_KEY, IPS_RATE_KEY);
 
 
 async function updateRate(identifier: string, rate: string, config: RateLimiterConfig): Promise<number> {
-  identifier = join(rate, identifier)
+  identifier = join(rate, identifier);
 
-  await redis.set(identifier, INITIAL_RATE.toString(), 'EX', config.interval, "NX");
+  await redis.set(identifier, INITIAL_RATE.toString(), "EX", config.interval, "NX");
 
-  return await redis.incr(identifier)
+  return await redis.incr(identifier);
 }
 
 
@@ -59,7 +59,7 @@ export function userRateLimit(config: RateLimiterConfig) {
 */
 export function routeRateLimit(config: RateLimiterConfig) {
   return async function(req: Request, res: Response, next: NextFunction) {
-    const baseRateName = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, ROUTES_RATE_KEY, req.baseUrl, req.path)
+    const baseRateName = join(BASE_RATE_LIMIT_REDIS_RATE_KEY, ROUTES_RATE_KEY, req.baseUrl, req.path);
 
     const ip = getIp(req);
     const token = req.header("Authorization");
