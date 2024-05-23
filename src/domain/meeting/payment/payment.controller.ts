@@ -81,7 +81,7 @@ export class MeetingPaymentController extends Controller {
     if (slot.meeting || prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id))
       throw new HttpError(409, "MeetingSlot already booked or paid");
 
-    if (prisma.meetingPayment.hasUnexpired(slot.payments))
+    if (prisma.meetingPayment.hasPendingUnexpired(slot.payments))
       throw new HttpError(409, "Pending payment already exists on this slot");
     if (!this.paymentService.doesMeetingTypeRequiresPayment(body.type))
       throw new HttpError(409, "Payment is not required to book meeting of this type");
