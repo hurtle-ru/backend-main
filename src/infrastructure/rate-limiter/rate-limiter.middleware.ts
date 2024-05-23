@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../error/http.error";
 import { RateInfo, RateLimiterConfig } from "./rate-limiter.dto";
-import { getHeaderFirstValue, getIp } from "../controller/express-request/express-request.utils";
+import { getHeaderFirstValue, getIp, isProvidedApiSecretKey } from "../controller/express-request/express-request.utils";
 
 
 const MILLISECONDS_IN_SECOND = 1000;
@@ -45,6 +45,11 @@ export function userRateLimit(config: RateLimiterConfig) {
   config.interval *= MILLISECONDS_IN_SECOND;
 
   return function(req: Request, res: Response, next: NextFunction) {
+    if (isProvidedApiSecretKey(req)) {
+      next()
+      return
+    }
+
     const ip = getIp(req);
     const token = getHeaderFirstValue("Authorization", req);
 
@@ -72,6 +77,11 @@ export function routeRateLimit(config: RateLimiterConfig) {
   config.interval *= MILLISECONDS_IN_SECOND;
 
   return function(req: Request, res: Response, next: NextFunction) {
+    if (isProvidedApiSecretKey(req)) {
+      next()
+      return
+    }
+
     const ip = getIp(req);
     const token = getHeaderFirstValue("Authorization", req);
 

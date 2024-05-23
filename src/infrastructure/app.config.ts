@@ -10,4 +10,5 @@ export const appConfig = cleanEnv(process.env, {
   NODE_ENV: str({ choices: ["production", "dev"] }),
   DOMAIN: webAddress(), // @example: http://localhost, https://b2b.hurtle.ru, https://b2c.hurtle.ru, https://hurtle.ru,
   API_VERSION: num({ default: 1 }),
+  API_SECRET_KEY: str(),
 });
