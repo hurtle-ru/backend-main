@@ -8,7 +8,9 @@ export const meetingPaymentPrismaExtension = Prisma.defineExtension({
         return status === "PENDING" && new Date() > dueDate;
       },
       hasPendingUnexpired(payments: Pick<MeetingPayment, "status" | "dueDate">[]): boolean {
-        return payments.some((p) => !Prisma.getExtensionContext(this).isPendingExpired(p));
+        return payments.some((p) =>
+          p.status === "PENDING" && !Prisma.getExtensionContext(this).isPendingExpired(p),
+        );
       },
       getPaidByGuest<T extends Pick<MeetingPayment, "status" | "guestEmail">>(
         payments: T[], guestEmail: string,
