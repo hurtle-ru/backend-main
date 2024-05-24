@@ -16,6 +16,7 @@ import {
 } from "tsoa";
 import { GUEST_ROLE, JwtModel, UserRole } from "../../auth/auth.dto";
 import {
+  AvailableForBookingDaysDictionary,
   BasicMeetingSlot,
   CreateMeetingSlotRequest, CreateMeetingSlotRequestSchema, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
   GetMeetingSlotResponse,
@@ -192,6 +193,37 @@ export class MeetingSlotController extends Controller {
     ]);
 
     return new PageResponse(meetingSlots, page, size, meetingSlotsCount);
+  }
+
+  @Get('/availableDays')
+  public async getAvailableForBookingDays(
+    @Query() timestamp?: number,
+    @Query() types?: MeetingType[],
+  ): Promise<AvailableForBookingDaysDictionary> {
+    const inputDate = new Date(timestamp ?? new Date().getTime());
+
+    const year = inputDate.getFullYear();
+    const month = inputDate.getMonth();
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const slots = await prisma.meetingSlot.findMany({
+      where: {
+        dateTime: {
+          gte: new Date(year, month, 1),
+          lt: new Date(year, month + 1, 1)
+        },
+        types: types ? { hasSome: types } : undefined,
+        meeting: null,
+      }
+    });
+
+    const dictionary: AvailableForBookingDaysDictionary = {};
+    for (let day = 1; day <= daysInMonth; day++) {
+      dictionary[day.toString()] = slots.some(slot => slot.dateTime.getDate() === day);
+    }
+
+    return dictionary;
   }
 
   @Delete("{id}")
