@@ -8,7 +8,10 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint/eslint-plugin"],
+  plugins: [
+    "@typescript-eslint/eslint-plugin",
+    "unused-imports"
+  ],
   extends: [
     "plugin:@typescript-eslint/recommended",
   ],
@@ -19,19 +22,7 @@ module.exports = {
   },
   ignorePatterns: [".eslintrc.js", "dist", "node_modules", "src/infrastructure/openapi/postProcessSwagger.js"],
   rules: {
-    "@typescript-eslint/restrict-plus-operands": "error",
-    "@typescript-eslint/promise-function-async": "error",
-    "@typescript-eslint/prefer-string-starts-ends-with": "error",
-    "@typescript-eslint/prefer-optional-chain": "error",
-    "@typescript-eslint/no-useless-empty-export": "error",
-    "@typescript-eslint/no-unnecessary-qualifier": "error",
-    "@typescript-eslint/no-this-alias": "error",
-    "@typescript-eslint/no-inferrable-types": "error",
-    "@typescript-eslint/no-empty-interface": "error",
-    "@typescript-eslint/no-duplicate-enum-values": "error",
-    "@typescript-eslint/no-base-to-string": "error",
-    "@typescript-eslint/type-annotation-spacing": "error",
-
+    "no-unused-vars": "off",
     "block-spacing": "error",
     "arrow-spacing": "error",
     "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
@@ -55,12 +46,25 @@ module.exports = {
     "space-before-blocks": "error",
     "space-infix-ops": "error",
     "space-in-parens": "error",
+    "object-curly-spacing": ["error", "always"],
 
+    "@typescript-eslint/restrict-plus-operands": "error",
+    "@typescript-eslint/promise-function-async": "error",
+    "@typescript-eslint/prefer-string-starts-ends-with": "error",
+    "@typescript-eslint/prefer-optional-chain": "error",
+    "@typescript-eslint/no-useless-empty-export": "error",
+    "@typescript-eslint/no-unnecessary-qualifier": "error",
+    "@typescript-eslint/no-this-alias": "error",
+    "@typescript-eslint/no-inferrable-types": "error",
+    "@typescript-eslint/no-empty-interface": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/no-base-to-string": "error",
+    "@typescript-eslint/type-annotation-spacing": "error",
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
-
     // TODO:
     // "@typescript-eslint/no-empty-function": "error",
     // "@typescript-eslint/no-misused-promises": "error",
@@ -68,7 +72,7 @@ module.exports = {
     // "@typescript-eslint/no-unsafe-enum-comparison": "error",
     // "no-unused-vars": "off",
     // "@typescript-eslint/no-unused-vars": "error",
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "off",
+
+    "unused-imports/no-unused-imports": "error",
   },
 }
