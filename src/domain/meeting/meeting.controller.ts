@@ -409,18 +409,29 @@ export class MeetingController extends Controller {
 
   @Get("{id}/video")
   @Middlewares(rateLimit({limit: 30, interval: 60}))
+  @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  @Response<HttpErrorBody & {"error": "Not enough rights to see this video"}>(403)
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getVideo(
-    @Request() req: ExpressRequest & JwtModel,
+    @Request() req: ExpressRequest & JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER | UserRole.MANAGER>,
     @Path() id: string,
   ): Promise<Readable | any> {
-    const meeting = await prisma.meeting.findUnique({
-      where: {
-        id,
-      },
-    });
 
+    const meeting = await prisma.meeting.findUnique({where: { id } });
     if (!meeting) throw new HttpError(404, "Meeting not found");
+
+    if (req.user.role === UserRole.EMPLOYER && meeting.employerId !== req.user.id) {
+      const responseWithProvidedEmployerAndMeeting = await prisma.vacancyResponse.exists({
+        candidateId: meeting.applicantId!,
+        vacancy: {
+          employerId: req.user.id,
+        },
+      })
+      if (!responseWithProvidedEmployerAndMeeting) throw new HttpError(403, "Not enough rights to see this video")
+    }
+    if (req.user.role === UserRole.APPLICANT && meeting.applicantId !== req.user.id) {
+      throw new HttpError(403, "Not enough rights to see this video")
+    }
 
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video");
     const filePath = `meeting/${id}/${fileName}`;
