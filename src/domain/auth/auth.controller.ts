@@ -98,21 +98,21 @@ export class AuthController extends Controller {
 
     return { token };
   }
-
-  @Post("guest/accessToken")
-  public async createGuestAccessToken(
-    @Request() req: ExpressRequest,
-    @Body() body: CreateGuestAccessTokenRequest,
-  ): Promise<CreateAccessTokenResponse> {
-    body = CreateGuestAccessTokenRequestSchema.validateSync(body);
-
-    const token = this.authService.createToken({
-      id: body.email,
-      role: GUEST_ROLE,
-    });
-
-    return { token };
-  }
+  //
+  // @Post("guest/accessToken")
+  // public async createGuestAccessToken(
+  //   @Request() req: ExpressRequest,
+  //   @Body() body: CreateGuestAccessTokenRequest,
+  // ): Promise<CreateAccessTokenResponse> {
+  //   body = CreateGuestAccessTokenRequestSchema.validateSync(body);
+  //
+  //   const token = this.authService.createToken({
+  //     id: body.email,
+  //     role: GUEST_ROLE,
+  //   });
+  //
+  //   return { token };
+  // }
 
   @Post("applicant")
   @Middlewares(rateLimit({limit: 10, interval: 60}))
@@ -347,7 +347,6 @@ export class AuthController extends Controller {
   @Post("getEmailCode")
   @Middlewares(rateLimit({limit: 10, interval: 60}))
   @Response<HttpErrorBody & {"error": "User with provided credentials not found"}>(404)
-  @Response<HttpErrorBody & {"error": "User with provided credentials has not verified email"}>(400)
   public async authGetEmailCode(
     @Request() req: ExpressRequest,
     @Body() body: AuthGetEmailCodeRequest,
@@ -360,9 +359,8 @@ export class AuthController extends Controller {
     }[body.role];
 
     if (!user) throw new HttpError(404, "User with provided credentials not found");
-    if (!user.isEmailConfirmed) throw new HttpError(404, "User with provided credentials has not verified email");
 
-    this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName);
+    await this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName);
   }
 
   @Post("withEmailCode")
@@ -382,8 +380,24 @@ export class AuthController extends Controller {
       }});
 
       const user = await {
-        "APPLICANT": prisma.applicant.findUnique({ where: { email: body.email } }),
-        "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } }),
+        "APPLICANT":
+          prisma.applicant.update({
+            where: {
+              email: body.email,
+            },
+            data: {
+              isEmailConfirmed: true,
+            },
+          }),
+        "EMPLOYER":
+          prisma.employer.update({
+            where: {
+              email: body.email,
+            },
+            data: {
+              isEmailConfirmed: true,
+            },
+          }),
       }[body.role];
 
       return {
