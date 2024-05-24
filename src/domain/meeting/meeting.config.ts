@@ -1,6 +1,6 @@
 import { MeetingType } from "@prisma/client";
 import { GUEST_ROLE, UserRole } from "../auth/auth.dto";
-import { bool, cleanEnv, port, str } from "envalid";
+import { cleanEnv, str } from "envalid";
 
 
 export const meetingConfig = cleanEnv(process.env, {
@@ -88,7 +88,7 @@ export const MeetingBusinessInfoByTypes: MeetingBusinessInfoByType = {
     emailDescriptionOnCreate: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     emailDescriptionOnRemind: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     roles: [GUEST_ROLE],
-    priceInKopecks: 100 * 100,
+    priceInKopecks: 299 * 100,
     isFree: false,
   },
   [MeetingType.CONSULTATION_B2C_EXPERT_3]: {
