@@ -195,7 +195,7 @@ export class MeetingSlotController extends Controller {
     return new PageResponse(meetingSlots, page, size, meetingSlotsCount);
   }
 
-  @Get('/availableDays')
+  @Get("/availableDays")
   public async getAvailableForBookingDays(
     @Query() timestamp?: number,
     @Query() types?: MeetingType[],
@@ -211,11 +211,11 @@ export class MeetingSlotController extends Controller {
       where: {
         dateTime: {
           gte: new Date(year, month, 1),
-          lt: new Date(year, month + 1, 1)
+          lt: new Date(year, month + 1, 1),
         },
         types: types ? { hasSome: types } : undefined,
         meeting: null,
-      }
+      },
     });
 
     const dictionary: AvailableForBookingDaysDictionary = {};
