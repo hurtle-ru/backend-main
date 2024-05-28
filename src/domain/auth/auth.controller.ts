@@ -1,7 +1,7 @@
-import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags} from "tsoa";
+import { Body, Controller, Request, Example, Middlewares, Get, Post, Query, Response, Route, Tags } from "tsoa";
 import {
   CreateAccessTokenRequest,
-  CreateAccessTokenResponse, CreateGuestAccessTokenRequest, GUEST_ROLE, JwtModel,
+  CreateAccessTokenResponse, JwtModel,
   RegisterApplicantRequest, RegisterApplicantWithGoogleRequest,
   RegisterEmployerRequest,
   UserRole,
@@ -16,12 +16,11 @@ import {
   HH_TOKEN,
   RegisterApplicantWithGoogleRequestSchema,
   RegisterApplicantRequestSchema,
-  CreateGuestAccessTokenRequestSchema,
   RegisterEmployerRequestSchema,
   AuthWithEmailCodeRequest,
   AuthGetEmailCodeRequest,
   AuthGetEmailCodeRequestSchema,
-  AuthWithEmailCodeRequestSchema,
+  AuthWithEmailCodeRequestSchema, CreateGuestAccessTokenRequest, CreateGuestAccessTokenRequestSchema, GUEST_ROLE,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -36,9 +35,7 @@ import { HhApplicantService } from "../../external/hh/applicant/applicant.servic
 import { BasicHhToken } from "../../external/hh/auth/auth.dto";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
-import { APPLICANT } from "../../infrastructure/controller/requester/requester.dto";
 import { logger } from "../../infrastructure/logger/logger";
-import { hh } from "../../external/hh/hh.dto";
 
 
 @injectable()
@@ -55,7 +52,7 @@ export class AuthController extends Controller {
   }
 
   @Post("accessToken")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error":
       | "Invalid login or password"
       | "User does not have a password"
@@ -115,7 +112,7 @@ export class AuthController extends Controller {
   }
 
   @Post("applicant")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   public async registerApplicant(@Body() body: RegisterApplicantRequest): Promise<void> {
     body = RegisterApplicantRequestSchema.validateSync(body);
@@ -127,7 +124,7 @@ export class AuthController extends Controller {
   }
 
   @Post("employer")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "User with this email already exists"}>(409)
   public async registerEmployer(@Body() body: RegisterEmployerRequest): Promise<void> {
     body = RegisterEmployerRequestSchema.validateSync(body);
@@ -139,7 +136,7 @@ export class AuthController extends Controller {
   }
 
   @Post("withGoogle")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Invalid Google token"}>(401)
   public async authWithGoogle(
     @Request() req: ExpressRequest & JwtModel,
@@ -188,7 +185,7 @@ export class AuthController extends Controller {
   }
 
   @Post("withGoogle/applicant")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Invalid Google token"}>(401)
   @Response<HttpErrorBody & {"error":
       | "User with this email already exists"
@@ -233,7 +230,7 @@ export class AuthController extends Controller {
   }
 
   @Post("withHh/applicant")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
   @Response<HttpErrorBody & {"error":
@@ -268,7 +265,7 @@ export class AuthController extends Controller {
       throw new HttpError(409, "User with this hh account already exists");
     }
 
-    const applicant = await this.authService.registerApplicantWithHh(bodyData, {...hhToken!, hhApplicantId: hhApplicant.id });
+    const applicant = await this.authService.registerApplicantWithHh(bodyData, { ...hhToken!, hhApplicantId: hhApplicant.id });
 
     const accessToken = this.authService.createToken({
       id: applicant.id,
@@ -279,7 +276,7 @@ export class AuthController extends Controller {
   }
 
   @Post("withHh")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
   @Response<HttpErrorBody & {"error": "hh.ru user is not applicant"}>(403)
   public async authWithHH(
@@ -317,7 +314,7 @@ export class AuthController extends Controller {
         await prisma.hhToken.create({
           data: {
             ...newHhToken,
-            applicant: { connect: { id: applicantByEmail.id} },
+            applicant: { connect: { id: applicantByEmail.id } },
             hhApplicantId: hhApplicant.id,
           },
         });
@@ -345,9 +342,8 @@ export class AuthController extends Controller {
   }
 
   @Post("getEmailCode")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "User with provided credentials not found"}>(404)
-  @Response<HttpErrorBody & {"error": "User with provided credentials has not verified email"}>(400)
   public async authGetEmailCode(
     @Request() req: ExpressRequest,
     @Body() body: AuthGetEmailCodeRequest,
@@ -360,13 +356,12 @@ export class AuthController extends Controller {
     }[body.role];
 
     if (!user) throw new HttpError(404, "User with provided credentials not found");
-    if (!user.isEmailConfirmed) throw new HttpError(404, "User with provided credentials has not verified email");
 
-    this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName);
+    await this.authService.sendAuthByEmailCodeRequest(body.role, body.email, user.firstName);
   }
 
   @Post("withEmailCode")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Invalid provided credentials or code"}>(401)
   public async authWithEmailCode(
     @Request() req: ExpressRequest,
@@ -375,15 +370,33 @@ export class AuthController extends Controller {
     body = AuthWithEmailCodeRequestSchema.validateSync(body);
 
     try {
-      await prisma.authByEmailCode.delete({ where: {
-        code: body.code,
-        email: body.email,
-        role: body.role,
-      }});
+      await prisma.authByEmailCode.delete({
+        where: {
+          code: body.code,
+          email: body.email,
+          role: body.role,
+        },
+      });
 
       const user = await {
-        "APPLICANT": prisma.applicant.findUnique({ where: { email: body.email } }),
-        "EMPLOYER": prisma.employer.findUnique({ where: { email: body.email } }),
+        "APPLICANT":
+          prisma.applicant.update({
+            where: {
+              email: body.email,
+            },
+            data: {
+              isEmailConfirmed: true,
+            },
+          }),
+        "EMPLOYER":
+          prisma.employer.update({
+            where: {
+              email: body.email,
+            },
+            data: {
+              isEmailConfirmed: true,
+            },
+          }),
       }[body.role];
 
       return {
