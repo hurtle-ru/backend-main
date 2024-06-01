@@ -2,11 +2,10 @@ import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
-  Delete,
   Get, Hidden,
   Patch,
   Path,
-  Post, Put,
+  Post,
   Query,
   Request,
   Response,
@@ -15,9 +14,12 @@ import {
   Tags,
 } from "tsoa";
 import {
-  BasicMeetingPayment,
-  CreateMeetingPaymentRequest, CreateMeetingPaymentRequestSchema, GetMeetingPaymentResponse,
-  MeetingPaymentTinkoffNotificationRequest, PatchMeetingPaymentRequest,
+  CreateMeetingPaymentRequest,
+  CreateMeetingPaymentRequestSchema,
+  CreateMeetingPaymentResponse,
+  GetMeetingPaymentResponse,
+  MeetingPaymentTinkoffNotificationRequest,
+  PatchMeetingPaymentRequest,
   PatchMeetingPaymentRequestSchema,
   TinkoffPaymentStatusToMeetingPaymentStatus,
 } from "./payment.dto";
@@ -55,7 +57,7 @@ export class MeetingPaymentController extends Controller {
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingPaymentRequest,
-  ): Promise<BasicMeetingPayment> {
+  ): Promise<CreateMeetingPaymentResponse> {
     body = CreateMeetingPaymentRequestSchema.validateSync(body);
 
     const slot = await prisma.meetingSlot.findUnique({
@@ -127,7 +129,10 @@ export class MeetingPaymentController extends Controller {
 
     {
       const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;
-      return paymentResponse;
+      return {
+        ...paymentResponse,
+        expirationMinutes: paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES,
+      };
     }
   }
 
@@ -160,7 +165,7 @@ export class MeetingPaymentController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PatchMeetingPaymentRequest,
-  ): Promise<BasicMeetingPayment> {
+  ): Promise<GetMeetingPaymentResponse> {
     body = PatchMeetingPaymentRequestSchema.validateSync(body);
 
     const where = { id, guestEmail: req.user.id };
@@ -177,8 +182,10 @@ export class MeetingPaymentController extends Controller {
       });
 
       const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;
-      return paymentResponse;
-
+      return {
+        ...paymentResponse,
+        expirationMinutes: paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES,
+      };
     } else throw new HttpError(401, "Invalid code");
   }
 
@@ -203,6 +210,9 @@ export class MeetingPaymentController extends Controller {
     if (payment.successCode !== successOrFailCode && payment.failCode !== successOrFailCode)
       throw new HttpError(403, "Code is invalid");
 
-    return payment;
+    return {
+      ...payment,
+      expirationMinutes: paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES,
+    };
   }
 }
