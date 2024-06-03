@@ -3,7 +3,6 @@ import { singleton } from "tsyringe";
 import { tinkoffConfig } from "./tinkoff.config";
 import { tinkoff } from "./tinkoff.dto";
 import crypto from "crypto";
-import { logger } from "../../infrastructure/logger/logger";
 
 
 /* Проверка подписей на стороне Тинькофф работает крайне нестабильно и некорректно.
@@ -16,7 +15,7 @@ export class TinkoffPaymentService {
   /**
    * Инициирует платежную сессию. На данный момент метод поддерживает только платежи с продажей 1-й услуги за платеж.
    * @param {string} orderId Уникальный идентификатор заказа, для которого проводится платёж
-   * @param {number} amount Целое число, выражающее сумму в **копейках**. Например, сумма 3руб. 12коп. - это число 312
+   * @param {number} amount Целое число, выражающее сумму в **копейках**. Например, сумма 3руб. 12коп. - это число 312. Минимум 100 копеек.
    * @param {string} description Описание заказа
    * @param {string} successUrl URL, куда будет переведен клиент в случае успешной оплаты
    * @param {string} failUrl URL, куда будет переведен клиент в случае неуспешной оплаты
@@ -37,6 +36,9 @@ export class TinkoffPaymentService {
     itemName: string,
 
   ): Promise<tinkoff.InitTinkoffPaymentResponse> {
+    amount = Math.floor(amount);
+    if (amount < 100) amount = 100;
+
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
       Amount: amount,
