@@ -210,7 +210,7 @@ export class MeetingSlotController extends Controller {
     const inputDate = moment({ year, month: month - 1 });
 
     if (!moment.tz.zone(timezone)) {
-      throw new HttpError(400, "Invalid timezone");
+      throw new HttpError(422, "Invalid timezone");
     }
     if (inputDate.isBefore(now, 'month')) {
       throw new HttpError(422, "The provided year and month must not be in the past");
