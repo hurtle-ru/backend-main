@@ -1,6 +1,5 @@
-import { Job, Queue, QueueEvents } from "bullmq";
+import { Job, Queue } from "bullmq";
 import redis from "../../../infrastructure/mq/redis.provider";
-import { JobsOptions } from "bullmq/dist/esm/types";
 import { logger } from "../../../infrastructure/logger/logger";
 import { injectable, singleton } from "tsyringe";
 import {
@@ -10,7 +9,6 @@ import {
   ResumeOcrJobData,
   ResumeOcrJobStatus,
 } from "../resume-ocr.dto";
-import { GuestResponseService } from "../../../domain/vacancy/guest-response/guest-response.service";
 import { randomUUID } from "crypto";
 
 
@@ -22,8 +20,7 @@ export class ResumeOcrQueue {
   constructor() {
     this.queue = new Queue(RESUME_OCR_QUEUE_NAME, {
       connection: redis,
-    },
-    );
+    });
   }
 
   async enqueueRecognizePdf(data: ResumeOcrJobData): Promise<Job<ResumeOcrJobData>> {
