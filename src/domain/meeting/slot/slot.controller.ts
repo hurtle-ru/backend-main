@@ -16,7 +16,7 @@ import {
 } from "tsoa";
 import { GUEST_ROLE, JwtModel, UserRole } from "../../auth/auth.dto";
 import {
-  AvailableForBookingDaysDictionary,
+  AvailableDaysDictionary,
   BasicMeetingSlot,
   CreateMeetingSlotRequest, CreateMeetingSlotRequestSchema, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
   GetMeetingSlotResponse,
@@ -29,6 +29,7 @@ import { MeetingPaymentStatus, MeetingSlot, MeetingType, Prisma } from "@prisma/
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { CreateSlotsWithinRangeMaximum } from "../meeting.config";
+import moment from "moment";
 
 
 @injectable()
@@ -196,31 +197,43 @@ export class MeetingSlotController extends Controller {
   }
 
   @Get("/availableDays")
-  public async getAvailableForBookingDays(
-    @Query() timestamp?: number,
+  @Response<HttpErrorBody & {
+    "error": "Invalid timezone" | "The provided year and month must not be in the past",
+  }>(422)
+  public async getAvailableDays(
+    @Query() year: number,
+    @Query() month: number,
+    @Query() timezone: string = 'Europe/Moscow',
     @Query() types?: MeetingType[],
-  ): Promise<AvailableForBookingDaysDictionary> {
-    const inputDate = new Date(timestamp ?? new Date().getTime());
+  ): Promise<AvailableDaysDictionary> {
+    const now = moment();
+    const inputDate = moment({ year, month: month - 1 });
 
-    const year = inputDate.getFullYear();
-    const month = inputDate.getMonth();
+    if (!moment.tz.zone(timezone)) {
+      throw new HttpError(400, "Invalid timezone");
+    }
+    if (inputDate.isBefore(now, 'month')) {
+      throw new HttpError(422, "The provided year and month must not be in the past");
+    }
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInMonth = inputDate.daysInMonth();
 
     const slots = await prisma.meetingSlot.findMany({
       where: {
         dateTime: {
-          gte: new Date(year, month, 1),
-          lt: new Date(year, month + 1, 1),
+          gte: inputDate.startOf('month').toDate(),
+          lt: inputDate.add(1, 'month').startOf('month').toDate(),
         },
         types: types ? { hasSome: types } : undefined,
         meeting: null,
       },
     });
 
-    const dictionary: AvailableForBookingDaysDictionary = {};
+    const dictionary: AvailableDaysDictionary = {};
     for (let day = 1; day <= daysInMonth; day++) {
-      dictionary[day.toString()] = slots.some(slot => slot.dateTime.getDate() === day);
+      dictionary[day.toString()] = slots.some((slot) =>
+        moment(slot.dateTime).tz(timezone).date() === day
+      );
     }
 
     return dictionary;
