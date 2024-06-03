@@ -203,7 +203,7 @@ export class MeetingSlotController extends Controller {
   public async getAvailableDays(
     @Query() year: number,
     @Query() month: number,
-    @Query() timezone: string = 'Europe/Moscow',
+    @Query() timezone: string,
     @Query() types?: MeetingType[],
   ): Promise<AvailableDaysDictionary> {
     const now = moment();
