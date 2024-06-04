@@ -44,13 +44,15 @@ export const CreatePromoCodeRequestSchema: yup.ObjectSchema<CreatePromoCodeReque
   "maxUses",
 ]);
 
-export type PatchByValuePromoCodeRequest = Pick<
-  BasicPromoCode,
-  | "value"
-  | "discount"
-  | "expirationDate"
-  | "isActive"
-  | "maxUses"
+export type PatchByValuePromoCodeRequest = Partial<
+  Pick<
+    BasicPromoCode,
+    | "value"
+    | "discount"
+    | "expirationDate"
+    | "isActive"
+    | "maxUses"
+  >
 >;
 
 export const PatchByValuePromoCodeRequestSchema: yup.ObjectSchema<PatchByValuePromoCodeRequest> = BasicPromoCodeSchema.pick([
@@ -59,7 +61,7 @@ export const PatchByValuePromoCodeRequestSchema: yup.ObjectSchema<PatchByValuePr
   "expirationDate",
   "isActive",
   "maxUses",
-]);
+]).partial();
 
 export type GetPromoCodeResponse = Pick<
   BasicPromoCode,
