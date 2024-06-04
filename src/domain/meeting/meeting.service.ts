@@ -1,6 +1,5 @@
 import { injectable, singleton } from "tsyringe";
-import intersect from "fast_array_intersect";
-import { MeetingType, MeetingPayment, Meeting, MeetingSlot } from "@prisma/client";
+import { MeetingType, Meeting, MeetingSlot } from "@prisma/client";
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from "moment-timezone";
@@ -8,13 +7,12 @@ import { appConfig } from "../../infrastructure/app.config";
 import { Request as ExpressRequest } from "express";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { EmailService } from "../../external/email/email.service";
-import { BaseMeetingDescription, MeetingBusinessInfoByTypes, MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
+import { MeetingBusinessInfoByTypes, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
-import { CreateMeetingByApplicantOrEmployerRequest, CreateMeetingGuestRequest, UserMeetingCreator, MeetingCreator } from "./meeting.dto";
+import { UserMeetingCreator, MeetingCreator } from "./meeting.dto";
 import { HtmlFormatter } from "../../external/telegram/telegram.service.text-formatter";
 import { prisma } from "../../infrastructure/database/prisma.provider";
-import { MeetingPaymentService } from "./payment/payment.service";
 import { HttpError } from "../../infrastructure/error/http.error";
 import { logger } from "../../infrastructure/logger/logger";
 import { BasicManager } from "../manager/manager.dto";
@@ -56,10 +54,14 @@ export class MeetingService {
     user: MeetingCreator,
   ): Promise<string> {
     const meetingName = MeetingBusinessInfoByTypes[meetingType].name;
-    return await this.jazzService.createRoom({
-      "guest": `Хартл ${meetingName}`,
-      "user": `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`
-    }[user._type]);
+
+    let name;
+    if (user._type === "user") {
+      name = `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`
+    } else {
+      name = `Хартл ${meetingName}`
+    }
+    return await this.jazzService.createRoom(name);
   }
 
   async notifyMeetingCreatedToAdminGroupAndUserEmail(
@@ -79,38 +81,12 @@ export class MeetingService {
     await this.sendMeetingCreatedToEmail(
       req.log,
       user!.email,
-      { link: meeting.roomUrl, dateTime: slot.dateTime },
+      {
+        name: meeting.name,
+        link: meeting.roomUrl,
+        dateTime: slot.dateTime,
+        emailDescriptionOnCreate: MeetingBusinessInfoByTypes[meeting.type].emailDescriptionOnCreate },
     );
-  }
-
-  async scheduleMeetingReminderToEmail(
-    logger: pino.Logger,
-    userEmail: string,
-    meeting: { link: string, dateTime: Date },
-  )  {
-    const date = moment(meeting.dateTime)
-      .locale("ru")
-      .tz(appConfig.TZ)
-      .format("D MMM YYYY г. HH:mm по московскому времени");
-
-    const emailData = {
-      to: userEmail,
-      subject: "Напоминание о встрече!",
-      template: {
-        name: "remind_about_meeting",
-        context: { link: meeting.link, date },
-      },
-    };
-
-    for (const minutesBefore of ReminderMinutesBeforeMeeting) {
-      const reminderDelay = this.calculateReminderDelay(meeting.dateTime, minutesBefore);
-
-      if (reminderDelay > 0) {
-        await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
-          .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
-          .catch((error) => logger.error({ error }, "Error scheduling meeting reminder"));
-      }
-    }
   }
 
   // TODO: replace roomUrl with meeting id
@@ -350,13 +326,6 @@ export class MeetingService {
         },
       },
     });
-  }
-
-  buildMeetingDescriptionByType(meetingType: MeetingType, specifiedDescription: string) {
-    if (meetingType === MeetingType.INTERVIEW) {
-      return BaseMeetingDescription
-    }
-    return specifiedDescription;
   }
 
   async getMeetingApplicantOrEmployerCreator(meeting: Pick<Meeting, "applicantId" | "employerId">) {

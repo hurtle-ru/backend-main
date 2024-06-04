@@ -132,8 +132,13 @@ export class MeetingController extends Controller {
     });
 
     await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(user, meeting, slot, req)
-    await this.meetingService.scheduleMeetingReminderToEmail(req.log, user!.email, { link: roomUrl, dateTime: slot.dateTime },);
-    
+    await this.meetingService.scheduleMeetingReminderToEmail(req.log, user!.email, {
+      name: meeting.name,
+      link: roomUrl,
+      dateTime: slot.dateTime,
+      emailDescriptionOnRemind: MeetingBusinessInfoByTypes[meeting.type].emailDescriptionOnRemind,
+    },);
+
     return meeting;
   }
 
@@ -469,7 +474,16 @@ export class MeetingController extends Controller {
 
       bodyData = { roomUrl, ...bodyData }
 
-      await this.meetingService.scheduleMeetingReminderToEmail(req.log, creator.email, { link: roomUrl, dateTime: new_slot.dateTime },);
+      await this.meetingService.scheduleMeetingReminderToEmail(
+        req.log,
+        creator.email,
+        {
+          name: meeting.name,
+          link: roomUrl,
+          dateTime: new_slot.dateTime,
+          emailDescriptionOnRemind: MeetingBusinessInfoByTypes[meeting.type].emailDescriptionOnRemind
+        },
+      );
       await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData, }, new_slot, req, true)
     }
 

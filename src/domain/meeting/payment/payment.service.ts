@@ -1,8 +1,8 @@
 import { injectable, singleton } from "tsyringe";
 import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service";
 import { MeetingPayment, MeetingType } from "@prisma/client";
-import { meetingPriceByType, paymentConfig } from "./payment.config";
-import { MeetingBusinessInfoByTypes, MeetingNameByType, PaidMeetingBusinessInfo } from "../meeting.config";
+import { paymentConfig } from "./payment.config";
+import { MeetingBusinessInfoByTypes, PaidMeetingBusinessInfo } from "../meeting.config";
 import { MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
 import otpGenerator from "otp-generator";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
