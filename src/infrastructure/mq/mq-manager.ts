@@ -1,6 +1,6 @@
 import { logger } from "../logger/logger";
 import { container } from "tsyringe";
-import { Job, Worker, Queue } from "bullmq";
+import { Job, Worker } from "bullmq";
 import { EmailWorker } from "../../external/email/mq/email.worker";
 import redis from "./redis.provider";
 import { TelegramWorker } from "../../external/telegram/mq/telegram.worker";

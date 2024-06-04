@@ -2,7 +2,7 @@ import { injectable, singleton } from "tsyringe";
 import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service";
 import { MeetingPayment, MeetingType } from "@prisma/client";
 import { meetingPriceByType, paymentConfig } from "./payment.config";
-import { MeetingNameByType } from "../meeting.config";
+import { MeetingBusinessInfoByTypes, MeetingNameByType, PaidMeetingBusinessInfo } from "../meeting.config";
 import { MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
 import otpGenerator from "otp-generator";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
@@ -15,13 +15,15 @@ export class MeetingPaymentService {
   constructor(readonly tinkoffPaymentService: TinkoffPaymentService) {}
 
   async initPaymentSession(
-    type: keyof typeof meetingPriceByType,
+    meetingType: MeetingType,
     meetingPaymentId: string,
     successCode: string,
     failCode: string,
     dueDate: string,
+    clientEmail: string,
   ) {
-    const description = `Хартл. ${MeetingNameByType[type]}`;
+    const itemName = MeetingBusinessInfoByTypes[meetingType].name;
+    const description = itemName;
 
     const successUrl = new URL(paymentConfig.MEETING_PAYMENT_SUCCESS_URL_BASE);
     successUrl.searchParams.append("meetingPaymentId", meetingPaymentId);
@@ -33,18 +35,20 @@ export class MeetingPaymentService {
 
     const response = await this.tinkoffPaymentService.initPayment(
       meetingPaymentId,
-      meetingPriceByType[type],
+      (MeetingBusinessInfoByTypes[meetingType] as PaidMeetingBusinessInfo).priceInKopecks,
       description,
       successUrl.toString(),
       failUrl.toString(),
       paymentConfig.MEETING_PAYMENT_NOTIFICATION_URL,
       dueDate,
+      clientEmail,
+      itemName,
     );
 
     return {
       id: response.PaymentId,
       url: response.PaymentURL,
-      amount: meetingPriceByType[type],
+      amount: (MeetingBusinessInfoByTypes[meetingType] as PaidMeetingBusinessInfo).priceInKopecks,
     };
   }
 
@@ -69,7 +73,7 @@ export class MeetingPaymentService {
   }
 
   doesMeetingTypeRequiresPayment(type: MeetingType): boolean {
-    return meetingPriceByType.hasOwnProperty(type);
+    return !MeetingBusinessInfoByTypes[type].isFree;
   }
 
   generateCode() {

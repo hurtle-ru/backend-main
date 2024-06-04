@@ -6,7 +6,6 @@ import {
   RegisterEmployerRequest,
   RegisterApplicantHhToken,
   RegisterApplicantWithHhRequest,
-  UserRole,
 } from "./auth.dto";
 import { authConfig } from "./auth.config";
 import * as bcrypt from "bcryptjs";
@@ -161,7 +160,7 @@ export class AuthService {
 
     await this.emailService.enqueueEmail({
       to: email,
-      subject: "Вход Hurtle",
+      subject: "Вход Хартл",
       template: {
         name: "auth_by_email_code",
         context: { name, code, link },

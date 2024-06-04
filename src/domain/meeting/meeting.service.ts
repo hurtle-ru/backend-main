@@ -8,7 +8,7 @@ import { appConfig } from "../../infrastructure/app.config";
 import { Request as ExpressRequest } from "express";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { EmailService } from "../../external/email/email.service";
-import { BaseMeetingDescription, MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
+import { BaseMeetingDescription, MeetingBusinessInfoByTypes, MeetingNameByType, MeetingTypeByRole, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
 import { CreateMeetingByApplicantOrEmployerRequest, CreateMeetingGuestRequest, UserMeetingCreator, MeetingCreator } from "./meeting.dto";
@@ -32,7 +32,7 @@ export class MeetingService {
   ) {}
 
   doesUserHaveAccessToMeetingSlot(userRole: UserRole | typeof GUEST_ROLE, slotTypes: MeetingType[]): boolean {
-    return intersect([MeetingTypeByRole[userRole], slotTypes]).length > 0;
+    return slotTypes.some(slotType => MeetingBusinessInfoByTypes[slotType]?.roles.includes(userRole));
   }
 
   async tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(user: MeetingCreator & { id: string, role: "APPLICANT" | "EMPLOYER" | "GUEST" }, body: Pick<Meeting, "slotId" | "type">): Promise<string | never> {
@@ -55,7 +55,7 @@ export class MeetingService {
     meetingType: MeetingType,
     user: MeetingCreator,
   ): Promise<string> {
-    const meetingName = MeetingNameByType[meetingType];
+    const meetingName = MeetingBusinessInfoByTypes[meetingType].name;
     return await this.jazzService.createRoom({
       "guest": `Хартл ${meetingName}`,
       "user": `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`
@@ -173,7 +173,7 @@ export class MeetingService {
   async sendMeetingCreatedToEmail(
     logger: pino.Logger,
     userEmail: string,
-    meeting: { link: string, dateTime: Date },
+    meeting: { name: string, link: string, dateTime: Date, emailDescriptionOnCreate: string },
   )  {
     const date = moment(meeting.dateTime)
       .locale("ru")
@@ -185,7 +185,12 @@ export class MeetingService {
       subject: "Встреча забронирована!",
       template: {
         name: "create_meeting",
-        context: { date, link: meeting.link },
+        context: {
+          date,
+          meetingName: meeting.name,
+          link: meeting.link,
+          emailDescriptionOnCreate: meeting.emailDescriptionOnCreate,
+        },
       },
     });
   }
@@ -194,7 +199,7 @@ export class MeetingService {
     logger: pino.Logger,
     userEmail: string,
     role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE,
-    meeting: { name: string, dateTime: Date },
+    meeting: { applicantName: string, name: string, dateTime: Date },
   )  {
     const link = this.getMeetingCreateLink(role);
     const date = moment(meeting.dateTime)
@@ -207,9 +212,49 @@ export class MeetingService {
       subject: "Встреча отменена!",
       template: {
         name: "cancel_meeting",
-        context: { name: meeting.name, date, link },
+        context: {
+          name: meeting.applicantName,
+          meetingName: meeting.name,
+          date,
+          link,
+        },
       },
     });
+  }
+
+  async scheduleMeetingReminderToEmail(
+    logger: pino.Logger,
+    userEmail: string,
+    meeting: { link: string, name: string, dateTime: Date, emailDescriptionOnRemind: string },
+  )  {
+    const date = moment(meeting.dateTime)
+      .locale("ru")
+      .tz(appConfig.TZ)
+      .format("D MMM YYYY г. HH:mm по московскому времени");
+
+    const emailData = {
+      to: userEmail,
+      subject: "Напоминание о встрече!",
+      template: {
+        name: "remind_about_meeting",
+        context: {
+          date,
+          meetingName: meeting.name,
+          link: meeting.link,
+          emailDescriptionOnRemind: meeting.emailDescriptionOnRemind,
+        },
+      },
+    };
+
+    for (const minutesBefore of ReminderMinutesBeforeMeeting) {
+      const reminderDelay = this.calculateReminderDelay(meeting.dateTime, minutesBefore);
+
+      if (reminderDelay > 0) {
+        await this.emailService.enqueueEmail(emailData, { delay: reminderDelay })
+          .then(() => logger.debug({ reminderDelay }, "Scheduled meeting reminder"))
+          .catch((error) => logger.error({ error }, "Error scheduling meeting reminder"));
+      }
+    }
   }
 
   async sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(

@@ -62,7 +62,6 @@ export type GetMeetingResponse = BasicMeeting & {
 export type CreateMeetingRequest = Pick<
   Meeting,
   | "name"
-  | "description"
   | "slotId"
   | "type"
 >;
@@ -70,7 +69,6 @@ export type CreateMeetingRequest = Pick<
 
 export const CreateMeetingRequestSchema: yup.ObjectSchema<CreateMeetingRequest> = BasicMeetingSchema.pick([
   "name",
-  "description",
   "slotId",
   "type",
 ]);
@@ -124,7 +122,6 @@ export type ExportAllRequest = {
   secret: string,
 }
 
-// Данные для экспорта: {Имя, Способ связи, Рекрутер}
 export type ExportAllResponse = {
   status: MeetingStatus,
   managerName: string

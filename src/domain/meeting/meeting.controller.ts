@@ -4,7 +4,6 @@ import {
   Body,
   Controller,
   Delete,
-  Exception,
   Get,
   Middlewares, Patch,
   Path,
@@ -43,13 +42,17 @@ import { Request as ExpressRequest } from "express";
 import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import path from "path";
-import { artifactConfig, AVAILABLE_VIDEO_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
+import {
+  artifactConfig,
+  AVAILABLE_PASSPORT_FILE_MIME_TYPES,
+  AVAILABLE_VIDEO_FILE_MIME_TYPES,
+} from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
-import { AVAILABLE_PASSPORT_FILE_MIME_TYPES, meetingConfig } from "./meeting.config";
 import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus, Prisma } from "@prisma/client";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 import { logger } from "../../infrastructure/logger/logger";
+import { MeetingBusinessInfoByTypes, meetingConfig } from "./meeting.config";
 
 
 @injectable()
@@ -113,12 +116,11 @@ export class MeetingController extends Controller {
     }[req.user.role]
 
     const roomUrl = await this.meetingService.tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow({ ...user, id: req.user.id, role: _requester }, body)
-
     const meeting = await prisma.meeting.create({
       data: {
         roomUrl,
-        description: this.meetingService.buildMeetingDescriptionByType(bodyData.type, bodyData.description),
         name: bodyData.name,
+        description: MeetingBusinessInfoByTypes[bodyData.type].description,
         slotId: bodyData.slotId,
         type: bodyData.type,
         ...{
@@ -131,7 +133,7 @@ export class MeetingController extends Controller {
 
     await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(user, meeting, slot, req)
     await this.meetingService.scheduleMeetingReminderToEmail(req.log, user!.email, { link: roomUrl, dateTime: slot.dateTime },);
-
+    
     return meeting;
   }
 
@@ -269,7 +271,7 @@ export class MeetingController extends Controller {
 
   @Get("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 30, interval: 60}))
+  @Middlewares(rateLimit({ limit: 30, interval: 60 }))
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getPassport(
     @Request() req: ExpressRequest & JwtModel,
@@ -278,7 +280,7 @@ export class MeetingController extends Controller {
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "passport");
     const filePath = `meeting/${id}/${fileName}`;
 
-    const meeting = await prisma.meeting.findUnique({where: { id }});
+    const meeting = await prisma.meeting.findUnique({ where: { id } });
 
     if (!meeting) throw new HttpError(404, "Meeting not found");
     if (fileName == null) throw new HttpError(404, "File not found");
@@ -297,7 +299,7 @@ export class MeetingController extends Controller {
 
   @Put("{id}/passport")
   @Security("jwt", [UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -327,19 +329,29 @@ export class MeetingController extends Controller {
   }
 
   @Get("{id}/video")
-  @Middlewares(rateLimit({limit: 30, interval: 60}))
+  @Middlewares(rateLimit({ limit: 30, interval: 60 }))
+  // @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
+  // @Response<HttpErrorBody & {"error": "Not enough rights to see this video"}>(403)
   @Response<HttpErrorBody & {"error": "File not found" | "Meeting not found"}>(404)
   public async getVideo(
-    @Request() req: ExpressRequest & JwtModel,
+    @Request() req: ExpressRequest & JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER | UserRole.MANAGER>,
     @Path() id: string,
   ): Promise<Readable | any> {
-    const meeting = await prisma.meeting.findUnique({
-      where: {
-        id,
-      },
-    });
-
+    const meeting = await prisma.meeting.findUnique({ where: { id } });
     if (!meeting) throw new HttpError(404, "Meeting not found");
+
+    // if (req.user.role === UserRole.EMPLOYER && meeting.employerId !== req.user.id) {
+    //   const responseWithProvidedEmployerAndMeeting = await prisma.vacancyResponse.exists({
+    //     candidateId: meeting.applicantId!,
+    //     vacancy: {
+    //       employerId: req.user.id,
+    //     },
+    //   });
+    //   if (!responseWithProvidedEmployerAndMeeting) throw new HttpError(403, "Not enough rights to see this video");
+    // }
+    // if (req.user.role === UserRole.APPLICANT && meeting.applicantId !== req.user.id) {
+    //   throw new HttpError(403, "Not enough rights to see this video");
+    // }
 
     const fileName = await this.artifactService.getFullFileName(`meeting/${id}/`, "video");
     const filePath = `meeting/${id}/${fileName}`;
@@ -367,7 +379,7 @@ export class MeetingController extends Controller {
 
   @Put("{id}/video")
   @Security("jwt", [UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)
   @Response<HttpErrorBody & {"error": "Invalid file mime type"}>(415)
@@ -469,7 +481,7 @@ export class MeetingController extends Controller {
 
   @Delete("{id}")
   @Security("jwt", [UserRole.MANAGER, UserRole.APPLICANT, UserRole.EMPLOYER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Meeting not found"}>(404)
   @Response<HttpErrorBody & {"error": "Applicant and employer unable to delete finished meeting"}>(409)
   public async deleteById(
@@ -515,7 +527,11 @@ export class MeetingController extends Controller {
       req.log,
       userEmail!,
       role,
-      { name: userFirstName!, dateTime: meeting.slot.dateTime },
+      {
+        applicantName: userFirstName!,
+        name: MeetingBusinessInfoByTypes[meeting.type].name,
+        dateTime: meeting.slot.dateTime,
+      },
     );
 
     await this.meetingService.removeMeetingReminderToEmail(

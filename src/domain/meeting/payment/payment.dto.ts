@@ -42,8 +42,13 @@ export const CreateMeetingPaymentRequestSchema: yup.ObjectSchema<CreateMeetingPa
   "type",
 ]);
 
+export type CreateMeetingPaymentResponse = BasicMeetingPayment & {
+  expirationMinutes: number;
+}
+
 export type GetMeetingPaymentResponse = BasicMeetingPayment & {
   slot?: BasicMeetingSlot | null;
+  expirationMinutes: number;
 };
 
 export type PatchMeetingPaymentRequest = Partial<Pick<MeetingPayment,
@@ -54,7 +59,7 @@ export type PatchMeetingPaymentRequest = Partial<Pick<MeetingPayment,
 
 export const PatchMeetingPaymentRequestSchema: yup.ObjectSchema<PatchMeetingPaymentRequest> = BasicMeetingPaymentSchema.pick([
   "status",
-]).partial().shape({code: yup.string().trim().min(1).defined()});
+]).partial().shape({ code: yup.string().trim().min(1).defined() });
 
 export type MeetingPaymentTinkoffNotificationRequest = {
   TerminalKey: string;
