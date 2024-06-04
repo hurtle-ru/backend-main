@@ -16,7 +16,7 @@ import {
 } from "tsoa";
 import { GUEST_ROLE, JwtModel, UserRole } from "../../auth/auth.dto";
 import {
-  AvailableDaysDictionary,
+  GetAvailableDaysResponse,
   BasicMeetingSlot,
   CreateMeetingSlotRequest, CreateMeetingSlotRequestSchema, CreateMeetingSlotsWithinRangeRequest, CreateMeetingSlotsWithinRangeResponse,
   GetMeetingSlotResponse,
@@ -205,7 +205,7 @@ export class MeetingSlotController extends Controller {
     @Query() month: number,
     @Query() timezone: string,
     @Query() types?: MeetingType[],
-  ): Promise<AvailableDaysDictionary> {
+  ): Promise<GetAvailableDaysResponse> {
     const now = moment();
     const inputDate = moment({ year, month: month - 1 });
 
@@ -229,7 +229,7 @@ export class MeetingSlotController extends Controller {
       },
     });
 
-    const dictionary: AvailableDaysDictionary = {};
+    const dictionary: GetAvailableDaysResponse = {};
     for (let day = 1; day <= daysInMonth; day++) {
       dictionary[day.toString()] = slots.some((slot) =>
         moment(slot.dateTime).tz(timezone).date() === day
