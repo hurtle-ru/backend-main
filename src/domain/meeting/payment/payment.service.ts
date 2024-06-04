@@ -21,6 +21,7 @@ export class MeetingPaymentService {
     failCode: string,
     dueDate: string,
     clientEmail: string,
+    promoCode: { discount: number } | null,
   ) {
     const itemName = MeetingBusinessInfoByTypes[meetingType].name;
     const description = itemName;
@@ -33,9 +34,13 @@ export class MeetingPaymentService {
     failUrl.searchParams.append("meetingPaymentId", meetingPaymentId);
     failUrl.searchParams.append("code", failCode);
 
+    const priceInKopecks = (MeetingBusinessInfoByTypes[meetingType] as PaidMeetingBusinessInfo).priceInKopecks;
+    let amount = promoCode ? Math.round(priceInKopecks * (1 - promoCode.discount / 100)) : priceInKopecks;
+    if (amount < 100) amount = 100;
+
     const response = await this.tinkoffPaymentService.initPayment(
       meetingPaymentId,
-      (MeetingBusinessInfoByTypes[meetingType] as PaidMeetingBusinessInfo).priceInKopecks,
+      amount,
       description,
       successUrl.toString(),
       failUrl.toString(),
@@ -48,7 +53,7 @@ export class MeetingPaymentService {
     return {
       id: response.PaymentId,
       url: response.PaymentURL,
-      amount: (MeetingBusinessInfoByTypes[meetingType] as PaidMeetingBusinessInfo).priceInKopecks,
+      amount,
     };
   }
 

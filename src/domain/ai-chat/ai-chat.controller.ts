@@ -31,11 +31,11 @@ export class ApplicantAiChatController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
-  @Response<HttpErrorBody & {"error": "AI Chat already exists"}>(409)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Response<HttpErrorBody & {
     "error":
-    "Applicant resume not found or invisible to employers"
+    | "AI Chat already exists"
+    | "Applicant resume not found or invisible to employers"
     | "Completed applicant interviews with transcript not found"
     | "Applicant can make AI chat only with himself resume"
   }>(409)

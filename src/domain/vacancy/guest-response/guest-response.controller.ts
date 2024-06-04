@@ -263,9 +263,12 @@ export class GuestVacancyResponseController extends Controller {
   @Patch("{id}")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER, PUBLIC_SCOPE])
   @Response<HttpErrorBody & {"error": "GuestVacancyResponse not found"}>(404)
-  @Response<HttpErrorBody & {"error": "Invalid body request for public scope"}>(403)
-  @Response<HttpErrorBody & {"error": "Invalid body request for employer"}>(403)
-  @Response<HttpErrorBody & {"error": "Invalid body request for manager"}>(403)
+  @Response<HttpErrorBody & {
+    "error":
+      | "Invalid body request for public scope"
+      | "Invalid body request for employer"
+      | "Invalid body request for manager"
+  }>(403)
   public async patchById(
     @Request() req: JwtModel | { user: undefined },
     @Path() id: string,
