@@ -20,7 +20,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: [".eslintrc.js", "dist", "node_modules", "src/infrastructure/openapi/postProcessSwagger.js"],
+  ignorePatterns: [".eslintrc.js", "dist", "node_modules", "src/infrastructure/openapi/postProcessSwagger.js", "test"],
   rules: {
     "no-unused-vars": "off",
     "block-spacing": "error",
