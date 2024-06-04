@@ -95,6 +95,7 @@ export type PatchMeetingByManagerRequest = Partial<Pick<
   | "description"
   | "status"
   | "transcript"
+  | "slotId"
 >>;
 
 export const PatchMeetingByManagerRequestSchema: yup.ObjectSchema<PatchMeetingByManagerRequest> = BasicMeetingSchema.pick([
@@ -102,6 +103,7 @@ export const PatchMeetingByManagerRequestSchema: yup.ObjectSchema<PatchMeetingBy
   "description",
   "status",
   "transcript",
+  "slotId",
 ]).partial();
 
 
