@@ -2,7 +2,6 @@ import { injectable } from "tsyringe";
 import { Body, Controller, Get, Patch, Path, Query, Request, Response, Route, Security, Tags } from "tsoa";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
-import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import {
   BasicGuestVacancyResponseResume,

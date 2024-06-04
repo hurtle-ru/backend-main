@@ -19,7 +19,7 @@ import {
   CreateApplicantAiChatMessageRequest,
   CreateApplicantAiChatMessageRequestSchema,
 } from "./message.dto";
-import { MeetingStatus, MeetingType, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
 import { Request as ExpressRequest } from "express";
 
@@ -36,7 +36,7 @@ export class ApplicantAiChatMessageController extends Controller {
 
   @Post("")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER])
-  @Middlewares(rateLimit({limit: 10, interval: 20}))
+  @Middlewares(rateLimit({ limit: 10, interval: 20 }))
   @Response<HttpErrorBody & {"error": "AI Chat not found"}>(404)
   @Response<HttpErrorBody & {"error":
     "Applicant resume not found"

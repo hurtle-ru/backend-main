@@ -1,4 +1,4 @@
-import { Job, Queue, Worker } from "bullmq";
+import { Job, Worker } from "bullmq";
 import redis from "../../../infrastructure/mq/redis.provider";
 import { injectable, singleton } from "tsyringe";
 import { TelegramService } from "../telegram.service";

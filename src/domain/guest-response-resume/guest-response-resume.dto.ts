@@ -1,4 +1,4 @@
-import { Currency, GuestVacancyResponseResume, Resume, ResumeImportExternalService } from "@prisma/client";
+import { Currency, GuestVacancyResponseResume, ResumeImportExternalService } from "@prisma/client";
 import * as yup from "yup";
 import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
 import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";

@@ -13,7 +13,7 @@ import {
   MetadataCreateGuestVacancyResponse,
   PatchGuestVacancyResponseQueuedWithOcrRequest,
 } from "./guest-response.dto";
-import { Job, QueueEvents } from "bullmq";
+import { QueueEvents } from "bullmq";
 import { logger } from "../../../infrastructure/logger/logger";
 import redis from "../../../infrastructure/mq/redis.provider";
 import path from "path";

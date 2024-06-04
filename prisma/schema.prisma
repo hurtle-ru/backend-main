@@ -292,9 +292,13 @@ model MeetingPayment {
   failCode       String               @db.VarChar(127)
   amount         Int?
   dueDate        DateTime
-  slot           MeetingSlot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  slotId         String
   type           MeetingType
+
+  slot   MeetingSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  slotId String
+
+  appliedPromoCode      PromoCode? @relation(fields: [appliedPromoCodeValue], references: [value])
+  appliedPromoCodeValue String?
 }
 
 model MeetingScriptProtocol {
@@ -458,6 +462,18 @@ model ApplicantAiChatMessage {
   completionTokens Int
   chat             ApplicantAiChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId           String
+}
+
+model PromoCode {
+  value           String           @id
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  discount        Int
+  expirationDate  DateTime?
+  isActive        Boolean
+  maxUses         Int?
+  successfulUses  Int
+  meetingPayments MeetingPayment[]
 }
 
 enum ContactType {

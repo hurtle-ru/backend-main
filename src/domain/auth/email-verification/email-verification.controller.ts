@@ -1,4 +1,4 @@
-import { Controller, Delete, Path, Post, Request, Route, Security, Tags, Response } from "tsoa";
+import { Controller, Path, Post, Request, Route, Security, Tags, Response } from "tsoa";
 import { JwtModel, UserRole } from "../auth.dto";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";

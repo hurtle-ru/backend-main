@@ -14,11 +14,6 @@ export const ReminderMinutesBeforeMeeting = [
 
 export const CreateSlotsWithinRangeMaximum = 50;
 
-
-export const BaseMeetingDescription = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
-+ "\nТакже, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
-+ "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
-
 export type MeetingBusinessInfo = {
   name: string,
   description: string,
