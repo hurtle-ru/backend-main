@@ -17,7 +17,7 @@ export const CreateSlotsWithinRangeMaximum = 50;
 
 export const BaseMeetingDescription = "На этой встрече пройдет вводное собеседование с HR-специалистом, чтобы создать твою карту компетенций, а также нейрорезюме."
 + "\nТакже, в процессе нашей беседы мы поможем тебе четко сформулировать ценность на рынке труда. "
-+ "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться."
++ "В конце встречи ты получишь обратную связь, которая поможет тебе расти и развиваться.";
 
 export type MeetingBusinessInfo = {
   name: string,
@@ -79,7 +79,7 @@ export const MeetingBusinessInfoByTypes: MeetingBusinessInfoByType = {
     emailDescriptionOnCreate: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     emailDescriptionOnRemind: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     roles: [GUEST_ROLE],
-    priceInKopecks: 1 * 100,
+    priceInKopecks: 1000 * 100,
     isFree: false,
   },
   [MeetingType.CONSULTATION_B2C_EXPERT_FOR_STUDENTS]: {
