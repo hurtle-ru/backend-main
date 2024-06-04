@@ -3,9 +3,16 @@ import { PromoCode,
 import * as yup from "yup";
 
 
-export type BasicPromoCode = Omit<
+export type BasicPromoCode = Pick<
   PromoCode,
-  | "meetingPayments"
+  | "value"
+  | "createdAt"
+  | "updatedAt"
+  | "discount"
+  | "expirationDate"
+  | "isActive"
+  | "maxUses"
+  | "successfulUses"
 >;
 
 const BasicPromoCodeSchema: yup.ObjectSchema<BasicPromoCode> = yup.object({
@@ -13,5 +20,42 @@ const BasicPromoCodeSchema: yup.ObjectSchema<BasicPromoCode> = yup.object({
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined().defined(),
   discount: yup.number().defined().min(1).max(99),
-
+  expirationDate: yup.date().defined().min(new Date()).nullable(),
+  isActive: yup.boolean().defined(),
+  maxUses: yup.number().defined().min(1).nullable(),
+  successfulUses: yup.number().defined(),
 });
+
+export type CreatePromoCodeRequest = Pick<
+  BasicPromoCode,
+  | "value"
+  | "discount"
+  | "expirationDate"
+  | "isActive"
+  | "maxUses"
+>;
+
+export const CreatePromoCodeRequestSchema: yup.ObjectSchema<CreatePromoCodeRequest> = BasicPromoCodeSchema.pick([
+  "value",
+  "discount",
+  "expirationDate",
+  "isActive",
+  "maxUses",
+]);
+
+export type PatchByValuePromoCodeRequest = Pick<
+  BasicPromoCode,
+  | "value"
+  | "discount"
+  | "expirationDate"
+  | "isActive"
+  | "maxUses"
+>;
+
+export const PatchByValuePromoCodeRequestSchema: yup.ObjectSchema<PatchByValuePromoCodeRequest> = BasicPromoCodeSchema.pick([
+  "value",
+  "discount",
+  "expirationDate",
+  "isActive",
+  "maxUses",
+]);

@@ -470,7 +470,7 @@ model PromoCode {
   expirationDate  DateTime?
   isActive        Boolean
   maxUses         Int?
-  uses            Int
+  successfulUses  Int
   meetingPayments MeetingPayment[]
 }
 
