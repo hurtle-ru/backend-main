@@ -53,12 +53,27 @@ export class MeetingPaymentController extends Controller {
       | "MeetingSlot already booked or paid"
       | "Payment is not required to book meeting of this type"
       | "Pending payment already exists on this slot"
+      | "PromoCode not found or unavailable"
   }>(409)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingPaymentRequest,
   ): Promise<CreateMeetingPaymentResponse> {
     body = CreateMeetingPaymentRequestSchema.validateSync(body);
+
+    let promoCode = null;
+
+    if (body.appliedPromoCodeValue) {
+      const fetchedPromoCode = await prisma.promoCode.findUnique({
+        where: { value: body.appliedPromoCodeValue },
+      });
+
+      if (!fetchedPromoCode || !prisma.promoCode.isAvailable(fetchedPromoCode)) {
+        throw new HttpError(409, "PromoCode not found or unavailable");
+      }
+
+      promoCode = fetchedPromoCode;
+    }
 
     const slot = await prisma.meetingSlot.findUnique({
       where: {
@@ -106,6 +121,7 @@ export class MeetingPaymentController extends Controller {
         successCode,
         failCode,
         type: body.type,
+        appliedPromoCodeValue: body.appliedPromoCodeValue,
       },
     });
 
@@ -116,6 +132,7 @@ export class MeetingPaymentController extends Controller {
       failCode,
       dueDate,
       guestEmail,
+      promoCode,
     );
 
     const updatedPayment = await prisma.meetingPayment.update({

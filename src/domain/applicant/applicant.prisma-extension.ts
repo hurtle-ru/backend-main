@@ -32,7 +32,11 @@ export const applicantPrismaExtension = Prisma.defineExtension({
                 },
                 slot: {
                   include: {
-                    payments: true,
+                    payments: {
+                      include: {
+                        appliedPromoCode: true,
+                      },
+                    },
                   },
                 },
               },

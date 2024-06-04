@@ -1,4 +1,5 @@
-import { PromoCode,
+import {
+  MeetingPayment, PromoCode,
 } from "@prisma/client";
 import * as yup from "yup";
 
@@ -59,3 +60,21 @@ export const PatchByValuePromoCodeRequestSchema: yup.ObjectSchema<PatchByValuePr
   "isActive",
   "maxUses",
 ]);
+
+export type GetPromoCodeResponse = Pick<
+  BasicPromoCode,
+  | "value"
+  | "discount"
+  | "isActive"
+> & Partial<
+  Pick<
+    BasicPromoCode,
+    | "createdAt"
+    | "updatedAt"
+    | "expirationDate"
+    | "maxUses"
+    | "successfulUses"
+  >
+> & {
+  meetingPayments?: MeetingPayment[];
+}

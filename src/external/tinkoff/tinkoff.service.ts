@@ -36,9 +36,6 @@ export class TinkoffPaymentService {
     itemName: string,
 
   ): Promise<tinkoff.InitTinkoffPaymentResponse> {
-    amount = Math.floor(amount);
-    if (amount < 100) amount = 100;
-
     const requestBody = {
       TerminalKey: tinkoffConfig.TINKOFF_TERMINAL_ID,
       Amount: amount,
