@@ -13,7 +13,7 @@ import {
   OcrMappedResumeSchema,
   PatchImportResumeWithOcrQueuedRequest,
 } from "./resume-ocr.dto";
-import { Job, QueueEvents } from "bullmq";
+import { QueueEvents } from "bullmq";
 import { logger } from "../../infrastructure/logger/logger";
 import path from "path";
 import { ArtifactService } from "../../external/artifact/artifact.service";
@@ -153,7 +153,7 @@ export class ResumeOcrService {
       },
     };
 
-    await prisma.resume.deleteMany({ where: { applicantId }});
+    await prisma.resume.deleteMany({ where: { applicantId } });
     const created = await prisma.resume.create({
       data: { applicantId, ...resumeData },
     });

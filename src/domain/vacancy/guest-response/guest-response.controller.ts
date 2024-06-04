@@ -9,7 +9,7 @@ import {
   Request,
   Response,
   Route,
-  Security, SuccessResponse,
+  Security,
   Tags, UploadedFile,
 } from "tsoa";
 import {
@@ -33,7 +33,7 @@ import { parseSortBy } from "../../../infrastructure/controller/sort/sort.dto";
 import { GuestResponseService } from "./guest-response.service";
 import { ArtifactService } from "../../../external/artifact/artifact.service";
 import { routeRateLimit as rateLimit } from "../../../infrastructure/rate-limiter/rate-limiter.middleware";
-import { artifactConfig, FILE_EXTENSION_MIME_TYPES } from "../../../external/artifact/artifact.config";
+import { artifactConfig } from "../../../external/artifact/artifact.config";
 import { Request as ExpressRequest } from "express";
 import { Readable } from "stream";
 import { validateSyncByAtLeastOneSchema } from "../../../infrastructure/validation/requests/utils.yup";
@@ -54,7 +54,7 @@ export class GuestVacancyResponseController extends Controller {
 
   @Post("queuedWithOcr")
   @Deprecated()
-  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
+  @Middlewares(rateLimit({ limit: 4, interval: 3600 * 24 }))
   @Response<HttpErrorBody & {"error": "Vacancy does not exist"}>(404)
   @Response<HttpErrorBody & {"error":
       | "Vacancy is unpublished or hidden"
@@ -78,7 +78,7 @@ export class GuestVacancyResponseController extends Controller {
 
   @Patch("queuedWithOcr/{jobId}/resume")
   @Deprecated()
-  @Middlewares(rateLimit({limit: 100, interval: 3600 * 24}))
+  @Middlewares(rateLimit({ limit: 100, interval: 3600 * 24 }))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async patchQueuedWithOcrById(
     @Request() req: JwtModel,
@@ -95,7 +95,7 @@ export class GuestVacancyResponseController extends Controller {
 
   @Get("queuedWithOcr/{jobId}")
   @Deprecated()
-  @Middlewares(rateLimit({limit: 1200, interval: 3600 * 24}))
+  @Middlewares(rateLimit({ limit: 1200, interval: 3600 * 24 }))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getQueuedWithOcrById(
     @Request() req: JwtModel,
@@ -203,7 +203,7 @@ export class GuestVacancyResponseController extends Controller {
   }
 
   @Get("{id}/resumeFile")
-  @Middlewares(rateLimit({limit: 500, interval: 60}))
+  @Middlewares(rateLimit({ limit: 500, interval: 60 }))
   @Response<HttpErrorBody & {"error": "File not found" | "GuestVacancyResponse not found"}>(404)
   @Produces(GuestVacancyResponseController.RESUME_FILE_MIME_TYPE)
   public async getResumeFileById(

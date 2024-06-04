@@ -4,7 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  Patch,
   Path,
   Post,
   Query,
@@ -80,7 +79,7 @@ export class MeetingScriptProtocolController extends Controller {
           template: include?.includes("template"),
           answers: include?.includes("answers"),
           meeting: include?.includes("meeting.slot")
-            ? { include: { slot: true }}
+            ? { include: { slot: true } }
             : include?.includes("meeting"),
         },
       }),
@@ -124,7 +123,7 @@ export class MeetingScriptProtocolController extends Controller {
         template: include?.includes("template"),
         answers: include?.includes("answers"),
         meeting: include?.includes("meeting.slot")
-          ? { include: { slot: true }}
+          ? { include: { slot: true } }
           : include?.includes("meeting"),
       },
     });

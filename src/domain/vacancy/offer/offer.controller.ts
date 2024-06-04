@@ -133,7 +133,7 @@ export class OfferController extends Controller {
         where,
         include: {
           vacancyResponse: include?.includes("vacancyResponse.vacancy")
-            ? { include: { vacancy: true }}
+            ? { include: { vacancy: true } }
             : include?.includes("vacancyResponse"),
         },
       }),
@@ -175,7 +175,7 @@ export class OfferController extends Controller {
 
     let where = null;
     if (req.user.role === UserRole.MANAGER) where = { id };
-    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id} } };
+    else if (req.user.role === UserRole.EMPLOYER) where = { id, vacancyResponse: { vacancy: { employerId: req.user.id } } };
 
     const offer = await prisma.offer.findUnique({
       where: where!,
@@ -206,7 +206,7 @@ export class OfferController extends Controller {
       where: where!,
       include: {
         vacancyResponse: include?.includes("vacancyResponse.vacancy")
-          ? { include: { vacancy: true }}
+          ? { include: { vacancy: true } }
           : include?.includes("vacancyResponse"),
       },
     });

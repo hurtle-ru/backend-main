@@ -3,7 +3,6 @@ import { singleton } from "tsyringe";
 import { tinkoffConfig } from "./tinkoff.config";
 import { tinkoff } from "./tinkoff.dto";
 import crypto from "crypto";
-import { logger } from "../../infrastructure/logger/logger";
 
 
 /* Проверка подписей на стороне Тинькофф работает крайне нестабильно и некорректно.

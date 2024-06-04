@@ -1,4 +1,4 @@
-import { bool, cleanEnv, port, str } from "envalid";
+import { cleanEnv, str } from "envalid";
 
 
 export const resumeOcrConfig = cleanEnv(process.env, {

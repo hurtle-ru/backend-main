@@ -1,4 +1,4 @@
-import { cleanEnv, host, num, port, str, url } from "envalid";
+import { cleanEnv, num, port, str, url } from "envalid";
 import { webAddress } from "./validation/env/web-address.envalid";
 
 

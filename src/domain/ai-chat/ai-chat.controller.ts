@@ -17,7 +17,6 @@ import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
 import { ApplicantAiChatService } from "./ai-chat.service";
 import { BasicApplicantAiChat, CreateApplicantAiChatRequest, CreateApplicantAiChatRequestSchema, GetApplicantAiChatResponse } from "./ai-chat.dto";
-import { MeetingStatus, MeetingType } from "@prisma/client";
 
 
 @injectable()

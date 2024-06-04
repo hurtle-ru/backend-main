@@ -61,7 +61,7 @@ export class ApplicantController extends Controller {
       include: {
         resume: include?.includes("resume"),
         meetings: include?.includes("meetings"),
-        aiChats: (include?.includes("aiChats") && { where: { employerId: null }}),
+        aiChats: (include?.includes("aiChats") && { where: { employerId: null } }),
         vacancyResponses: include?.includes("vacancyResponses"),
       },
     });
@@ -198,7 +198,7 @@ export class ApplicantController extends Controller {
   }
 
   @Get("{id}/avatar")
-  @Middlewares(rateLimit({limit: 300, interval: 60}))
+  @Middlewares(rateLimit({ limit: 300, interval: 60 }))
   @Response<HttpErrorBody & {"error": "File not found" | "Applicant not found"}>(404)
   public async getAvatar(
     @Request() req: ExpressRequest,
@@ -230,7 +230,7 @@ export class ApplicantController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another applicant"}>(403)
   @Response<HttpErrorBody & {"error": "Applicant not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)

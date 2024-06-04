@@ -95,7 +95,7 @@ export class HhAuthService {
         data: newTokenData,
       });
 
-      return {...hhToken, ...newTokenData};
+      return { ...hhToken, ...newTokenData };
     }
 
     return hhToken;

@@ -2,7 +2,7 @@ import path from "path";
 import { injectable } from "tsyringe";
 import { Readable } from "stream";
 
-import {Request as ExpressRequest} from "express";
+import { Request as ExpressRequest } from "express";
 
 import {
   Body,
@@ -34,7 +34,7 @@ import {
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
-import { ArtifactService} from "../../external/artifact/artifact.service";
+import { ArtifactService } from "../../external/artifact/artifact.service";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
 import { routeRateLimit as rateLimit } from "../../infrastructure/rate-limiter/rate-limiter.middleware";
 
@@ -117,7 +117,7 @@ export class EmployerController extends Controller {
   }
 
   @Get("{id}/avatar")
-  @Middlewares(rateLimit({limit: 300, interval: 60}))
+  @Middlewares(rateLimit({ limit: 300, interval: 60 }))
   @Response<HttpErrorBody & {"error": "File not found" | "Employer not found"}>(404)
   public async getAvatar(
     @Request() req: ExpressRequest,
@@ -148,7 +148,7 @@ export class EmployerController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another employer"}>(403)
   @Response<HttpErrorBody & {"error": "Employer not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)

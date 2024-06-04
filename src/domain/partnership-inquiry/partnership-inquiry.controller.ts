@@ -6,7 +6,6 @@ import {
   Patch,
   Path,
   Post,
-  Put,
   Query,
   Response,
   Route,
@@ -39,7 +38,7 @@ export class PartnershipInquiryController extends Controller {
   }
 
   @Post("")
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   public async create(
     @Body() body: CreatePartnershipInquiryRequest,
   ): Promise<BasicPartnershipInquiry> {

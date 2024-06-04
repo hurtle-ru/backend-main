@@ -25,7 +25,7 @@ import {
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { PageResponse } from "../../../infrastructure/controller/pagination/page.response";
-import { MeetingPaymentStatus, MeetingSlot, MeetingType, Prisma } from "@prisma/client";
+import { MeetingPaymentStatus, MeetingType, Prisma } from "@prisma/client";
 import { MeetingSlotService } from "./slot.service";
 import { PageNumber, PageSizeNumber } from "../../../infrastructure/controller/pagination/page.dto";
 import { CreateSlotsWithinRangeMaximum } from "../meeting.config";
@@ -212,7 +212,7 @@ export class MeetingSlotController extends Controller {
     if (!moment.tz.zone(timezone)) {
       throw new HttpError(422, "Invalid timezone");
     }
-    if (inputDate.isBefore(now, 'month')) {
+    if (inputDate.isBefore(now, "month")) {
       throw new HttpError(422, "The provided year and month must not be in the past");
     }
 
@@ -221,8 +221,8 @@ export class MeetingSlotController extends Controller {
     const slots = await prisma.meetingSlot.findMany({
       where: {
         dateTime: {
-          gte: inputDate.startOf('month').toDate(),
-          lt: inputDate.add(1, 'month').startOf('month').toDate(),
+          gte: inputDate.startOf("month").toDate(),
+          lt: inputDate.add(1, "month").startOf("month").toDate(),
         },
         types: types ? { hasSome: types } : undefined,
         meeting: null,
@@ -232,7 +232,7 @@ export class MeetingSlotController extends Controller {
     const dictionary: GetAvailableDaysResponse = {};
     for (let day = 1; day <= daysInMonth; day++) {
       dictionary[day.toString()] = slots.some((slot) =>
-        moment(slot.dateTime).tz(timezone).date() === day
+        moment(slot.dateTime).tz(timezone).date() === day,
       );
     }
 

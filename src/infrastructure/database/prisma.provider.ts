@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { hhTokenExtension } from "../../external/hh/auth/auth.prisma-extension";
 import { applicantPrismaExtension } from "../../domain/applicant/applicant.prisma-extension";
 import { employerPrismaExtension } from "../../domain/employer/employer.prisma-extension";

@@ -7,8 +7,6 @@ import { BasicMeetingSlot } from "./slot/slot.dto";
 import { BasicMeetingFeedback } from "./feedback/feedback.dto";
 import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
 import {
-  APPLICANT_SCHEMA,
-  EMPLOYER_SCHEMA,
   RequesterApplicant,
   RequesterApplicantSchema,
   RequesterEmployer,

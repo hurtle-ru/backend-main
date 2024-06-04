@@ -33,7 +33,9 @@ export class MeetingService {
     return slotTypes.some(slotType => MeetingBusinessInfoByTypes[slotType]?.roles.includes(userRole));
   }
 
-  async tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(user: MeetingCreator & { id: string, role: "APPLICANT" | "EMPLOYER" | "GUEST" }, body: Pick<Meeting, "slotId" | "type">): Promise<string | never> {
+  async tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(
+    user: MeetingCreator & { id: string, role: "APPLICANT" | "EMPLOYER" | "GUEST" },
+    body: Pick<Meeting, "slotId" | "type">): Promise<string | never> {
     try {
       return await this.createSaluteJazzRoom(body.type, user!);
     } catch (error) {
@@ -42,7 +44,7 @@ export class MeetingService {
       await this.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
         user!,
         body,
-        error
+        error,
       );
 
       throw new HttpError(409, "Related service not available, retry later");
@@ -57,9 +59,9 @@ export class MeetingService {
 
     let name;
     if (user._type === "user") {
-      name = `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`
+      name = `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`;
     } else {
-      name = `Хартл ${meetingName}`
+      name = `Хартл ${meetingName}`;
     }
     return await this.jazzService.createRoom(name);
   }
@@ -69,7 +71,7 @@ export class MeetingService {
     meeting: Pick<Meeting, "id" | "name" | "type" | "roomUrl">,
     slot: Pick<MeetingSlot, "dateTime"> & { manager: Pick<BasicManager, "name" | "id"> },
     req: ExpressRequest & JwtModel,
-    isRescheduling: boolean = false,
+    isRescheduling = false,
   ) {
     await this.sendMeetingCreatedToAdminGroup(
       { name: meeting.name, id: meeting.id, dateTime: slot.dateTime, type: meeting.type },
@@ -113,7 +115,7 @@ export class MeetingService {
     manager: { name: string, id: string },
     user: { _type: "user", firstName: string, lastName: string, id: string, role: string }
         | { _type: "guest", email: string, id: string, role: string},
-    isRescheduling: boolean = false,
+    isRescheduling = false,
   )  {
 
     let text =
@@ -287,7 +289,7 @@ export class MeetingService {
   }
 
   async doesSlotAvailableForBookingOrThrow(slotId: string, requester_role: JwtModel["user"]["role"]) {
-    const slot = await this.findFutureSlotById(slotId)
+    const slot = await this.findFutureSlotById(slotId);
 
     if (!slot) throw new HttpError(404, "MeetingSlot not found");
     if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
@@ -295,7 +297,7 @@ export class MeetingService {
     if (!this.doesUserHaveAccessToMeetingSlot(requester_role, slot.types))
       throw new HttpError(403, "User does not have access to this MeetingSlot type");
 
-    return slot
+    return slot;
   }
 
   async findFutureSlotById(slotId: string) {
@@ -330,10 +332,10 @@ export class MeetingService {
 
   async getMeetingApplicantOrEmployerCreator(meeting: Pick<Meeting, "applicantId" | "employerId">) {
     if (meeting.applicantId) {
-      return { _type: "user", ...await prisma.applicant.findUnique({ where: { id: meeting.applicantId }}) as any }
+      return { _type: "user", ...await prisma.applicant.findUnique({ where: { id: meeting.applicantId } }) as any };
     }
     if (meeting.employerId) {
-      return { _type: "user", ...await prisma.employer.findUnique({ where: { id: meeting.employerId }}) as any }
+      return { _type: "user", ...await prisma.employer.findUnique({ where: { id: meeting.employerId } }) as any };
     }
   }
 

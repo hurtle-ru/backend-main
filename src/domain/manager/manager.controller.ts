@@ -6,7 +6,7 @@ import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error"
 import { BasicManager, GetManagerResponse, PatchMeRequestByManager, PatchMeRequestByManagerSchema } from "./manager.dto";
 import { JwtModel, UserRole } from "../auth/auth.dto";
 import { injectable } from "tsyringe";
-import { ArtifactService} from "../../external/artifact/artifact.service";
+import { ArtifactService } from "../../external/artifact/artifact.service";
 import { Readable } from "stream";
 import { Request as ExpressRequest } from "express";
 import { artifactConfig, AVAILABLE_IMAGE_FILE_MIME_TYPES } from "../../external/artifact/artifact.config";
@@ -76,7 +76,7 @@ export class ManagerController extends Controller {
   }
 
   @Get("{id}/avatar")
-  @Middlewares(rateLimit({limit: 30, interval: 60}))
+  @Middlewares(rateLimit({ limit: 30, interval: 60 }))
   @Response<HttpErrorBody & {"error": "File not found" | "Manager not found"}>(404)
   public async getAvatar(
     @Request() req: ExpressRequest,
@@ -107,7 +107,7 @@ export class ManagerController extends Controller {
 
   @Put("{id}/avatar")
   @Security("jwt", [UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 10, interval: 60}))
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
   @Response<HttpErrorBody & {"error": "Not enough rights to edit another manager"}>(403)
   @Response<HttpErrorBody & {"error": "Manager not found"}>(404)
   @Response<HttpErrorBody & {"error": "File is too large"}>(413)

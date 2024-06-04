@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import { Body, Controller, Get, Middlewares, Patch, Path, Post, Query, Request, Response, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Get, Patch, Path, Post, Request, Response, Route, Security, Tags } from "tsoa";
 import { JwtModel, PUBLIC_SCOPE, UserRole } from "../../auth/auth.dto";
 import { HttpError, HttpErrorBody } from "../../../infrastructure/error/http.error";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
