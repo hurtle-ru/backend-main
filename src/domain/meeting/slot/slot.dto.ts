@@ -96,6 +96,6 @@ export type GetMeetingSlotResponse = BasicMeetingSlot & {
  */
 export type SlotPageSizeNumber = number;
 
-export interface AvailableDaysDictionary {
+export interface GetAvailableDaysResponse {
   [key: string]: boolean;
 }
