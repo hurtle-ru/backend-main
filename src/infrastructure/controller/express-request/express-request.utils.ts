@@ -13,7 +13,7 @@ export function getIp(req: Request): string | undefined {
 
 export function isProvidedApiSecretKey(req: Request): boolean {
   const key = req.header("X-API-KEY");
-  return key === appConfig.API_SECRET_KEY
+  return key === appConfig.API_SECRET_KEY;
 }
 
 export function parseCookies(cookieHeader: string | undefined): { [key: string]: string } {
