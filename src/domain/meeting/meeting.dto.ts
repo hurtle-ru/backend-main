@@ -7,8 +7,6 @@ import { BasicMeetingSlot } from "./slot/slot.dto";
 import { BasicMeetingFeedback } from "./feedback/feedback.dto";
 import { BasicMeetingScriptProtocol } from "./script/protocol/protocol.dto";
 import {
-  APPLICANT_SCHEMA,
-  EMPLOYER_SCHEMA,
   RequesterApplicant,
   RequesterApplicantSchema,
   RequesterEmployer,
@@ -95,6 +93,7 @@ export type PatchMeetingByManagerRequest = Partial<Pick<
   | "description"
   | "status"
   | "transcript"
+  | "slotId"
 >>;
 
 export const PatchMeetingByManagerRequestSchema: yup.ObjectSchema<PatchMeetingByManagerRequest> = BasicMeetingSchema.pick([
@@ -102,6 +101,7 @@ export const PatchMeetingByManagerRequestSchema: yup.ObjectSchema<PatchMeetingBy
   "description",
   "status",
   "transcript",
+  "slotId",
 ]).partial();
 
 

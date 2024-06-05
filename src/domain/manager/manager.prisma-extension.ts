@@ -19,7 +19,11 @@ export const managerPrismaExtension = Prisma.defineExtension({
             password: true,
             slots: {
               include: {
-                payments: true,
+                payments: {
+                  include: {
+                    appliedPromoCode: true,
+                  },
+                },
               },
             },
           },

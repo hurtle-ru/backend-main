@@ -5,6 +5,9 @@ import { tinkoff } from "./tinkoff.dto";
 import crypto from "crypto";
 
 
+/* Проверка подписей на стороне Тинькофф работает крайне нестабильно и некорректно.
+*  Некоторые поля (даже скалярные) Тинькофф без всякого упоминания в документации будет игнорировать при сверке подписей.
+*/
 @singleton()
 export class TinkoffPaymentService {
   constructor() {}
@@ -12,7 +15,7 @@ export class TinkoffPaymentService {
   /**
    * Инициирует платежную сессию. На данный момент метод поддерживает только платежи с продажей 1-й услуги за платеж.
    * @param {string} orderId Уникальный идентификатор заказа, для которого проводится платёж
-   * @param {number} amount Целое число, выражающее сумму в **копейках**. Например, сумма 3руб. 12коп. - это число 312
+   * @param {number} amount Целое число, выражающее сумму в **копейках**. Например, сумма 3руб. 12коп. - это число 312. Минимум 100 копеек.
    * @param {string} description Описание заказа
    * @param {string} successUrl URL, куда будет переведен клиент в случае успешной оплаты
    * @param {string} failUrl URL, куда будет переведен клиент в случае неуспешной оплаты
@@ -84,18 +87,29 @@ export class TinkoffPaymentService {
   }
 
   makeToken(requestData: Record<string, any | number | undefined>): string {
+    const ignoreKeys = ["NotificationUrl"];
+
     const dataWithCredentials: Record<string, any | number> = {
-      ...Object.fromEntries(Object.entries(requestData).filter(([_, value]) => value !== undefined)),
+      ...Object.fromEntries(Object.entries(requestData).filter(([key, value]) =>
+        value !== undefined
+        && value !== null
+        && typeof value !== "object"
+        && !ignoreKeys.includes(key),
+      )),
       Password: tinkoffConfig.TINKOFF_TERMINAL_PASSWORD,
     };
 
+    // Сортируем ключи по алфавиту
     const sortedKeys = Object.keys(dataWithCredentials).sort();
-    const concatenatedValues = sortedKeys.map((key) => String(dataWithCredentials[key])).join("");
 
-    return this.sha256(concatenatedValues).toString();
+    // Конкатенируем значения в одну строку
+    const concatenatedValues = sortedKeys.map(key => String(dataWithCredentials[key])).join("");
+
+    // Возвращаем хеш строку
+    return this.sha256(concatenatedValues).toLowerCase();
   }
 
   sha256(input: string): string {
-    return crypto.createHash("sha256").update(input).digest("hex");
+    return crypto.createHash("sha256").update(input, "utf8").digest("hex");
   }
 }

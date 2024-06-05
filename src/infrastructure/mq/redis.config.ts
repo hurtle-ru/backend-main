@@ -1,4 +1,4 @@
-import { cleanEnv, host, num, port, str, url } from "envalid";
+import { cleanEnv, host, port, str, url } from "envalid";
 
 
 export const redisConfig = cleanEnv(process.env, {

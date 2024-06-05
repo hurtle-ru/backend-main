@@ -123,4 +123,4 @@ export const PatchByIdByEmployerRequestSchema: yup.ObjectSchema<PatchByIdByEmplo
   "size",
   "website",
   "description",
-]);
+]).partial();

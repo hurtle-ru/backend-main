@@ -1,6 +1,6 @@
 import { MeetingType } from "@prisma/client";
 import { GUEST_ROLE, UserRole } from "../auth/auth.dto";
-import { bool, cleanEnv, port, str } from "envalid";
+import { cleanEnv, str } from "envalid";
 
 
 export const meetingConfig = cleanEnv(process.env, {
@@ -74,10 +74,10 @@ export const MeetingBusinessInfoByTypes: MeetingBusinessInfoByType = {
     emailDescriptionOnCreate: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     emailDescriptionOnRemind: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     roles: [GUEST_ROLE],
-    priceInKopecks: 1 * 100,
+    priceInKopecks: 1000 * 100,
     isFree: false,
   },
-  [MeetingType.CONSULTATION_B2C_EXPERT_2]: {
+  [MeetingType.CONSULTATION_B2C_EXPERT_FOR_STUDENTS]: {
     name: "Разбор резюме",
     description:
       "«Разбор резюме» поможет вам выделиться среди других кандидатов и привлечь внимание рекрутеров. \n" +
@@ -88,10 +88,10 @@ export const MeetingBusinessInfoByTypes: MeetingBusinessInfoByType = {
     emailDescriptionOnCreate: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     emailDescriptionOnRemind: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     roles: [GUEST_ROLE],
-    priceInKopecks: 100 * 100,
+    priceInKopecks: 299 * 100,
     isFree: false,
   },
-  [MeetingType.CONSULTATION_B2C_EXPERT_3]: {
+  [MeetingType.CONSULTATION_B2C_EXPERT_STANDARD]: {
     name: "Разбор резюме",
     description:
       "«Разбор резюме» поможет вам выделиться среди других кандидатов и привлечь внимание рекрутеров. \n" +
@@ -102,7 +102,7 @@ export const MeetingBusinessInfoByTypes: MeetingBusinessInfoByType = {
     emailDescriptionOnCreate: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     emailDescriptionOnRemind: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     roles: [GUEST_ROLE],
-    priceInKopecks: 350 * 100,
+    priceInKopecks: 599 * 100,
     isFree: false,
   },
 };

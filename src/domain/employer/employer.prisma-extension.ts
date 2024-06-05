@@ -22,7 +22,11 @@ export const employerPrismaExtension = Prisma.defineExtension({
                 },
                 slot: {
                   include: {
-                    payments: true,
+                    payments: {
+                      include: {
+                        appliedPromoCode: true,
+                      },
+                    },
                   },
                 },
               },

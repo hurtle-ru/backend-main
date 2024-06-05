@@ -6,7 +6,6 @@ import {
   Patch,
   Path,
   Post,
-  Put,
   Request,
   Response,
   Route,

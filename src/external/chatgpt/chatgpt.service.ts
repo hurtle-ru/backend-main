@@ -5,9 +5,7 @@ import { SocksProxyAgent } from "socks-proxy-agent";
 import { ChatCompletionMessageParam } from "openai/resources";
 import { Uploadable } from "openai/src/uploads";
 import { logger } from "../../infrastructure/logger/logger";
-import { Assistants } from "openai/resources/beta";
 import { MessageContent } from "openai/resources/beta/threads";
-import { th } from "yup-locales";
 
 
 @singleton()

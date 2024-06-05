@@ -1,4 +1,4 @@
-import { cleanEnv, str } from "envalid";
+import { cleanEnv } from "envalid";
 import { int } from "../../infrastructure/validation/env/int.envalid";
 
 

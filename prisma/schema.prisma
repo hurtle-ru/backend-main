@@ -292,9 +292,13 @@ model MeetingPayment {
   failCode       String               @db.VarChar(127)
   amount         Int?
   dueDate        DateTime
-  slot           MeetingSlot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  slotId         String
   type           MeetingType
+
+  slot   MeetingSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  slotId String
+
+  appliedPromoCode      PromoCode? @relation(fields: [appliedPromoCodeValue], references: [value])
+  appliedPromoCodeValue String?
 }
 
 model MeetingScriptProtocol {
@@ -460,6 +464,18 @@ model ApplicantAiChatMessage {
   chatId           String
 }
 
+model PromoCode {
+  value           String           @id
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  discount        Int
+  expirationDate  DateTime?
+  isActive        Boolean
+  maxUses         Int?
+  successfulUses  Int
+  meetingPayments MeetingPayment[]
+}
+
 enum ContactType {
   PHONE
   EMAIL
@@ -593,9 +609,9 @@ enum MeetingType {
   INTERVIEW
   CONSULTATION_B2C // Не используется
   CONSULTATION_B2B // Не используется
-  CONSULTATION_B2C_EXPERT // Выполняет роль CONSULTATION_B2C_EXPERT_1
-  CONSULTATION_B2C_EXPERT_2
-  CONSULTATION_B2C_EXPERT_3
+  CONSULTATION_B2C_EXPERT // Выполняет роль CONSULTATION_B2C_EXPERT_1; та что вначале была за 1руб.
+  CONSULTATION_B2C_EXPERT_FOR_STUDENTS
+  CONSULTATION_B2C_EXPERT_STANDARD
 }
 
 enum MeetingStatus {

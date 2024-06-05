@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-import { MeetingFeedback, MeetingType } from "@prisma/client";
+import { MeetingFeedback } from "@prisma/client";
 import { BasicMeeting } from "../meeting.dto";
 
 

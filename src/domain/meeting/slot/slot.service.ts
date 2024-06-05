@@ -1,5 +1,5 @@
 import { injectable, singleton } from "tsyringe";
-import { MeetingType, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { UserRole } from "../../auth/auth.dto";
 
 

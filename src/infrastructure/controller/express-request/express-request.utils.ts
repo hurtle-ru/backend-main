@@ -15,3 +15,14 @@ export function isProvidedApiSecretKey(req: Request): boolean {
   const key = req.header("X-API-KEY");
   return key === appConfig.API_SECRET_KEY
 }
+
+export function parseCookies(cookieHeader: string | undefined): { [key: string]: string } {
+  const cookies: { [key: string]: string } = {};
+  if (cookieHeader) {
+    cookieHeader.split(";").forEach(cookie => {
+      const parts = cookie.split("=");
+      cookies[parts.shift()!.trim()] = decodeURI(parts.join("="));
+    });
+  }
+  return cookies;
+}

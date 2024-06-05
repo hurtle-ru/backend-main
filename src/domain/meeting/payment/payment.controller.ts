@@ -2,11 +2,10 @@ import { injectable } from "tsyringe";
 import {
   Body,
   Controller,
-  Delete,
   Get, Hidden,
   Patch,
   Path,
-  Post, Put,
+  Post,
   Query,
   Request,
   Response,
@@ -15,9 +14,12 @@ import {
   Tags,
 } from "tsoa";
 import {
-  BasicMeetingPayment,
-  CreateMeetingPaymentRequest, CreateMeetingPaymentRequestSchema, GetMeetingPaymentResponse,
-  MeetingPaymentTinkoffNotificationRequest, PatchMeetingPaymentRequest,
+  CreateMeetingPaymentRequest,
+  CreateMeetingPaymentRequestSchema,
+  CreateMeetingPaymentResponse,
+  GetMeetingPaymentResponse,
+  MeetingPaymentTinkoffNotificationRequest,
+  PatchMeetingPaymentRequest,
   PatchMeetingPaymentRequestSchema,
   TinkoffPaymentStatusToMeetingPaymentStatus,
 } from "./payment.dto";
@@ -51,12 +53,27 @@ export class MeetingPaymentController extends Controller {
       | "MeetingSlot already booked or paid"
       | "Payment is not required to book meeting of this type"
       | "Pending payment already exists on this slot"
+      | "PromoCode not found or unavailable"
   }>(409)
   public async create(
     @Request() req: JwtModel,
     @Body() body: CreateMeetingPaymentRequest,
-  ): Promise<BasicMeetingPayment> {
+  ): Promise<CreateMeetingPaymentResponse> {
     body = CreateMeetingPaymentRequestSchema.validateSync(body);
+
+    let promoCode = null;
+
+    if (body.appliedPromoCodeValue) {
+      const fetchedPromoCode = await prisma.promoCode.findUnique({
+        where: { value: body.appliedPromoCodeValue },
+      });
+
+      if (!fetchedPromoCode || !prisma.promoCode.isAvailable(fetchedPromoCode)) {
+        throw new HttpError(409, "PromoCode not found or unavailable");
+      }
+
+      promoCode = fetchedPromoCode;
+    }
 
     const slot = await prisma.meetingSlot.findUnique({
       where: {
@@ -81,7 +98,7 @@ export class MeetingPaymentController extends Controller {
     if (slot.meeting || prisma.meetingPayment.getPaidByGuest(slot.payments, req.user.id))
       throw new HttpError(409, "MeetingSlot already booked or paid");
 
-    if (prisma.meetingPayment.hasUnexpired(slot.payments))
+    if (prisma.meetingPayment.hasPendingUnexpired(slot.payments))
       throw new HttpError(409, "Pending payment already exists on this slot");
     if (!this.paymentService.doesMeetingTypeRequiresPayment(body.type))
       throw new HttpError(409, "Payment is not required to book meeting of this type");
@@ -104,6 +121,7 @@ export class MeetingPaymentController extends Controller {
         successCode,
         failCode,
         type: body.type,
+        appliedPromoCodeValue: body.appliedPromoCodeValue,
       },
     });
 
@@ -114,6 +132,7 @@ export class MeetingPaymentController extends Controller {
       failCode,
       dueDate,
       guestEmail,
+      promoCode,
     );
 
     const updatedPayment = await prisma.meetingPayment.update({
@@ -127,7 +146,10 @@ export class MeetingPaymentController extends Controller {
 
     {
       const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;
-      return paymentResponse;
+      return {
+        ...paymentResponse,
+        expirationMinutes: paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES,
+      };
     }
   }
 
@@ -160,7 +182,7 @@ export class MeetingPaymentController extends Controller {
     @Request() req: JwtModel,
     @Path() id: string,
     @Body() body: PatchMeetingPaymentRequest,
-  ): Promise<BasicMeetingPayment> {
+  ): Promise<GetMeetingPaymentResponse> {
     body = PatchMeetingPaymentRequestSchema.validateSync(body);
 
     const where = { id, guestEmail: req.user.id };
@@ -177,8 +199,10 @@ export class MeetingPaymentController extends Controller {
       });
 
       const { kassaPaymentId, successCode, failCode, ...paymentResponse } = updatedPayment;
-      return paymentResponse;
-
+      return {
+        ...paymentResponse,
+        expirationMinutes: paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES,
+      };
     } else throw new HttpError(401, "Invalid code");
   }
 
@@ -203,6 +227,9 @@ export class MeetingPaymentController extends Controller {
     if (payment.successCode !== successOrFailCode && payment.failCode !== successOrFailCode)
       throw new HttpError(403, "Code is invalid");
 
-    return payment;
+    return {
+      ...payment,
+      expirationMinutes: paymentConfig.MEETING_PAYMENT_EXPIRATION_MINUTES,
+    };
   }
 }

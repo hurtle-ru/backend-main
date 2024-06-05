@@ -2,7 +2,6 @@ import { str, cleanEnv, bool } from "envalid";
 import axios from "axios";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import OpenAI from "openai";
-import { Agent } from "agent-base";
 import { logger } from "../../infrastructure/logger/logger";
 export const chatGptConfig = cleanEnv(process.env, {
   CHATGPT_API_KEY: str(),

@@ -1,6 +1,6 @@
-import { bool, cleanEnv, num, port, str } from "envalid";
+import { cleanEnv, str } from "envalid";
 import { int } from "../../../infrastructure/validation/env/int.envalid";
-import { MeetingType } from "@prisma/client";
+
 
 export const paymentConfig = {
   ...cleanEnv(

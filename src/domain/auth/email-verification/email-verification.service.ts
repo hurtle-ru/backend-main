@@ -2,7 +2,6 @@ import otpGenerator from "otp-generator";
 import { appConfig } from "../../../infrastructure/app.config";
 import { injectable, singleton } from "tsyringe";
 import { EmailService } from "../../../external/email/email.service";
-import pino from "pino";
 
 
 @injectable()
