@@ -18,11 +18,13 @@ import { GUEST_ROLE, JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import {
   BasicPromoCode,
   CreatePromoCodeRequest,
-  CreatePromoCodeRequestSchema, GetPromoCodeResponse,
+  CreatePromoCodeRequestSchema, GetManyPromoCodeResponse, GetPromoCodeResponse,
   PatchByValuePromoCodeRequest, PatchByValuePromoCodeRequestSchema,
 } from "./promo-code.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
+import { PageNumber, PageSizeNumber } from "../../infrastructure/controller/pagination/page.dto";
+import { PageResponse } from "../../infrastructure/controller/pagination/page.response";
 
 
 @injectable()
@@ -72,6 +74,23 @@ export class PromoCodeController extends Controller {
       where: { value },
       data: body,
     });
+  }
+
+  @Get("")
+  @Security("jwt", [UserRole.MANAGER])
+  public async getAll(
+    @Query() page: PageNumber = 1,
+    @Query() size: PageSizeNumber = 20,
+  ): Promise<PageResponse<GetManyPromoCodeResponse>> {
+    const [promoCodes, promoCodesCount] = await Promise.all([
+      prisma.promoCode.findMany({
+        skip: (page - 1) * size,
+        take: size,
+      }),
+      prisma.promoCode.count(),
+    ]);
+
+    return new PageResponse(promoCodes, page, size, promoCodesCount);
   }
 
   @Get("{value}")
