@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-import { Meeting, MeetingStatus, MeetingType } from "@prisma/client";
+import { Meeting, MeetingPayment, MeetingStatus, MeetingType } from "@prisma/client";
 import { BasicApplicant } from "../applicant/applicant.dto";
 import { BasicEmployer } from "../employer/employer.dto";
 import { BasicMeetingSlot } from "./slot/slot.dto";
@@ -15,6 +15,7 @@ import {
   RequesterGuestSchema,
 } from "../../infrastructure/controller/requester/requester.dto";
 import { yupOneOfEnum } from "../../infrastructure/validation/requests/enum.yup";
+import { BasicMeetingPaymentSchema } from "./payment/payment.dto";
 
 
 export type BasicMeeting = Omit<
@@ -110,10 +111,38 @@ export type PatchMeetingByApplicantOrEmployerRequest = Partial<Pick<
   | "slotId"
 >>;
 
-export const PatchMeetingByApplicantOrEmployerSchemaRequest: yup.ObjectSchema<PatchMeetingByApplicantOrEmployerRequest> = BasicMeetingSchema.pick([
+export const PatchMeetingByApplicantOrEmployerRequestSchema: yup.ObjectSchema<PatchMeetingByApplicantOrEmployerRequest> = BasicMeetingSchema.pick([
   "slotId",
 ]).partial();
 
+export type RescheduleMeetingByGuestRequest =
+  Pick<MeetingPayment, "successCode">
+  & Pick<Meeting, "slotId">
+  & {
+    paymentId: MeetingPayment["id"]
+  }
+
+export const RescheduleMeetingByGuestRequestSchema: yup.ObjectSchema<RescheduleMeetingByGuestRequest> =
+  BasicMeetingPaymentSchema.pick([
+    "successCode",
+  ]).concat(
+    BasicMeetingSchema.pick([
+      "slotId",
+    ]),
+  ).shape({
+    paymentId: yup.string().defined(),
+  });
+
+export type RescheduleMeetingByManagerRequest = {
+  paymentId: MeetingPayment["id"]
+} & Pick<Meeting, "slotId">
+
+export const RescheduleMeetingByManagerRequestSchema: yup.ObjectSchema<RescheduleMeetingByManagerRequest> =
+  BasicMeetingSchema.pick([
+    "slotId",
+  ]).shape({
+    paymentId: yup.string().defined(),
+  });
 
 export type ExportAllRequest = {
   dateTime: Date,

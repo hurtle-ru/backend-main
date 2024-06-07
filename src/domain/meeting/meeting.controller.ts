@@ -32,7 +32,12 @@ import {
   PatchMeetingByManagerRequestSchema,
   MeetingCreator,
   PatchMeetingByApplicantOrEmployerRequest,
-  PatchMeetingByApplicantOrEmployerSchemaRequest,
+  PatchMeetingByApplicantOrEmployerRequestSchema,
+  RescheduleMeetingByGuestRequest,
+  RescheduleMeetingByGuestRequestSchema,
+  GuestMeetingCreator,
+  RescheduleMeetingByManagerRequest,
+  RescheduleMeetingByManagerRequestSchema,
 } from "./meeting.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -52,6 +57,7 @@ import { MeetingPaymentService } from "./payment/payment.service";
 import { MeetingStatus, Prisma } from "@prisma/client";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 import { MeetingBusinessInfoByTypes, meetingConfig } from "./meeting.config";
+import { GUEST } from "../../infrastructure/controller/requester/requester.dto";
 
 
 @injectable()
@@ -430,9 +436,13 @@ export class MeetingController extends Controller {
     let bodyData;
     if (req.user.role === UserRole.MANAGER) {
       bodyData = PatchMeetingByManagerRequestSchema.validateSync(body);
-    } else bodyData = PatchMeetingByApplicantOrEmployerSchemaRequest.validateSync(body);
+    } else bodyData = PatchMeetingByApplicantOrEmployerRequestSchema.validateSync(body);
 
-    const where = { id };
+    const where: Prisma.MeetingWhereUniqueInput = {
+      id,
+      applicantId: req.user.role === UserRole.APPLICANT ? req.user.id : undefined,
+      employerId: req.user.role === UserRole.EMPLOYER ? req.user.id : undefined,
+    };
 
     const meeting = await prisma.meeting.findUnique({
       where,
@@ -489,6 +499,107 @@ export class MeetingController extends Controller {
       where,
       data: bodyData,
     });
+  }
+
+  @Patch("guestReschedule/{id}")
+  @Security("jwt", [UserRole.MANAGER, GUEST_ROLE])
+  @Response<HttpErrorBody & {"error": "Meeting not found" | "Payment not found"}>(404)
+  @Response<HttpErrorBody & { "error": "User does not have access to this MeetingSlot type"}>(403)
+  @Response<HttpErrorBody & {"error":
+    "Specified slot hasn`t same meeting type"
+    | "MeetingSlot already booked"
+    | "New slot must be different from the old"
+    | "Related service not available, retry later"
+    | "Meeting is not held with guest"
+  }>(409)
+  public async guestRescheduleById(
+    @Request() req: ExpressRequest & JwtModel,
+    @Body() body: RescheduleMeetingByGuestRequest | RescheduleMeetingByManagerRequest,
+    @Path() id: string,
+  ): Promise<BasicMeeting> {
+    let bodyData: RescheduleMeetingByGuestRequest | RescheduleMeetingByManagerRequest;
+    if (req.user.role === UserRole.MANAGER) {
+      bodyData = RescheduleMeetingByManagerRequestSchema.validateSync(body);
+    } else {
+      bodyData = RescheduleMeetingByGuestRequestSchema.validateSync(body);
+    }
+
+    const meeting = await prisma.meeting.findUnique({
+      where: {
+        id,
+        guestEmail: req.user.role === GUEST ? req.user.id : undefined,
+      },
+    });
+    if (!meeting) throw new HttpError(404, "Meeting not found");
+    if (!meeting.guestEmail) throw new HttpError(409, "Meeting is not held with guest");
+
+    let successCode;
+    if ("successCode" in bodyData) successCode = bodyData.successCode;
+
+    const payment = await prisma.meetingPayment.findUnique({
+      where: {
+        id: bodyData.paymentId,
+        guestEmail: meeting.guestEmail,
+        successCode,
+      },
+    });
+    if (!payment) throw new HttpError(404, "Payment not found");
+
+    if (bodyData.slotId === meeting.slotId) {
+      throw new HttpError(409, "New slot must be different from the old");
+    }
+
+    const new_slot = await this.meetingService.doesSlotAvailableForBookingOrThrow(bodyData.slotId, GUEST);
+
+    if (!new_slot.types.includes(meeting.type)) {
+      throw new HttpError(409, "Specified slot has not same meeting type");
+    }
+
+    const creator: GuestMeetingCreator = { _type: "guest", email: meeting.guestEmail };
+
+    this.meetingService.removeMeetingReminderToEmail(
+      req.log, creator.email, meeting.roomUrl,
+    );
+
+    const roomUrl = await this.meetingService.tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(
+      {
+        ...creator,
+        id: req.user.id,
+        role: GUEST,
+      },
+      meeting,
+    );
+
+    const response = (await prisma.$transaction([
+      prisma.meeting.update({
+        where: { id },
+        data: {
+          slotId: bodyData.slotId,
+          roomUrl,
+        },
+      }),
+      prisma.meetingPayment.update({
+        where: { id: payment.id },
+        data: {
+          slotId: bodyData.slotId,
+        },
+      }),
+    ]))[0];
+
+    await this.meetingService.scheduleMeetingReminderToEmail(
+      req.log,
+      creator.email,
+      {
+        name: meeting.name,
+        link: roomUrl,
+        dateTime: new_slot.dateTime,
+        emailDescriptionOnRemind: MeetingBusinessInfoByTypes[meeting.type].emailDescriptionOnRemind,
+      },
+    );
+
+    await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData }, new_slot, req, true);
+
+    return response;
   }
 
   @Delete("{id}")
