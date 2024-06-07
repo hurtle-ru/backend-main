@@ -81,3 +81,15 @@ export type GetPromoCodeResponse = Pick<
 > & {
   meetingPayments?: MeetingPayment[];
 }
+
+export type GetManyPromoCodeResponse = Pick<
+  BasicPromoCode,
+  "value"
+  | "discount"
+  | "expirationDate"
+  | "isActive"
+  | "createdAt"
+  | "updatedAt"
+  | "maxUses"
+  | "successfulUses"
+  >

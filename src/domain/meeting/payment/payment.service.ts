@@ -29,10 +29,12 @@ export class MeetingPaymentService {
     const successUrl = new URL(paymentConfig.MEETING_PAYMENT_SUCCESS_URL_BASE);
     successUrl.searchParams.append("meetingPaymentId", meetingPaymentId);
     successUrl.searchParams.append("code", successCode);
+    successUrl.searchParams.append("email", clientEmail);
 
     const failUrl = new URL(paymentConfig.MEETING_PAYMENT_FAIL_URL_BASE);
     failUrl.searchParams.append("meetingPaymentId", meetingPaymentId);
     failUrl.searchParams.append("code", failCode);
+    failUrl.searchParams.append("email", clientEmail);
 
     const priceInKopecks = (MeetingBusinessInfoByTypes[meetingType] as PaidMeetingBusinessInfo).priceInKopecks;
     let amount = promoCode ? Math.round(priceInKopecks * (1 - promoCode.discount / 100)) : priceInKopecks;
