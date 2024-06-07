@@ -16,8 +16,7 @@ export const BasicMeetingScriptTemplateSchema: yup.ObjectSchema<BasicMeetingScri
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
   title: yup.string().defined().max(100),
-  description: yup.string().defined().max(300),
-  answerOptions: yup.array(yup.string().defined().max(300)).defined(),
+  description: yup.string().defined().max(300).nullable(),
 });
 
 export type CreateMeetingScriptTemplateRequest = Pick<

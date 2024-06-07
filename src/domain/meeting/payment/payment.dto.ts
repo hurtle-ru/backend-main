@@ -38,7 +38,7 @@ export const BasicMeetingPaymentSchema: yup.ObjectSchema<BasicMeetingPayment> = 
   dueDate: yup.date().defined(),
   type: yupOneOfEnum(MeetingType).defined(),
   slotId: yup.string().defined(),
-  appliedPromoCodeValue: yup.string().defined(),
+  appliedPromoCodeValue: yup.string().defined().nullable(),
 });
 
 export type GetMeetingPaymentResponse = Pick<

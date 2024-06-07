@@ -24,7 +24,7 @@ const BasicVacancyResponseSchema: yup.ObjectSchema<BasicVacancyResponse> = yup.o
   id: yup.string().length(36).defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  candidateRecommendedByManagerId: yup.string().length(36).defined(),
+  candidateRecommendedByManagerId: yup.string().length(36).defined().nullable(),
   status: yupOneOfEnum(VacancyResponseStatus).defined(),
   isViewedByEmployer: yup.boolean().defined(),
   candidateId: yup.string().defined().length(36),
