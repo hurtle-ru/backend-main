@@ -18,7 +18,7 @@ import { GUEST_ROLE, JwtModel, PUBLIC_SCOPE, UserRole } from "../auth/auth.dto";
 import {
   BasicPromoCode,
   CreatePromoCodeRequest,
-  CreatePromoCodeRequestSchema, GetManyPromoCodeResponse, GetPromoCodeResponse,
+  CreatePromoCodeRequestSchema, GetAllPromoCodeResponse, GetPromoCodeResponse,
   PatchByValuePromoCodeRequest, PatchByValuePromoCodeRequestSchema,
 } from "./promo-code.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
@@ -81,7 +81,7 @@ export class PromoCodeController extends Controller {
   public async getAll(
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
-  ): Promise<PageResponse<GetManyPromoCodeResponse>> {
+  ): Promise<PageResponse<GetAllPromoCodeResponse>> {
     const [promoCodes, promoCodesCount] = await Promise.all([
       prisma.promoCode.findMany({
         skip: (page - 1) * size,

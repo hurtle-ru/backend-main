@@ -82,7 +82,7 @@ export type GetPromoCodeResponse = Pick<
   meetingPayments?: MeetingPayment[];
 }
 
-export type GetManyPromoCodeResponse = Pick<
+export type GetAllPromoCodeResponse = Pick<
   BasicPromoCode,
   "value"
   | "discount"
