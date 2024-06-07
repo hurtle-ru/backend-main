@@ -124,13 +124,13 @@ export type RescheduleMeetingByGuestRequest =
 
 export const RescheduleMeetingByGuestRequestSchema: yup.ObjectSchema<RescheduleMeetingByGuestRequest> =
   BasicMeetingPaymentSchema.pick([
-    "successCode"
+    "successCode",
   ]).concat(
     BasicMeetingSchema.pick([
-      "slotId"
-    ])
+      "slotId",
+    ]),
   ).shape({
-    paymentId: yup.string().defined()
+    paymentId: yup.string().defined(),
   });
 
 export type RescheduleMeetingByManagerRequest = {
@@ -139,10 +139,10 @@ export type RescheduleMeetingByManagerRequest = {
 
 export const RescheduleMeetingByManagerRequestSchema: yup.ObjectSchema<RescheduleMeetingByManagerRequest> =
   BasicMeetingSchema.pick([
-    "slotId"
+    "slotId",
   ]).shape({
-    paymentId: yup.string().defined()
-  })
+    paymentId: yup.string().defined(),
+  });
 
 export type ExportAllRequest = {
   dateTime: Date,
