@@ -79,7 +79,7 @@ export class VacancyResponseController extends Controller {
       ? req.user.id
       : (bodyData as CreateVacancyResponseRequestFromManager).candidateId;
 
-    const vacancy = await prisma.vacancy.findUnique({ where: { id: bodyData.vacancyId }});
+    const vacancy = await prisma.vacancy.findUnique({ where: { id: bodyData.vacancyId } });
     if (!vacancy)
       throw new HttpError(404, "Vacancy does not exist");
 
@@ -234,7 +234,7 @@ export class VacancyResponseController extends Controller {
             ? { include: { employer: true } }
             : include?.includes("vacancy"),
           candidate: include?.includes("candidate.resume")
-            ? { include: { resume: true }}
+            ? { include: { resume: true } }
             : include?.includes("candidate"),
         },
       }),

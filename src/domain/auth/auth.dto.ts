@@ -65,7 +65,7 @@ export const RegisterEmployerRequestSchema: yup.ObjectSchema<RegisterEmployerReq
   "firstName",
   "lastName",
   "middleName",
-]).shape({password: PasswordSchema});
+]).shape({ password: PasswordSchema });
 
 
 export type RegisterApplicantRequest = Pick<BasicApplicant,
@@ -84,7 +84,7 @@ export const RegisterApplicantRequestSchema: yup.ObjectSchema<RegisterApplicantR
   "lastName",
   "firstName",
   "middleName",
-]).shape({password: PasswordSchema});
+]).shape({ password: PasswordSchema });
 
 
 export type RegisterApplicantWithHhRequest = Pick<BasicApplicant,
@@ -135,7 +135,7 @@ export type RegisterApplicantWithHhByHhTokenRequest = RegisterApplicantWithHhReq
 
 export const RegisterApplicantWithHhByAuthCodeRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhByAuthCodeRequest> = RegisterApplicantWithHhRequestSchema.concat(
   HhAuthorizationCodeRequestSchema,
-).shape({_authBy: yup.string().defined().oneOf([HH_AUTHORIZATION_CODE] as const)});
+).shape({ _authBy: yup.string().defined().oneOf([HH_AUTHORIZATION_CODE] as const) });
 
 export const RegisterApplicantWithHhByHhTokenRequestSchema: yup.ObjectSchema<RegisterApplicantWithHhByHhTokenRequest> = RegisterApplicantWithHhRequestSchema.shape({
   _authBy: yup.string().defined().oneOf([HH_TOKEN] as const),

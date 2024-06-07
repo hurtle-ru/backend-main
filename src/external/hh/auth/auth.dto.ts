@@ -1,6 +1,5 @@
 import * as yup from "yup";
 import { HhToken } from "@prisma/client";
-import { CreateAccessTokenResponse, RegisterApplicantWithHhRequest } from "../../../domain/auth/auth.dto";
 
 
 const WEEK = 3600 * 24 * 7;

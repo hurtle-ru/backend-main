@@ -165,7 +165,7 @@ export class ResumeController extends Controller {
 
     const where = {
       id,
-      ...(req.user.role === UserRole.APPLICANT && { applicant: {id: req.user.id } }),
+      ...(req.user.role === UserRole.APPLICANT && { applicant: { id: req.user.id } }),
     };
 
     const resume = await prisma.resume.findUnique({ where });

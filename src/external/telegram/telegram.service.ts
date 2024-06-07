@@ -1,4 +1,4 @@
-import TelegramBot, { ParseMode, SendMessageOptions } from "node-telegram-bot-api";
+import TelegramBot, { SendMessageOptions } from "node-telegram-bot-api";
 import { telegramConfig } from "./telegram.config";
 import { singleton } from "tsyringe";
 import { TelegramQueue } from "./mq/telegram.queue";

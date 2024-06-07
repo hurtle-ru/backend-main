@@ -86,7 +86,7 @@ export class HhResumeController extends Controller {
         languages: { create: validatedResume.languages },
         experience: { create: validatedResume.experience },
         education: { create: validatedResume.education },
-        certificates: { create: validatedResume.certificates},
+        certificates: { create: validatedResume.certificates },
       },
     });
   }

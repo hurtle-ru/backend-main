@@ -7,9 +7,7 @@ import { BasicManager } from "../../manager/manager.dto";
 import {
   APPLICANT,
   MANAGER,
-  RequesterApplicant,
   RequesterApplicantSchema,
-  RequesterManager,
   RequesterManagerSchema,
 } from "../../../infrastructure/controller/requester/requester.dto";
 import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.yup";

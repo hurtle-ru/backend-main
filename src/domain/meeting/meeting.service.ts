@@ -1,17 +1,21 @@
 import { injectable, singleton } from "tsyringe";
-import intersect from "fast_array_intersect";
-import { MeetingType } from "@prisma/client";
-import { GUEST_ROLE, UserRole } from "../auth/auth.dto";
+import { MeetingType, Meeting, MeetingSlot } from "@prisma/client";
+import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from "moment-timezone";
 import { appConfig } from "../../infrastructure/app.config";
+import { Request as ExpressRequest } from "express";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { EmailService } from "../../external/email/email.service";
 import { MeetingBusinessInfoByTypes, ReminderMinutesBeforeMeeting } from "./meeting.config";
 import pino from "pino";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
-import { CreateMeetingByApplicantOrEmployerRequest, CreateMeetingGuestRequest, UserMeetingCreator, MeetingCreator } from "./meeting.dto";
+import { UserMeetingCreator, MeetingCreator } from "./meeting.dto";
 import { HtmlFormatter } from "../../external/telegram/telegram.service.text-formatter";
+import { prisma } from "../../infrastructure/database/prisma.provider";
+import { HttpError } from "../../infrastructure/error/http.error";
+import { logger } from "../../infrastructure/logger/logger";
+import { BasicManager } from "../manager/manager.dto";
 
 
 @injectable()
@@ -29,18 +33,81 @@ export class MeetingService {
     return slotTypes.some(slotType => MeetingBusinessInfoByTypes[slotType]?.roles.includes(userRole));
   }
 
-  async createRoom(
+  async tryToCreateSaluteJazzRoomOrNotifyAdminsAndThrow(
+    user: MeetingCreator & { id: string, role: "APPLICANT" | "EMPLOYER" | "GUEST" },
+    body: Pick<Meeting, "slotId" | "type">): Promise<string | never> {
+    try {
+      return await this.createSaluteJazzRoom(body.type, user!);
+    } catch (error) {
+      logger.error({ error }, "Can not create Sber jazz room");
+
+      await this.sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
+        user!,
+        body,
+        error,
+      );
+
+      throw new HttpError(409, "Related service not available, retry later");
+    }
+  }
+
+  async createSaluteJazzRoom(
     meetingType: MeetingType,
-    user: { _type: "user", firstName: string, lastName: string }
-        | { _type: "guest" },
+    user: MeetingCreator,
   ): Promise<string> {
     const meetingName = MeetingBusinessInfoByTypes[meetingType].name;
 
-    let roomName;
-    if (user._type === "guest") roomName = `Хартл ${meetingName}`;
-    else if (user._type === "user") roomName = `${user.lastName} ${user.firstName[0]}. | Хартл ${meetingName}`;
+    let name;
+    if (user._type === "user") {
+      name = `${(user as UserMeetingCreator).lastName} ${(user as UserMeetingCreator).firstName[0]}. | Хартл ${meetingName}`;
+    } else {
+      name = `Хартл ${meetingName}`;
+    }
+    return await this.jazzService.createRoom(name);
+  }
 
-    return await this.jazzService.createRoom(roomName!);
+  async notifyMeetingCreatedToAdminGroupAndUserEmail(
+    user: MeetingCreator,
+    meeting: Pick<Meeting, "id" | "name" | "type" | "roomUrl">,
+    slot: Pick<MeetingSlot, "dateTime"> & { manager: Pick<BasicManager, "name" | "id"> },
+    req: ExpressRequest & JwtModel,
+    isRescheduling = false,
+  ) {
+    await this.sendMeetingCreatedToAdminGroup(
+      { name: meeting.name, id: meeting.id, dateTime: slot.dateTime, type: meeting.type },
+      { name: slot.manager.name, id: slot.manager.id },
+      { ...user!, id: req.user.id, role: req.user.role },
+      isRescheduling,
+    );
+
+    await this.sendMeetingCreatedToEmail(
+      req.log,
+      user!.email,
+      {
+        name: meeting.name,
+        link: meeting.roomUrl,
+        dateTime: slot.dateTime,
+        emailDescriptionOnCreate: MeetingBusinessInfoByTypes[meeting.type].emailDescriptionOnCreate },
+    );
+  }
+
+  // TODO: replace roomUrl with meeting id
+  async removeMeetingReminderToEmail(
+    logger: pino.Logger,
+    userEmail: string,
+    roomUrl: string,
+  ) {
+    const jobs = await this.emailService.findIncompleteJobsByEmailAndLink(userEmail, roomUrl);
+    for (const job of jobs) {
+      if (job.id) {
+        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job");
+        try {
+          await this.emailService.removeJob(job.id);
+        } catch (e) {
+          logger.error({ jobId: job.id }, "Error while removing job");
+        }
+      }
+    }
   }
 
   async sendMeetingCreatedToAdminGroup(
@@ -48,10 +115,11 @@ export class MeetingService {
     manager: { name: string, id: string },
     user: { _type: "user", firstName: string, lastName: string, id: string, role: string }
         | { _type: "guest", email: string, id: string, role: string},
+    isRescheduling = false,
   )  {
 
     let text =
-      "Забронирована новая встреча!" +
+      (isRescheduling ? "Перенесена встреча!" : "Забронирована новая встреча!") +
       "\n" +
       `\nНазвание: <b>${meeting.name} (ID: ${meeting.id})</b>` +
       `\nТип: <b>${meeting.type}</b>` +
@@ -168,8 +236,8 @@ export class MeetingService {
   }
 
   async sendMeetingNotCreatedBySberJazzRelatedErrorToAdminGroup(
-    user: MeetingCreator & { id: string },
-    body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
+    user: MeetingCreator & { id: string, role: "APPLICANT" | "EMPLOYER" | "GUEST" },
+    body: Pick<Meeting, "slotId" | "type">,
     error: any,
   ) {
     let text = "Ошибка во время попытки создать комнату в Sber Jazz:" + "\n\n";
@@ -180,20 +248,20 @@ export class MeetingService {
       "Тип встречи: " + formatter.bold(body.type),
       "",
       "Информация о пользователе: ",
-      this.getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage(user, body),
+      this.getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage({ ...user, role: user.role }),
       "",
       "Ошибка: ",
       formatter.code(error),
     ].join("\n");
 
-    const reply_markup = body._requester !== "GUEST" ? {
+    const reply_markup = user.role !== "GUEST" ? {
       inline_keyboard: [
         [{
           text: "Admin-panel",
           url: {
             "APPLICANT": this.adminPanelService.getLinkOnApplicant(user.id),
             "EMPLOYER":  this.adminPanelService.getLinkOnEmployer(user.id),
-          }[body._requester],
+          }[user.role],
         }],
       ],
     } : undefined;
@@ -205,25 +273,6 @@ export class MeetingService {
         reply_markup: reply_markup,
       },
     });
-  }
-
-  // TODO: replace roomUrl with meeting id
-  async removeMeetingReminderToEmail(
-    logger: pino.Logger,
-    userEmail: string,
-    roomUrl: string,
-  ) {
-    const jobs = await this.emailService.findIncompleteJobsByEmailAndLink(userEmail, roomUrl);
-    for (const job of jobs) {
-      if (job.id) {
-        logger.debug({ jobId: job.id }, "removeMeetingReminderToEmail: removing job");
-        try {
-          await this.emailService.removeJob(job.id);
-        } catch (e) {
-          logger.error({ jobId: job.id }, "Error while removing job");
-        }
-      }
-    }
   }
 
   getMeetingCreateLink(role: UserRole.APPLICANT | UserRole.EMPLOYER | typeof GUEST_ROLE): string {
@@ -239,13 +288,63 @@ export class MeetingService {
     return reminderTime.getTime() - new Date().getTime();
   }
 
+  async doesSlotAvailableForBookingOrThrow(slotId: string, requester_role: JwtModel["user"]["role"]) {
+    const slot = await this.findFutureSlotById(slotId);
+
+    if (!slot) throw new HttpError(404, "MeetingSlot not found");
+    if (slot.meeting) throw new HttpError(409, "MeetingSlot already booked");
+
+    if (!this.doesUserHaveAccessToMeetingSlot(requester_role, slot.types))
+      throw new HttpError(403, "User does not have access to this MeetingSlot type");
+
+    return slot;
+  }
+
+  async findFutureSlotById(slotId: string) {
+    return await prisma.meetingSlot.findUnique({
+      where: {
+        id: slotId,
+        dateTime: { gte: new Date() },
+      },
+      select: {
+        meeting: true,
+        types: true,
+        dateTime: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            dueDate: true,
+            status: true,
+            guestEmail: true,
+            successCode: true,
+            type: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getMeetingApplicantOrEmployerCreator(meeting: Pick<Meeting, "applicantId" | "employerId">) {
+    if (meeting.applicantId) {
+      return { _type: "user", ...await prisma.applicant.findUnique({ where: { id: meeting.applicantId } }) as any };
+    }
+    if (meeting.employerId) {
+      return { _type: "user", ...await prisma.employer.findUnique({ where: { id: meeting.employerId } }) as any };
+    }
+  }
+
   private getMeetingNotCreatedBySberJazzRelatedErrorToAdminGroupMessage(
-    user: MeetingCreator & { id: string },
-    body: CreateMeetingGuestRequest | CreateMeetingByApplicantOrEmployerRequest,
+    user: MeetingCreator & { id: string, role: string },
   ): string {
     let message = [
       "ID: " + this.formatter.code(user.id),
-      "Роль: "  + body._requester,
+      "Роль: "  + user.role,
       "Почта: " + this.formatter.code(user.email),
     ].join("\n");
 

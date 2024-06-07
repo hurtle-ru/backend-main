@@ -1,4 +1,4 @@
-import { bool, cleanEnv, num, port, str } from "envalid";
+import { cleanEnv, str } from "envalid";
 
 export const hhConfig = cleanEnv(process.env, {
   HH_CLIENT_ID: str(),

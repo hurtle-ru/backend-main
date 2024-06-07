@@ -74,7 +74,7 @@ export const MeetingBusinessInfoByTypes: MeetingBusinessInfoByType = {
     emailDescriptionOnCreate: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     emailDescriptionOnRemind: "Совсем скоро ты встретишься с нашим рекрутером и сделаешь своё резюме идеальным.",
     roles: [GUEST_ROLE],
-    priceInKopecks: 1 * 100,
+    priceInKopecks: 1000 * 100,
     isFree: false,
   },
   [MeetingType.CONSULTATION_B2C_EXPERT_FOR_STUDENTS]: {

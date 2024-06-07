@@ -20,7 +20,8 @@ import { yupUint32 } from "../../infrastructure/validation/requests/int32.yup";
 export type BasicVacancy = Omit<
   Vacancy,
   | "employer"
-  | "vacancyResponses"
+  | "responses"
+  | "guestResponses"
   | "uniqueViewerApplicantIds"
   | "uniqueViewerIps"
 >;

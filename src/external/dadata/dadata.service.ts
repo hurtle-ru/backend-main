@@ -12,7 +12,7 @@ export class DadataService {
   async getBasicCompanyInfoByInn(inn: string): Promise<BasicDadataCompany | null> {
     const response = await axios.post(
       BaseDadataURL + "rs/suggest/party",
-      JSON.stringify({query: inn}),
+      JSON.stringify({ query: inn }),
       {
         method: "POST",
         headers: {

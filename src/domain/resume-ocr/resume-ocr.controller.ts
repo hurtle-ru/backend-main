@@ -42,7 +42,7 @@ export class ResumeOcrController extends Controller {
 
   @Post("queuedImportWithOcr")
   @Security("jwt", [UserRole.APPLICANT, UserRole.MANAGER])
-  @Middlewares(rateLimit({limit: 4, interval: 3600 * 24}))
+  @Middlewares(rateLimit({ limit: 4, interval: 3600 * 24 }))
   @Response<HttpErrorBody & {"error": "Manager must provide applicant id"}>(422)
   @Response<HttpErrorBody & {"error": "Applicant does not exist"}>(404)
   @Response<HttpErrorBody & {"error": "Applicant resume is unfilled or does not exist"}>(409)
@@ -70,7 +70,7 @@ export class ResumeOcrController extends Controller {
   }
 
   @Patch("queuedImportWithOcr/{jobId}/resume")
-  @Middlewares(rateLimit({limit: 100, interval: 3600 * 24}))
+  @Middlewares(rateLimit({ limit: 100, interval: 3600 * 24 }))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async patchQueuedWithOcrById(
     @Request() req: JwtModel,
@@ -86,7 +86,7 @@ export class ResumeOcrController extends Controller {
   }
 
   @Get("queuedImportWithOcr/{jobId}")
-  @Middlewares(rateLimit({limit: 50, interval: 3600}))
+  @Middlewares(rateLimit({ limit: 50, interval: 3600 }))
   @Response<HttpErrorBody & {"error": "Job not found"}>(404)
   public async getQueuedWithOcrById(
     @Request() req: JwtModel,

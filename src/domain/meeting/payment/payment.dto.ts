@@ -8,12 +8,21 @@ import { yupOneOfEnum } from "../../../infrastructure/validation/requests/enum.y
 import { yupUint32 } from "../../../infrastructure/validation/requests/int32.yup";
 
 
-export type BasicMeetingPayment = Omit<
+export type BasicMeetingPayment = Pick<
   MeetingPayment,
-  | "slot"
+  | "id"
+  | "createdAt"
+  | "status"
+  | "guestEmail"
+  | "url"
   | "kassaPaymentId"
   | "successCode"
   | "failCode"
+  | "amount"
+  | "dueDate"
+  | "type"
+  | "slotId"
+  | "appliedPromoCodeValue"
 >;
 
 export const BasicMeetingPaymentSchema: yup.ObjectSchema<BasicMeetingPayment> = yup.object({
@@ -23,38 +32,61 @@ export const BasicMeetingPaymentSchema: yup.ObjectSchema<BasicMeetingPayment> = 
   guestEmail: yup.string().defined().email().max(512),
   url: yup.string().defined().trim().url().max(2048).nullable(),
   kassaPaymentId: yup.string().defined().min(1).max(512).nullable(),
-  successCode: yup.string().defined().trim().min(1).max(512).nullable(),
-  failCode: yup.string().defined().trim().min(1).max(512).nullable(),
+  successCode: yup.string().defined().trim().min(1).max(512),
+  failCode: yup.string().defined().trim().min(1).max(512),
   amount: yupUint32().defined().nullable(),
   dueDate: yup.date().defined(),
-  slotId: yup.string().defined(),
   type: yupOneOfEnum(MeetingType).defined(),
+  slotId: yup.string().defined(),
+  appliedPromoCodeValue: yup.string().defined(),
 });
 
+export type GetMeetingPaymentResponse = Pick<
+  BasicMeetingPayment,
+  | "id"
+  | "createdAt"
+  | "status"
+  | "guestEmail"
+  | "url"
+  | "amount"
+  | "dueDate"
+  | "type"
+  | "slotId"
+  | "appliedPromoCodeValue"
+> & {
+  slot?: BasicMeetingSlot | null;
+  expirationMinutes: number;
+}
 
 export type CreateMeetingPaymentRequest = Pick<
   MeetingPayment,
   | "slotId"
   | "type"
+  | "appliedPromoCodeValue"
 >;
 export const CreateMeetingPaymentRequestSchema: yup.ObjectSchema<CreateMeetingPaymentRequest> = BasicMeetingPaymentSchema.pick([
   "slotId",
   "type",
+  "appliedPromoCodeValue",
 ]);
 
-export type GetMeetingPaymentResponse = BasicMeetingPayment & {
-  slot?: BasicMeetingSlot | null;
-};
+export type CreateMeetingPaymentResponse = GetMeetingPaymentResponse;
 
-export type PatchMeetingPaymentRequest = Partial<Pick<MeetingPayment,
-  | "status"
->> & {
+export type PatchMeetingPaymentRequest = Partial<
+  Pick<
+    MeetingPayment,
+    | "status"
+  >
+> & {
   code: string;
 };
 
 export const PatchMeetingPaymentRequestSchema: yup.ObjectSchema<PatchMeetingPaymentRequest> = BasicMeetingPaymentSchema.pick([
   "status",
-]).partial().shape({code: yup.string().trim().min(1).defined()});
+]).partial()
+  .shape({
+    code: yup.string().trim().min(1).defined(),
+  });
 
 export type MeetingPaymentTinkoffNotificationRequest = {
   TerminalKey: string;

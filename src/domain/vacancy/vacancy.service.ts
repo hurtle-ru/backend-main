@@ -1,5 +1,5 @@
 import { injectable, singleton } from "tsyringe";
-import { Prisma, VacancyEmploymentType, VacancyExperience, VacancyStatus } from "@prisma/client";
+import { Prisma, VacancyStatus } from "@prisma/client";
 import { TelegramService } from "../../external/telegram/telegram.service";
 import { AdminPanelService } from "../../external/admin-panel/admin-panel.service";
 import SearchingUtils from "../../infrastructure/searching/utils";
