@@ -18,7 +18,6 @@ export const BasicMeetingScriptProtocolSchema: yup.ObjectSchema<BasicMeetingScri
   id: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
-  dateTime: yup.date().defined(),
   meetingId: yup.string().defined().length(36),
   templateId: yup.string().defined().length(36),
 });

@@ -17,7 +17,7 @@ export const BasicApplicantAiChatSchema: yup.ObjectSchema<ApplicantAiChat> = yup
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined(),
   applicantId: yup.string().defined().length(36),
-  employerId: yup.string().defined().length(36),
+  employerId: yup.string().defined().length(36).nullable(),
 });
 
 export type CreateApplicantAiChatRequest = Pick<
