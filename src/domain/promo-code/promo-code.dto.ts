@@ -2,6 +2,7 @@ import {
   MeetingPayment, PromoCode,
 } from "@prisma/client";
 import * as yup from "yup";
+import { yupInt32 } from "../../infrastructure/validation/requests/int32.yup";
 
 
 export type BasicPromoCode = Pick<
@@ -23,8 +24,8 @@ const BasicPromoCodeSchema: yup.ObjectSchema<BasicPromoCode> = yup.object({
   discount: yup.number().defined().min(1).max(99),
   expirationDate: yup.date().defined().min(new Date()).nullable(),
   isActive: yup.boolean().defined(),
-  maxUses: yup.number().defined().min(1).nullable(),
-  successfulUses: yup.number().defined(),
+  maxUses: yupInt32().defined().min(1).nullable(),
+  successfulUses: yupInt32().defined(),
 });
 
 export type CreatePromoCodeRequest = Pick<
