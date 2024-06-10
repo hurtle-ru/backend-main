@@ -21,7 +21,7 @@ const BasicPromoCodeSchema: yup.ObjectSchema<BasicPromoCode> = yup.object({
   value: yup.string().defined(),
   createdAt: yup.date().defined(),
   updatedAt: yup.date().defined().defined(),
-  discount: yup.number().defined().min(1).max(99),
+  discount: yup.number().defined().min(1).lessThan(100),
   expirationDate: yup.date().defined().min(new Date()).nullable(),
   isActive: yup.boolean().defined(),
   maxUses: yupInt32().defined().min(1).nullable(),
