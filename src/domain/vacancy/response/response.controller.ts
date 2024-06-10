@@ -169,7 +169,7 @@ export class VacancyResponseController extends Controller {
   @Get("my")
   @Security("jwt", [UserRole.APPLICANT, UserRole.EMPLOYER, UserRole.MANAGER])
   public async getMy(
-    @Request() req: JwtModel,
+    @Request() req: JwtModel<UserRole.APPLICANT | UserRole.EMPLOYER | UserRole.MANAGER>,
     @Query() include?: ("candidate" | "candidate.resume" | "vacancy" | "vacancy.employer" | "candidateRecommendedBy")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
@@ -184,9 +184,13 @@ export class VacancyResponseController extends Controller {
     @Query() candidate_resume_minDesiredSalary?: number,
     @Query() candidate_resume_maxDesiredSalary?: number,
   ): Promise<PageResponse<GetVacancyResponseResponse>> {
-    let where: Prisma.VacancyResponseWhereInput = {
+    const where: Prisma.VacancyResponseWhereInput = {
       status: { in: status ?? undefined },
-      candidateId: { in: candidateId ?? undefined },
+      candidateId: (
+        req.user.role == UserRole.APPLICANT
+          ? req.user.id
+          : { in: candidateId ?? undefined }
+      ),
       candidateRecommendedByManagerId: { in: candidateRecommendedByManagerId ?? undefined },
       vacancyId: { in: vacancyId ?? undefined },
       vacancy: {
@@ -195,6 +199,16 @@ export class VacancyResponseController extends Controller {
           gte: vacancy_minSalary ?? undefined,
           lte: vacancy_maxSalary ?? undefined,
         },
+        ...{
+          "APPLICANT": {
+            isHidden: false,
+            status: { equals: VacancyStatus.PUBLISHED },
+          },
+          "EMPLOYER": {
+            employerId: req.user.id,
+          },
+          "MANAGER": {},
+        }[req.user.role],
       },
       candidate: {
         resume: {
@@ -205,22 +219,6 @@ export class VacancyResponseController extends Controller {
         },
       },
     };
-
-    switch (req.user.role) {
-    case UserRole.APPLICANT:
-      where = {
-        ...where,
-        candidateId: req.user.id,
-        vacancy:{
-          isHidden: false,
-          status: { equals: VacancyStatus.PUBLISHED },
-        },
-      };
-      break;
-    case UserRole.EMPLOYER:
-      where = { ...where, vacancy: { employerId: req.user.id } };
-      break;
-    }
 
     const [vacancyResponses, vacancyResponsesCount] = await Promise.all([
       prisma.vacancyResponse.findMany({
