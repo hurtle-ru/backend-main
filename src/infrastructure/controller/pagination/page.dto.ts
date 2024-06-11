@@ -7,6 +7,6 @@ export type PageNumber = number;
 /**
  * @isInt Should be integer
  * @minimum 1
- * @maximum 800
+ * @maximum 80
  */
 export type PageSizeNumber = number;
