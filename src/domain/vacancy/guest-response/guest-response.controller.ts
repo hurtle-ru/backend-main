@@ -191,6 +191,7 @@ export class GuestVacancyResponseController extends Controller {
         where: where!,
         orderBy: parseSortBy<Prisma.GuestVacancyResponseOrderByWithRelationAndSearchRelevanceInput>(sortBy),
         include: {
+          resume: true,
           vacancy: include?.includes("vacancy.employer")
             ? { include: { employer: true } }
             : include?.includes("vacancy"),
