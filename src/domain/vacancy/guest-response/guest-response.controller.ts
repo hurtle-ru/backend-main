@@ -164,6 +164,7 @@ export class GuestVacancyResponseController extends Controller {
   ): Promise<PageResponse<GetGuestVacancyResponseResponse>> {
     let where: Prisma.GuestVacancyResponseWhereInput = {
       status: { in: status ?? undefined },
+      moderationStatus: req.user.role !== UserRole.MANAGER ? { equals: VacancyStatus.PUBLISHED }: undefined,
       vacancyId: { in: vacancyId ?? undefined },
       vacancy: {
         city: { in: vacancy_city ?? undefined },
@@ -228,20 +229,18 @@ export class GuestVacancyResponseController extends Controller {
     @Path() id: string,
     @Query() include?: ("vacancy" | "resume")[],
   ): Promise<GetGuestVacancyResponseResponse> {
-    let where = null;
+    let where: Prisma.GuestVacancyResponseWhereUniqueInput = {
+      id,
+      moderationStatus: { equals: VacancyStatus.PUBLISHED },
+    };
 
     if (req.user) {
-      switch (req.user.role) {
-      case UserRole.EMPLOYER:
-        where = { id, vacancy: { employerId: req.user.id } };
-        break;
-      case UserRole.MANAGER:
-        where = { id };
-        break;
+      if (req.user.role == UserRole.EMPLOYER) {
+        where = { ...where, vacancy: { employerId: req.user.id } };
       }
     } else {
       where = {
-        id,
+        ...where,
         vacancy: {
           isHidden: false,
           status: { equals: VacancyStatus.PUBLISHED },
