@@ -8,6 +8,7 @@ import { existsExtension } from "./exists.prisma-extension";
 import { meetingPaymentPrismaExtension } from "../../domain/meeting/payment/payment.prisma-extension";
 import { resumePrismaExtension } from "../../domain/resume/resume.prisma-extension";
 import { promoCodePrismaExtension } from "../../domain/promo-code/promo-code.prisma-extension";
+import { GazpromTokenExtension } from "../../external/gazprom/gazprom.prisma-extension";
 
 
 export const prisma = new PrismaClient()
@@ -16,6 +17,7 @@ export const prisma = new PrismaClient()
   .$extends(managerPrismaExtension)
   .$extends(meetingPrismaExtension)
   .$extends(hhTokenExtension)
+  .$extends(GazpromTokenExtension)
   .$extends(existsExtension)
   .$extends(meetingPaymentPrismaExtension)
   .$extends(resumePrismaExtension)
