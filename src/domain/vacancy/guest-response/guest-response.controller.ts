@@ -150,7 +150,7 @@ export class GuestVacancyResponseController extends Controller {
   @Security("jwt", [UserRole.EMPLOYER, UserRole.MANAGER])
   public async getMy(
     @Request() req: JwtModel,
-    @Query() include?: ("vacancy" | "vacancy.employer")[],
+    @Query() include?: ("resume" | "vacancy" | "vacancy.employer")[],
     @Query() page: PageNumber = 1,
     @Query() size: PageSizeNumber = 20,
     @Query() sortBy?: ("createdAt_asc" | "createdAt_desc" | "isViewedByEmployer_asc" | "isViewedByEmployer_desc")[],
@@ -164,6 +164,7 @@ export class GuestVacancyResponseController extends Controller {
   ): Promise<PageResponse<GetGuestVacancyResponseResponse>> {
     let where: Prisma.GuestVacancyResponseWhereInput = {
       status: { in: status ?? undefined },
+      moderationStatus: req.user.role !== UserRole.MANAGER ? { equals: VacancyStatus.PUBLISHED }: undefined,
       vacancyId: { in: vacancyId ?? undefined },
       vacancy: {
         city: { in: vacancy_city ?? undefined },
@@ -191,6 +192,7 @@ export class GuestVacancyResponseController extends Controller {
         where: where!,
         orderBy: parseSortBy<Prisma.GuestVacancyResponseOrderByWithRelationAndSearchRelevanceInput>(sortBy),
         include: {
+          resume: include?.includes("resume"),
           vacancy: include?.includes("vacancy.employer")
             ? { include: { employer: true } }
             : include?.includes("vacancy"),
@@ -227,20 +229,18 @@ export class GuestVacancyResponseController extends Controller {
     @Path() id: string,
     @Query() include?: ("vacancy" | "resume")[],
   ): Promise<GetGuestVacancyResponseResponse> {
-    let where = null;
+    let where: Prisma.GuestVacancyResponseWhereUniqueInput = {
+      id,
+      moderationStatus: req.user?.role !== UserRole.MANAGER ? { equals: VacancyStatus.PUBLISHED }: undefined,
+    };
 
     if (req.user) {
-      switch (req.user.role) {
-      case UserRole.EMPLOYER:
-        where = { id, vacancy: { employerId: req.user.id } };
-        break;
-      case UserRole.MANAGER:
-        where = { id };
-        break;
+      if (req.user.role == UserRole.EMPLOYER) {
+        where = { ...where, vacancy: { employerId: req.user.id } };
       }
     } else {
       where = {
-        id,
+        ...where,
         vacancy: {
           isHidden: false,
           status: { equals: VacancyStatus.PUBLISHED },
