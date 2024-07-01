@@ -3,7 +3,7 @@ import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service
 import { MeetingPayment, MeetingType } from "@prisma/client";
 import { paymentConfig } from "./payment.config";
 import { MeetingBusinessInfoByTypes, PaidMeetingBusinessInfo } from "../meeting.config";
-import { MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
+import { BasicMeetingPayment, MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
 import otpGenerator from "otp-generator";
 import { prisma } from "../../../infrastructure/database/prisma.provider";
 import { HttpError } from "../../../infrastructure/error/http.error";
@@ -59,11 +59,14 @@ export class MeetingPaymentService {
     };
   }
 
-  async checkPaymentExistsAndMatchesSpecifiedDataOrThrow(
+  checkPaymentExistsAndMatchesSpecifiedDataOrThrow(
     userId: string,
-    slotPayments: Pick<MeetingPayment, "successCode" | "type" | "status" | "guestEmail">[],
+    slotPayments: Pick<BasicMeetingPayment, "successCode" | "type" | "status" | "guestEmail" | "amount">[],
     data: {type: MeetingType, successCode?: string}):
-  Promise<never | void> {
+      Pick<BasicMeetingPayment, "successCode" | "type" | "status" | "guestEmail" | "amount">
+      | never
+      | void
+   {
     // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
     if (this.doesMeetingTypeRequiresPayment(data.type)) {
       const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slotPayments, userId);
@@ -76,6 +79,8 @@ export class MeetingPaymentService {
 
       if (slotPaymentPaidByGuest.type !== data.type)
         throw new HttpError(409, "Paid meeting type and passed type from request body don`t match");
+
+      return slotPaymentPaidByGuest
     }
   }
 

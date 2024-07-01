@@ -107,7 +107,7 @@ export class MeetingController extends Controller {
     }
 
     const slot = await this.meetingService.doesSlotAvailableForBookingOrThrow(bodyData.slotId, req.user.role);
-    this.paymentService.checkPaymentExistsAndMatchesSpecifiedDataOrThrow(req.user.id, slot.payments, bodyData);
+    const payment = this.paymentService.checkPaymentExistsAndMatchesSpecifiedDataOrThrow(req.user.id, slot.payments, bodyData);
 
     const findArgs: Prisma.ApplicantFindUniqueArgs | Prisma.EmployerFindUniqueArgs = {
       where: { id: req.user.id },
@@ -136,7 +136,12 @@ export class MeetingController extends Controller {
       },
     });
 
-    await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(user, meeting, slot, req);
+    await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(
+      user,
+      { ...meeting, amount: payment?.amount || null },
+      slot,
+      req
+    );
     await this.meetingService.scheduleMeetingReminderToEmail(req.log, user!.email, {
       name: meeting.name,
       link: roomUrl,
@@ -492,7 +497,7 @@ export class MeetingController extends Controller {
           emailDescriptionOnRemind: MeetingBusinessInfoByTypes[meeting.type].emailDescriptionOnRemind,
         },
       );
-      await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData }, new_slot, req, true);
+      await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData, amount: null }, new_slot, req, true);
     }
 
     return await prisma.meeting.update({
@@ -597,7 +602,7 @@ export class MeetingController extends Controller {
       },
     );
 
-    await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData }, new_slot, req, true);
+    await this.meetingService.notifyMeetingCreatedToAdminGroupAndUserEmail(creator, { ...meeting, ...bodyData, amount: payment.amount }, new_slot, req, true);
 
     return response;
   }

@@ -1,5 +1,5 @@
 import { injectable, singleton } from "tsyringe";
-import { MeetingType, Meeting, MeetingSlot } from "@prisma/client";
+import { MeetingType, Meeting, MeetingSlot, MeetingPayment } from "@prisma/client";
 import { GUEST_ROLE, JwtModel, UserRole } from "../auth/auth.dto";
 import { SberJazzService } from "../../external/sberjazz/sberjazz.service";
 import moment from "moment-timezone";
@@ -68,13 +68,13 @@ export class MeetingService {
 
   async notifyMeetingCreatedToAdminGroupAndUserEmail(
     user: MeetingCreator,
-    meeting: Pick<Meeting, "id" | "name" | "type" | "roomUrl">,
+    meeting: Pick<Meeting, "id" | "name" | "type" | "roomUrl"> & Pick<MeetingPayment, "amount">,
     slot: Pick<MeetingSlot, "dateTime"> & { manager: Pick<BasicManager, "name" | "id"> },
     req: ExpressRequest & JwtModel,
     isRescheduling = false,
   ) {
     await this.sendMeetingCreatedToAdminGroup(
-      { name: meeting.name, id: meeting.id, dateTime: slot.dateTime, type: meeting.type },
+      { name: meeting.name, id: meeting.id, dateTime: slot.dateTime, type: meeting.type, amount: meeting.amount },
       { name: slot.manager.name, id: slot.manager.id },
       { ...user!, id: req.user.id, role: req.user.role },
       isRescheduling,
@@ -111,10 +111,9 @@ export class MeetingService {
   }
 
   async sendMeetingCreatedToAdminGroup(
-    meeting: { name: string, id: string, dateTime: Date, type: MeetingType },
+    meeting: { name: string, id: string, dateTime: Date, type: MeetingType } & Pick<MeetingPayment, "amount">,
     manager: { name: string, id: string },
-    user: { _type: "user", firstName: string, lastName: string, id: string, role: string }
-        | { _type: "guest", email: string, id: string, role: string},
+    user: { _type: "user", firstName: string, lastName: string, id: string, role: string } | { _type: "guest", email: string, id: string, role: string},
     isRescheduling = false,
   )  {
 
@@ -125,6 +124,10 @@ export class MeetingService {
       `\nТип: <b>${meeting.type}</b>` +
       `\nДата: <b>${meeting.dateTime}</b>` +
       `\nМенеджер: <b>${manager.name} (ID: ${manager.id}</b>` +
+      `\nСтоимость встречи: ${
+        this.telegramService.TextFormatter.bold((meeting.amount || 0).toLocaleString('en-US').replace(/,/g, '_')
+        + " р."
+      )}` +
       "\n";
 
     if (user._type === "user") text += `\nПользователь: <b>${user.lastName} ${user.firstName[0]}. (ID: ${user.id})</b>`;
@@ -324,6 +327,7 @@ export class MeetingService {
             guestEmail: true,
             successCode: true,
             type: true,
+            amount: true,
           },
         },
       },
