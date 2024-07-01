@@ -141,22 +141,24 @@ export class AuthService {
     const applicant = await prisma.applicant.create(
       {
         data: {
-          ...bodyRest,
-          login: bodyRest.email,
+          login: body.email,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          middleName: body.middleName,
+          contact: body.contact,
+          email: body.email,
+          phone: body.phone,
+          birthDate: body.birthDate,
+
+          GazpromToken: {
+            create: { ...gazpromToken, gazpromUserId: openid }
+          },
           resume: {
             create: {},
           },
         },
       },
     );
-
-    await prisma.gazpromToken.create({
-      data: {
-        ...gazpromToken,
-        gazpromUserId: openid,
-        applicant: { connect: { id: applicant.id } },
-      },
-    });
 
     return applicant;
   }

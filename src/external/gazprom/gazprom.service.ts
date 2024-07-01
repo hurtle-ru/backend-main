@@ -15,7 +15,8 @@ import { GazpromMappingService } from "./gazprom.mapper";
 
 @singleton()
 export class GazpromService {
-  private readonly BASE_URL = "https://auth.gid.ru/"
+  // private readonly BASE_URL = "https://auth.gid.ru/"
+  private readonly BASE_URL = "https://preprod.gid-auth.ru/"
   private readonly SCOPES = [
     "openid", "phone", "first_name", "last_name", "profile", "city", "gender", "birthdate", "email", "email_confirmed", "offline_access"
   ]
@@ -39,63 +40,56 @@ export class GazpromService {
   }
 
   async getUserInfo({ accessToken, tokenType }: BasicGazpromToken): Promise<GazpromUserInfo> {
-    const response = await axios.post<GetGazpromUserInfoResponse>(
-      urlJoin(this.BASE_URL, "/userinfo"), {
-      headers: {
-        "Authorization": join(tokenType, accessToken),
-      },
-      validateStatus: () => true,
-    });
+    const response = await axios.get<GetGazpromUserInfoResponse>(
+      urlJoin(this.BASE_URL, "/userinfo"),
+      {
+        headers: {
+          "Authorization": join([tokenType, accessToken], " "),
+        },
+        validateStatus: () => true,
+      }
+    );
 
     if ("error" in response.data) {
       logger.error({err: response.data.error}, "Get Gazprom user info error: ")
       throw new HttpError(401, "Code is invalid");
     }
 
-    logger.info({data: response.data}, "USER RESPONSE DATA")
     const user = this.mappingService.mapUserInfo(response.data)
-
-    logger.info({user}, "USER DATA")
 
     return user
   }
 
   async createToken(code: string): Promise<BasicGazpromToken> {
-    const params = {
+    const body = {
+      code,
       client_id: gazpromConfig.GAZPROM_CLIENT_ID,
       client_secret: gazpromConfig.GAZPROM_CLIENT_SECRET,
-      code,
       grant_type: "authorization_code",
       redirect_uri: gazpromConfig.GAZPROM_REDIRECT_URI,
-    };
-
-    const response = await axios.post<CreateGazpromTokenResponse>(urlJoin(this.BASE_URL, "oauth2/token"), qs.stringify(params), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Basic " + this.CLIENT_AUTH,
-      },
-      validateStatus: () => true,
-    });
+    }
+    const response = await axios.post<CreateGazpromTokenResponse>(
+      urlJoin(this.BASE_URL, `oauth2/token`),
+      body,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        validateStatus: () => true,
+      }
+    );
 
     if ("error" in response.data) {
       logger.error({err: response.data.error}, "Create gazprom access token error: ")
       throw new HttpError(401, "Code is invalid");
     }
 
-    logger.info({
-      createdAt: new Date(),
-      accessToken: response.data.access_token,
-      refreshToken: response.data.refresh_token,
-      expiresIn: response.data.expires_in,
-      tokenType: response.data.token_type,
-    }, "ACCESS TOKEN")
-
     return {
       createdAt: new Date(),
       accessToken: response.data.access_token,
       refreshToken: response.data.refresh_token,
       expiresIn: response.data.expires_in,
-      tokenType: response.data.token_type,
+      tokenType: this.capitalizeTokenType(response.data.token_type),
     };
   }
 
@@ -121,7 +115,7 @@ export class GazpromService {
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<BasicGazpromToken> {
-    const params = {
+    const body = {
       grant_type: "refresh_token",
       refresh_token: refreshToken,
       client_id: gazpromConfig.GAZPROM_CLIENT_ID,
@@ -129,26 +123,21 @@ export class GazpromService {
       scope: this.SCOPES.join(" "),
     };
 
-    const response = await axios.post<RefreshGazpromTokenResponse>(urlJoin(this.BASE_URL, "oauth2/token"), qs.stringify(params), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Basic " + this.CLIENT_AUTH,
-      },
-      validateStatus: () => true,
-    });
+    const response = await axios.post<RefreshGazpromTokenResponse>(
+      urlJoin(this.BASE_URL, "oauth2/token"),
+      body,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        validateStatus: () => true,
+      }
+    );
 
     if ("error" in response.data) {
       logger.error({err: response.data.error}, "Refresh gazprom token error: ")
       throw new HttpError(401, "Can not refresh token");
     }
-
-    logger.info({
-      createdAt: new Date(),
-      accessToken: response.data.access_token,
-      refreshToken: response.data.refresh_token,
-      expiresIn: response.data.expires_in,
-      tokenType: response.data.token_type,
-    }, "REFRESH TOKEN")
 
     return {
       createdAt: new Date(),
@@ -162,7 +151,13 @@ export class GazpromService {
   private makeClientAuth(): string {
     return btoa(gazpromConfig.GAZPROM_CLIENT_ID + ":" + gazpromConfig.GAZPROM_CLIENT_SECRET)
   }
-}
 
-const service = new GazpromService(new GazpromMappingService())
-logger.info(service.buildAuthorizeUrl())
+  private capitalizeTokenType(token: string): string {
+    if (token === "bearer") return "Bearer"
+
+    if (token.length === 0) {
+      return token;
+    }
+    return token.charAt(0).toUpperCase() + token.slice(1);
+}
+}

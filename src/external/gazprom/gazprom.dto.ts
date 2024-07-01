@@ -16,8 +16,8 @@ export type BasicGazpromToken = Pick<
 
 export const BasicGazpromTokenSchema: yup.ObjectSchema<BasicGazpromToken> = yup.object({
   createdAt: yup.date().defined(),
-  accessToken: yup.string().trim().length(64).defined(),
-  refreshToken: yup.string().trim().length(64).defined(),
+  accessToken: yup.string().trim().min(1).defined(),
+  refreshToken: yup.string().trim().min(1).defined(),
   tokenType: yup.string().trim().max(64).defined(),
   expiresIn: yup.number().min(0).max(2 * WEEK).defined(),
 });
@@ -50,13 +50,13 @@ export type CreateGazpromTokenResponse = {
 export type AuthWithGazpromUserAccountResponse = {
   message: "Gazprom token is valid, but registration is required",
   gazpromToken: BasicGazpromToken,
-  gazpromAccount: GazpromUserInfo,
+  gazpromAccount: Omit<GazpromUserInfo, "openid">,
 }
 
 export type RefreshGazpromTokenResponse = CreateGazpromTokenResponse
 
 export type GazpromUserInfoResponse = {
-  openid: string,
+  sub: string,
   phone?: string,
   first_name?: string,
   last_name?: string,

@@ -8,7 +8,7 @@ import { Gender } from "@prisma/client";
 export class GazpromMappingService {
   mapUserInfo(data: GazpromUserInfoResponse): GazpromUserInfo {
     return {
-      openid: data.openid,
+      openid: data.sub, // gazprom legacy
       phone: data.phone ?? null,
       nickname: data.nickname ?? null,
       city: data.city ?? null,

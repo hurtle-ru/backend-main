@@ -20,7 +20,7 @@ import {
   AuthWithEmailCodeRequest,
   AuthGetEmailCodeRequest,
   AuthGetEmailCodeRequestSchema,
-  AuthWithEmailCodeRequestSchema, CreateGuestAccessTokenRequest, CreateGuestAccessTokenRequestSchema, GUEST_ROLE, RegisterApplicantWithGazpromTokenRequest, RegisterApplicantWithGazpromCodeRequest, RegisterApplicantWithGazpromCodeRequestSchema, RegisterApplicantWithGazpromTokenRequestSchema, AuthWithGazpromRequest, AuthWithGazpromRequestSchema,
+  AuthWithEmailCodeRequestSchema, CreateGuestAccessTokenRequest, CreateGuestAccessTokenRequestSchema, GUEST_ROLE, RegisterApplicantWithGazpromTokenRequest, RegisterApplicantWithGazpromCodeRequest, RegisterApplicantWithGazpromCodeRequestSchema, RegisterApplicantWithGazpromTokenRequestSchema, AuthWithGazpromRequest, AuthWithGazpromRequestSchema, AuthWithGazpromResponse,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -455,7 +455,7 @@ export class AuthController extends Controller {
     return {
       message: "Gazprom token is valid, but registration is required",
       gazpromToken: newToken,
-      gazpromAccount: gazpromUser,
+      gazpromAccount: gazpromUserRest,
     };
   }
 
