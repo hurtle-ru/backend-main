@@ -6,6 +6,7 @@ import {
   RegisterEmployerRequest,
   RegisterApplicantHhToken,
   RegisterApplicantWithHhRequest,
+  RegisterApplicantWithGazpromBaseRequest,
 } from "./auth.dto";
 import { authConfig } from "./auth.config";
 import * as bcrypt from "bcryptjs";
@@ -16,6 +17,7 @@ import { APPLICANT, EMPLOYER } from "../../infrastructure/controller/requester/r
 import otpGenerator from "otp-generator";
 import { EmailService } from "../../external/email/email.service";
 import { appConfig } from "../../infrastructure/app.config";
+import { BasicGazpromToken } from "../../external/gazprom/gazprom.dto";
 
 
 
@@ -128,6 +130,34 @@ export class AuthService {
         applicant: { connect: { id: applicant.id } },
       },
     });
+
+    return applicant;
+  }
+
+  async registerApplicantWithGazprom(body: RegisterApplicantWithGazpromBaseRequest & { openid: string }, gazpromToken: BasicGazpromToken) {
+    const { openid, ...bodyRest } = body;
+
+    const applicant = await prisma.applicant.create(
+      {
+        data: {
+          login: body.email,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          middleName: body.middleName,
+          contact: body.contact,
+          email: body.email,
+          phone: body.phone,
+          birthDate: body.birthDate,
+
+          GazpromToken: {
+            create: { ...gazpromToken, gazpromUserId: openid },
+          },
+          resume: {
+            create: {},
+          },
+        },
+      },
+    );
 
     return applicant;
   }

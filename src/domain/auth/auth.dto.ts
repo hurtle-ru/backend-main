@@ -13,6 +13,7 @@ import { HhToken } from "@prisma/client";
 import { APPLICANT, APPLICANT_SCHEMA, EMPLOYER } from "../../infrastructure/controller/requester/requester.dto";
 import { GoogleTokenSchema } from "../../external/google/auth/auth.dto";
 import { BasicEmployer, BasicEmployerSchema } from "../employer/employer.dto";
+import { AuthWithGazpromUserAccountResponse, BasicGazpromToken, BasicGazpromTokenSchema, GAZPROM_AUTHORIZATION_CODE, GAZPROM_TOKEN, GazpromAuthorizationCodeRequest, GazpromAuthorizationCodeRequestSchema } from "../../external/gazprom/gazprom.dto";
 
 
 export interface JwtModel<R = UserRole | typeof GUEST_ROLE> {
@@ -105,7 +106,6 @@ export const RegisterApplicantWithHhRequestSchema: yup.ObjectSchema<RegisterAppl
   "middleName",
 ]);
 
-
 export type RegisterApplicantWithGoogleRequest = Pick<BasicApplicant,
   | "contact"
   | "birthDate"
@@ -142,7 +142,6 @@ export const RegisterApplicantWithHhByHhTokenRequestSchema: yup.ObjectSchema<Reg
   hhToken: BasicHhTokenSchema,
 });
 
-
 export type AuthWithHhUserResponse = CreateAccessTokenResponse | AuthWithHhUserAccountResponse
 
 export type AuthWithHhRequest = {
@@ -154,6 +153,56 @@ export const AuthWithHhRequestSchema: yup.ObjectSchema<AuthWithHhRequest> = HhAu
 });
 
 export { HH_AUTHORIZATION_CODE, HH_TOKEN };
+
+export type RegisterApplicantWithGazpromBaseRequest = Pick<BasicApplicant,
+  | "email"
+  | "contact"
+  | "firstName"
+  | "middleName"
+  | "lastName"
+  | "phone"
+  | "birthDate"
+  | "gender"
+  | "nickname"
+>
+
+export const RegisterApplicantWithGazpromBaseRequestSchema: yup.ObjectSchema<RegisterApplicantWithGazpromBaseRequest> = BasicApplicantSchema.pick([
+  "email",
+  "contact",
+  "firstName",
+  "middleName",
+  "lastName",
+  "phone",
+  "birthDate",
+  "gender",
+  "nickname",
+]);
+
+export type RegisterApplicantWithGazpromTokenRequest = RegisterApplicantWithGazpromBaseRequest & { gazpromToken: BasicGazpromToken, _authBy: GAZPROM_TOKEN }
+
+export const RegisterApplicantWithGazpromTokenRequestSchema: yup.ObjectSchema<RegisterApplicantWithGazpromTokenRequest> = RegisterApplicantWithGazpromBaseRequestSchema.shape({
+  _authBy: yup.string().defined().oneOf([GAZPROM_TOKEN] as const),
+  gazpromToken: BasicGazpromTokenSchema,
+});
+
+
+export type RegisterApplicantWithGazpromCodeRequest = RegisterApplicantWithGazpromBaseRequest & { authorizationCode: string, _authBy: GAZPROM_AUTHORIZATION_CODE }
+
+export const RegisterApplicantWithGazpromCodeRequestSchema: yup.ObjectSchema<RegisterApplicantWithGazpromCodeRequest> = RegisterApplicantWithGazpromBaseRequestSchema.concat(
+  GazpromAuthorizationCodeRequestSchema,
+).shape({
+  _authBy: yup.string().defined().oneOf([GAZPROM_AUTHORIZATION_CODE] as const),
+});
+
+export type AuthWithGazpromRequest = {
+  role: APPLICANT;
+} & GazpromAuthorizationCodeRequest
+
+export const AuthWithGazpromRequestSchema: yup.ObjectSchema<AuthWithGazpromRequest> = GazpromAuthorizationCodeRequestSchema.shape({
+  role: APPLICANT_SCHEMA,
+});
+
+export type AuthWithGazpromResponse = CreateAccessTokenResponse | AuthWithGazpromUserAccountResponse
 
 export type AuthGetEmailCodeRequest = Pick<BasicApplicant, "email"> & {
   role: APPLICANT | EMPLOYER;
