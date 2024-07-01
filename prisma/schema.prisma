@@ -35,6 +35,7 @@ model Applicant {
   password             Password?
   aiChats              ApplicantAiChat[]
   hhToken              HhToken?
+  GazpromToken         GazpromToken?
   googleTokenSub       String?           @unique
 }
 
@@ -103,6 +104,20 @@ model HhToken {
   hhApplicantId String @unique
   accessToken   String @db.VarChar(255)
   refreshToken  String @db.VarChar(255)
+  expiresIn     Int
+}
+
+model GazpromToken {
+  createdAt DateTime @default(now())
+
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String    @unique
+
+  gazpromUserId String  @unique
+
+  accessToken   String @db.VarChar(255)
+  refreshToken  String @db.VarChar(255)
+  tokenType     String
   expiresIn     Int
 }
 

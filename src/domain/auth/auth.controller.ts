@@ -20,7 +20,7 @@ import {
   AuthWithEmailCodeRequest,
   AuthGetEmailCodeRequest,
   AuthGetEmailCodeRequestSchema,
-  AuthWithEmailCodeRequestSchema, CreateGuestAccessTokenRequest, CreateGuestAccessTokenRequestSchema, GUEST_ROLE,
+  AuthWithEmailCodeRequestSchema, CreateGuestAccessTokenRequest, CreateGuestAccessTokenRequestSchema, GUEST_ROLE, RegisterApplicantWithGazpromTokenRequest, RegisterApplicantWithGazpromCodeRequest, RegisterApplicantWithGazpromCodeRequestSchema, RegisterApplicantWithGazpromTokenRequestSchema, AuthWithGazpromRequest, AuthWithGazpromRequestSchema, AuthWithGazpromResponse,
 } from "./auth.dto";
 import { prisma } from "../../infrastructure/database/prisma.provider";
 import { HttpError, HttpErrorBody } from "../../infrastructure/error/http.error";
@@ -36,6 +36,8 @@ import { BasicHhToken } from "../../external/hh/auth/auth.dto";
 import { validateSyncByAtLeastOneSchema } from "../../infrastructure/validation/requests/utils.yup";
 
 import { logger } from "../../infrastructure/logger/logger";
+import { GazpromService } from "../../external/gazprom/gazprom.service";
+import { BasicGazpromToken, GAZPROM_AUTHORIZATION_CODE, GAZPROM_TOKEN } from "../../external/gazprom/gazprom.dto";
 
 
 @injectable()
@@ -46,6 +48,7 @@ export class AuthController extends Controller {
     private readonly authService: AuthService,
     private readonly googleAuthService: GoogleAuthService,
     private readonly hhAuthService: HhAuthService,
+    private readonly gazpromService: GazpromService,
     private readonly hhApplicantService: HhApplicantService,
   ) {
     super();
@@ -338,6 +341,121 @@ export class AuthController extends Controller {
         email: hhApplicant.email,
         phone: hhApplicant.phone,
       },
+    };
+  }
+
+  @Get("GazpromAuthorizeUrl")
+  @Example<string>("https://auth.gid.ru/oauth2/auth/?response_type=code&client_id=CLIENT_ID&scope=client&redirect_uri=REDIRECT_URI&state=STATE&max_age=604800")
+  public async getGazpromAuthorizeUrl(): Promise<string> {
+    return this.gazpromService.buildAuthorizeUrl();
+  }
+
+  @Post("withGazprom/applicant")
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
+  @Response<HttpErrorBody & {"error":
+    | "User with this gazprom account already exists"
+    | "User with this email already exists"
+  }>(409)
+  public async registerApplicantWithGazprom(
+    @Body() body: RegisterApplicantWithGazpromTokenRequest | RegisterApplicantWithGazpromCodeRequest,
+  ): Promise<CreateAccessTokenResponse> {
+    let gazpromToken: BasicGazpromToken;
+
+    const { _authBy, ...bodyWithOutAuthBy } = body;
+
+    const bodyData = validateSyncByAtLeastOneSchema(
+      [
+        RegisterApplicantWithGazpromCodeRequestSchema.omit(["_authBy"]),
+        RegisterApplicantWithGazpromTokenRequestSchema.omit(["_authBy"]),
+      ],
+      bodyWithOutAuthBy,
+    );
+
+    const existingApplicant = await prisma.applicant.exists({ email: bodyData.email });
+    if (existingApplicant) throw new HttpError(409, "User with this email already exists");
+
+    if (body._authBy === GAZPROM_AUTHORIZATION_CODE) {
+      gazpromToken = await this.gazpromService.createToken(body.authorizationCode);
+    } else if (body._authBy === GAZPROM_TOKEN) gazpromToken = body.gazpromToken;
+
+    const gazpromUser = await this.gazpromService.getUserInfo(gazpromToken!);
+
+    if (await prisma.gazpromToken.exists({ gazpromUserId: gazpromUser.openid })) {
+      throw new HttpError(409, "User with this gazprom account already exists");
+    }
+
+    const applicant = await this.authService.registerApplicantWithGazprom(
+      { ...bodyData, openid: gazpromUser.openid },
+      gazpromToken!,
+    );
+
+    const accessToken = this.authService.createToken({
+      id: applicant.id,
+      role: UserRole.APPLICANT,
+    });
+
+    return { token: accessToken };
+  }
+
+  @Post("withGazprom")
+  @Middlewares(rateLimit({ limit: 10, interval: 60 }))
+  @Response<HttpErrorBody & {"error": "Code is invalid"}>(401)
+  public async authWithGazprom(
+    @Request() req: ExpressRequest & JwtModel,
+    @Body() body: AuthWithGazpromRequest,
+  ): Promise<AuthWithGazpromResponse> {
+    body = AuthWithGazpromRequestSchema.validateSync(body);
+
+    const newToken = await this.gazpromService.createToken(body.authorizationCode);
+    const gazpromUser = await this.gazpromService.getUserInfo(newToken);
+    let currentToken = await prisma.gazpromToken.findUnique({ where: { gazpromUserId: gazpromUser.openid } });
+
+    if (currentToken) {
+      currentToken = await prisma.gazpromToken.update({
+        where: {
+          applicantId: currentToken.applicantId,
+        },
+        data: {
+          ...newToken,
+        },
+      });
+
+      const accessToken = this.authService.createToken({
+        id: currentToken.applicantId,
+        role: UserRole.APPLICANT,
+      });
+
+      return { token: accessToken };
+    }
+
+    if (gazpromUser.email) {
+      const applicantByEmail = await prisma.applicant.findUnique({ where: { email: gazpromUser.email } });
+
+      if (applicantByEmail) {
+        await prisma.gazpromToken.create({
+          data: {
+            ...newToken,
+            applicant: { connect: { id: applicantByEmail.id } },
+            gazpromUserId: gazpromUser.openid,
+          },
+        });
+
+        const accessToken = this.authService.createToken({
+          id: applicantByEmail.id,
+          role: UserRole.APPLICANT,
+        });
+
+        return { token: accessToken };
+      }
+    }
+
+    const { openid, ...gazpromUserRest } = gazpromUser;
+
+    return {
+      message: "Gazprom token is valid, but registration is required",
+      gazpromToken: newToken,
+      gazpromAccount: gazpromUserRest,
     };
   }
 
