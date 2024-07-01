@@ -14,7 +14,7 @@ export class TelegramService {
 
   public readonly TextFormatter = new HtmlFormatter();
 
-  private adminGroupId = telegramConfig.TELEGRAM_ADMIN_GROUP_ID
+  private adminGroupId = telegramConfig.TELEGRAM_ADMIN_GROUP_ID;
   private adminGroupThreadId = appConfig.NODE_ENV === "production" ? telegramConfig.TELEGRAM_ADMIN_THREAD_ID : telegramConfig.TELEGRAM_DEV_ADMIN_THREAD_ID;
 
   constructor(

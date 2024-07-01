@@ -140,7 +140,7 @@ export class MeetingController extends Controller {
       user,
       { ...meeting, amount: payment?.amount || null },
       slot,
-      req
+      req,
     );
     await this.meetingService.scheduleMeetingReminderToEmail(req.log, user!.email, {
       name: meeting.name,

@@ -125,9 +125,9 @@ export class MeetingService {
       `\nДата: <b>${meeting.dateTime}</b>` +
       `\nМенеджер: <b>${manager.name} (ID: ${manager.id}</b>` +
       `\nСтоимость встречи: ${
-        this.telegramService.TextFormatter.bold((meeting.amount || 0).toLocaleString('en-US').replace(/,/g, '_')
-        + " р."
-      )}` +
+        this.telegramService.TextFormatter.bold((meeting.amount || 0).toLocaleString("en-US").replace(/,/g, "_")
+        + " р.",
+        )}` +
       "\n";
 
     if (user._type === "user") text += `\nПользователь: <b>${user.lastName} ${user.firstName[0]}. (ID: ${user.id})</b>`;

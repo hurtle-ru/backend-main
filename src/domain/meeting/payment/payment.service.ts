@@ -1,6 +1,6 @@
 import { injectable, singleton } from "tsyringe";
 import { TinkoffPaymentService } from "../../../external/tinkoff/tinkoff.service";
-import { MeetingPayment, MeetingType } from "@prisma/client";
+import { MeetingType } from "@prisma/client";
 import { paymentConfig } from "./payment.config";
 import { MeetingBusinessInfoByTypes, PaidMeetingBusinessInfo } from "../meeting.config";
 import { BasicMeetingPayment, MeetingPaymentTinkoffNotificationRequest } from "./payment.dto";
@@ -65,8 +65,7 @@ export class MeetingPaymentService {
     data: {type: MeetingType, successCode?: string}):
       Pick<BasicMeetingPayment, "successCode" | "type" | "status" | "guestEmail" | "amount">
       | never
-      | void
-   {
+      | void {
     // TODO: Если платные встречи станут доступны для обычных пользователей и/или бесплатные станут доступны гостям, нужно будет пересмотреть логику этой валидации
     if (this.doesMeetingTypeRequiresPayment(data.type)) {
       const slotPaymentPaidByGuest = prisma.meetingPayment.getPaidByGuest(slotPayments, userId);
@@ -80,7 +79,7 @@ export class MeetingPaymentService {
       if (slotPaymentPaidByGuest.type !== data.type)
         throw new HttpError(409, "Paid meeting type and passed type from request body don`t match");
 
-      return slotPaymentPaidByGuest
+      return slotPaymentPaidByGuest;
     }
   }
 
