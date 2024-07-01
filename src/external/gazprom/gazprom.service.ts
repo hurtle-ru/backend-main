@@ -3,7 +3,7 @@ import axios from "axios";
 import qs from "qs";
 import { gazpromConfig } from "./gazprom.config";
 import { randomUUID } from "crypto";
-import urlJoin from "url-join"
+import urlJoin from "url-join";
 import { HttpError } from "../../infrastructure/error/http.error";
 import { BasicGazpromToken, CreateGazpromTokenResponse, GazpromUserInfo, GetGazpromUserInfoResponse, RefreshGazpromTokenResponse } from "./gazprom.dto";
 import { logger } from "../../infrastructure/logger/logger";
@@ -16,14 +16,15 @@ import { GazpromMappingService } from "./gazprom.mapper";
 @singleton()
 export class GazpromService {
   // private readonly BASE_URL = "https://auth.gid.ru/"
-  private readonly BASE_URL = "https://preprod.gid-auth.ru/"
+  private readonly BASE_URL = "https://preprod.gid-auth.ru/";
   private readonly SCOPES = [
-    "openid", "phone", "first_name", "last_name", "profile", "city", "gender", "birthdate", "email", "email_confirmed", "offline_access"
-  ]
-  private readonly CLIENT_AUTH = this.makeClientAuth()
+    "openid", "phone", "first_name", "last_name", "profile", "city", "gender", "birthdate", "email", "email_confirmed", "offline_access",
+  ];
+
+  private readonly CLIENT_AUTH = this.makeClientAuth();
 
   constructor(
-    private readonly mappingService: GazpromMappingService
+    private readonly mappingService: GazpromMappingService,
   ) {}
 
   buildAuthorizeUrl(): string {
@@ -34,9 +35,9 @@ export class GazpromService {
       redirect_uri: gazpromConfig.GAZPROM_REDIRECT_URI,
       state: randomUUID(),
       max_age: 604800, // 1 WEEK
-    })
+    });
 
-    return urlJoin(this.BASE_URL, `oauth2/auth/?${params}`)
+    return urlJoin(this.BASE_URL, `oauth2/auth/?${params}`);
   }
 
   async getUserInfo({ accessToken, tokenType }: BasicGazpromToken): Promise<GazpromUserInfo> {
@@ -47,17 +48,17 @@ export class GazpromService {
           "Authorization": join([tokenType, accessToken], " "),
         },
         validateStatus: () => true,
-      }
+      },
     );
 
     if ("error" in response.data) {
-      logger.error({err: response.data.error}, "Get Gazprom user info error: ")
+      logger.error({ err: response.data.error }, "Get Gazprom user info error: ");
       throw new HttpError(401, "Code is invalid");
     }
 
-    const user = this.mappingService.mapUserInfo(response.data)
+    const user = this.mappingService.mapUserInfo(response.data);
 
-    return user
+    return user;
   }
 
   async createToken(code: string): Promise<BasicGazpromToken> {
@@ -67,20 +68,20 @@ export class GazpromService {
       client_secret: gazpromConfig.GAZPROM_CLIENT_SECRET,
       grant_type: "authorization_code",
       redirect_uri: gazpromConfig.GAZPROM_REDIRECT_URI,
-    }
+    };
     const response = await axios.post<CreateGazpromTokenResponse>(
-      urlJoin(this.BASE_URL, `oauth2/token`),
+      urlJoin(this.BASE_URL, "oauth2/token"),
       body,
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         validateStatus: () => true,
-      }
+      },
     );
 
     if ("error" in response.data) {
-      logger.error({err: response.data.error}, "Create gazprom access token error: ")
+      logger.error({ err: response.data.error }, "Create gazprom access token error: ");
       throw new HttpError(401, "Code is invalid");
     }
 
@@ -131,11 +132,11 @@ export class GazpromService {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         validateStatus: () => true,
-      }
+      },
     );
 
     if ("error" in response.data) {
-      logger.error({err: response.data.error}, "Refresh gazprom token error: ")
+      logger.error({ err: response.data.error }, "Refresh gazprom token error: ");
       throw new HttpError(401, "Can not refresh token");
     }
 
@@ -149,15 +150,15 @@ export class GazpromService {
   }
 
   private makeClientAuth(): string {
-    return btoa(gazpromConfig.GAZPROM_CLIENT_ID + ":" + gazpromConfig.GAZPROM_CLIENT_SECRET)
+    return btoa(gazpromConfig.GAZPROM_CLIENT_ID + ":" + gazpromConfig.GAZPROM_CLIENT_SECRET);
   }
 
   private capitalizeTokenType(token: string): string {
-    if (token === "bearer") return "Bearer"
+    if (token === "bearer") return "Bearer";
 
     if (token.length === 0) {
       return token;
     }
     return token.charAt(0).toUpperCase() + token.slice(1);
-}
+  }
 }

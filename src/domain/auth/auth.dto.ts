@@ -9,7 +9,7 @@ import {
   HhAuthorizationCodeRequest,
   HhAuthorizationCodeRequestSchema,
 } from "../../external/hh/auth/auth.dto";
-import { Gender, HhToken } from "@prisma/client";
+import { HhToken } from "@prisma/client";
 import { APPLICANT, APPLICANT_SCHEMA, EMPLOYER } from "../../infrastructure/controller/requester/requester.dto";
 import { GoogleTokenSchema } from "../../external/google/auth/auth.dto";
 import { BasicEmployer, BasicEmployerSchema } from "../employer/employer.dto";

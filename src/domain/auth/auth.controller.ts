@@ -386,8 +386,8 @@ export class AuthController extends Controller {
     }
 
     const applicant = await this.authService.registerApplicantWithGazprom(
-      {...bodyData, openid: gazpromUser.openid},
-      gazpromToken!
+      { ...bodyData, openid: gazpromUser.openid },
+      gazpromToken!,
     );
 
     const accessToken = this.authService.createToken({
@@ -450,7 +450,7 @@ export class AuthController extends Controller {
       }
     }
 
-    let { openid, ...gazpromUserRest } = gazpromUser
+    const { openid, ...gazpromUserRest } = gazpromUser;
 
     return {
       message: "Gazprom token is valid, but registration is required",

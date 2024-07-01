@@ -17,7 +17,6 @@ import { APPLICANT, EMPLOYER } from "../../infrastructure/controller/requester/r
 import otpGenerator from "otp-generator";
 import { EmailService } from "../../external/email/email.service";
 import { appConfig } from "../../infrastructure/app.config";
-import { Prisma } from "@prisma/client";
 import { BasicGazpromToken } from "../../external/gazprom/gazprom.dto";
 
 
@@ -136,7 +135,7 @@ export class AuthService {
   }
 
   async registerApplicantWithGazprom(body: RegisterApplicantWithGazpromBaseRequest & { openid: string }, gazpromToken: BasicGazpromToken) {
-    const { openid, ...bodyRest } = body
+    const { openid, ...bodyRest } = body;
 
     const applicant = await prisma.applicant.create(
       {
@@ -151,7 +150,7 @@ export class AuthService {
           birthDate: body.birthDate,
 
           GazpromToken: {
-            create: { ...gazpromToken, gazpromUserId: openid }
+            create: { ...gazpromToken, gazpromUserId: openid },
           },
           resume: {
             create: {},

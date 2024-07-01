@@ -1,6 +1,5 @@
 import * as yup from "yup";
 import { GazpromToken, Gender } from "@prisma/client";
-import { DeepNullable } from "../../util/typescript.utils";
 
 
 const WEEK = 3600 * 24 * 7;
@@ -22,10 +21,10 @@ export const BasicGazpromTokenSchema: yup.ObjectSchema<BasicGazpromToken> = yup.
   expiresIn: yup.number().min(0).max(2 * WEEK).defined(),
 });
 
-export const GAZPROM_TOKEN = "GAZPROM_TOKEN"
+export const GAZPROM_TOKEN = "GAZPROM_TOKEN";
 export type GAZPROM_TOKEN = "GAZPROM_TOKEN"
 
-export const GAZPROM_AUTHORIZATION_CODE = "GAZPROM_AUTHORIZATION_CODE"
+export const GAZPROM_AUTHORIZATION_CODE = "GAZPROM_AUTHORIZATION_CODE";
 export type GAZPROM_AUTHORIZATION_CODE = "GAZPROM_AUTHORIZATION_CODE"
 
 export type GazpromAuthorizationCodeRequest = {

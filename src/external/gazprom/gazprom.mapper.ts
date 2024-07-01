@@ -1,5 +1,5 @@
 import { injectable, singleton } from "tsyringe";
-import { GazpromUserInfo, GazpromUserInfoResponse,} from "./gazprom.dto";
+import { GazpromUserInfo, GazpromUserInfoResponse } from "./gazprom.dto";
 import { Gender } from "@prisma/client";
 
 
@@ -19,20 +19,20 @@ export class GazpromMappingService {
       lastName: data.last_name ?? null,
       birthDate: data.birthdate ?? null,
       middleName: this.parseMiddleName(data.profile),
-    }
+    };
   }
 
   private parseMiddleName(profile?: string): string | null {
-    if (!profile) return null
-    if (profile.split(" ").length !== 3) return null
+    if (!profile) return null;
+    if (profile.split(" ").length !== 3) return null;
 
-    return profile.split(" ")[2]
+    return profile.split(" ")[2];
   }
 
   private mapGender(gender?: string) {
-    if (gender === "m") return Gender.MALE
-    if (gender === "f") return Gender.FEMALE
+    if (gender === "m") return Gender.MALE;
+    if (gender === "f") return Gender.FEMALE;
 
-    return null
+    return null;
   }
 }
