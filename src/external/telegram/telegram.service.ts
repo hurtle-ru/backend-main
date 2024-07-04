@@ -14,7 +14,8 @@ export class TelegramService {
 
   public readonly TextFormatter = new HtmlFormatter();
 
-  private adminGroupChatId = appConfig.NODE_ENV === "production" ? telegramConfig.TELEGRAM_ADMIN_GROUP_CHAT_ID : telegramConfig.TELEGRAM_ADMIN_DEV_GROUP_CHAT_ID;
+  private adminGroupId = telegramConfig.TELEGRAM_ADMIN_GROUP_ID;
+  private adminGroupThreadId = appConfig.NODE_ENV === "production" ? telegramConfig.TELEGRAM_ADMIN_THREAD_ID : telegramConfig.TELEGRAM_DEV_ADMIN_THREAD_ID;
 
   constructor(
     private readonly queue: TelegramQueue,
@@ -27,6 +28,6 @@ export class TelegramService {
   }
 
   async sendMessage(text: string, options?: SendMessageOptions): Promise<void> {
-    await this.bot.sendMessage(this.adminGroupChatId, text, options);
+    await this.bot.sendMessage(this.adminGroupId, text, { ...options, message_thread_id: this.adminGroupThreadId });
   }
 }
